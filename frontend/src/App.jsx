@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/public/HomePage';
@@ -28,7 +28,8 @@ import PartnerScannerPage from './pages/partner/PartnerScannerPage';
 import PartnerProfilePage from './pages/partner/PartnerProfilePage';
 import PartnerAuthPage from './pages/partner/PartnerAuthPage';
 
-// 100% Free VIP Passcode Protection
+// 3D Cinematic Intro & Private Access Gate
+import CinematicIntro3D from './components/common/CinematicIntro3D';
 import PrivateAccessGate from './components/common/PrivateAccessGate';
 
 import { useAuth } from './context/AuthContext';
@@ -43,74 +44,93 @@ const AdminRoute = ({ children }) => {
 };
 
 function App() {
+  const location = useLocation();
+  const [showIntro, setShowIntro] = useState(() => {
+    // Show 3D intro if opening home / first time in session
+    const seen = sessionStorage.getItem('cinebook_intro_seen');
+    return !seen && (location.pathname === '/' || location.pathname === '/welcome');
+  });
+
+  const handleCompleteIntro = () => {
+    sessionStorage.setItem('cinebook_intro_seen', 'true');
+    setShowIntro(false);
+  };
+
   return (
     <PrivateAccessGate>
-      <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300">
-        <Routes>
-          {/* Dedicated Partner / Exhibitor Portal Routes (with its own standalone dashboard layout) */}
-          <Route path="/partner/login" element={<PartnerAuthPage />} />
-          <Route path="/partner/register" element={<PartnerAuthPage />} />
-          <Route path="/partner" element={<PartnerLayout />}>
-            <Route index element={<PartnerDashboardPage />} />
-            <Route path="screens" element={<PartnerScreensPage />} />
-            <Route path="shows" element={<PartnerShowsPage />} />
-            <Route path="settlements" element={<PartnerSettlementsPage />} />
-            <Route path="scanner" element={<PartnerScannerPage />} />
-            <Route path="profile" element={<PartnerProfilePage />} />
-          </Route>
+      {showIntro ? (
+        <CinematicIntro3D onComplete={handleCompleteIntro} />
+      ) : (
+        <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300">
+          <Routes>
+            {/* Dedicated Route to Replay 3D Intro */}
+            <Route path="/welcome" element={<CinematicIntro3D onComplete={handleCompleteIntro} />} />
 
-          {/* Public & Customer Routes with Global Customer Navbar & Footer */}
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar />
-                <main className="flex-1">
-                  <Routes>
-                    {/* Public Pages */}
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/movies" element={<MoviesPage />} />
-                    <Route path="/movie/:slug" element={<MovieDetailPage />} />
-                    <Route path="/events" element={<EventsPage />} />
-                    <Route path="/theatres" element={<TheatresPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                    
-                    {/* Static / Policy Pages */}
-                    <Route path="/about" element={<AboutPage />} />
-                    <Route path="/contact" element={<ContactPage />} />
-                    <Route path="/terms" element={<TermsPage />} />
-                    <Route path="/privacy" element={<PrivacyPage />} />
-                    <Route path="/cancellation-policy" element={<CancellationPolicyPage />} />
+            {/* Dedicated Partner / Exhibitor Portal Routes (with its own standalone dashboard layout) */}
+            <Route path="/partner/login" element={<PartnerAuthPage />} />
+            <Route path="/partner/register" element={<PartnerAuthPage />} />
+            <Route path="/partner" element={<PartnerLayout />}>
+              <Route index element={<PartnerDashboardPage />} />
+              <Route path="screens" element={<PartnerScreensPage />} />
+              <Route path="shows" element={<PartnerShowsPage />} />
+              <Route path="settlements" element={<PartnerSettlementsPage />} />
+              <Route path="scanner" element={<PartnerScannerPage />} />
+              <Route path="profile" element={<PartnerProfilePage />} />
+            </Route>
 
-                    {/* Customer Booking Flow */}
-                    <Route path="/seat-selection/:showId" element={<SeatSelectionPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/booking-confirmation/:bookingId" element={<BookingConfirmationPage />} />
-                    <Route path="/my-bookings" element={<MyBookingsPage />} />
-                    <Route path="/dashboard" element={<CustomerDashboardPage />} />
+            {/* Public & Customer Routes with Global Customer Navbar & Footer */}
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-1">
+                    <Routes>
+                      {/* Public Pages */}
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/movies" element={<MoviesPage />} />
+                      <Route path="/movie/:slug" element={<MovieDetailPage />} />
+                      <Route path="/events" element={<EventsPage />} />
+                      <Route path="/theatres" element={<TheatresPage />} />
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/register" element={<RegisterPage />} />
+                      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                      
+                      {/* Static / Policy Pages */}
+                      <Route path="/about" element={<AboutPage />} />
+                      <Route path="/contact" element={<ContactPage />} />
+                      <Route path="/terms" element={<TermsPage />} />
+                      <Route path="/privacy" element={<PrivacyPage />} />
+                      <Route path="/cancellation-policy" element={<CancellationPolicyPage />} />
 
-                    {/* Admin Portal */}
-                    <Route
-                      path="/admin"
-                      element={
-                        <AdminRoute>
-                          <AdminDashboardPage />
-                        </AdminRoute>
-                      }
-                    />
+                      {/* Customer Booking Flow */}
+                      <Route path="/seat-selection/:showId" element={<SeatSelectionPage />} />
+                      <Route path="/checkout" element={<CheckoutPage />} />
+                      <Route path="/booking-confirmation/:bookingId" element={<BookingConfirmationPage />} />
+                      <Route path="/my-bookings" element={<MyBookingsPage />} />
+                      <Route path="/dashboard" element={<CustomerDashboardPage />} />
 
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </>
-            }
-          />
-        </Routes>
-      </div>
+                      {/* Admin Portal */}
+                      <Route
+                        path="/admin"
+                        element={
+                          <AdminRoute>
+                            <AdminDashboardPage />
+                          </AdminRoute>
+                        }
+                      />
+
+                      {/* Fallback */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+          </Routes>
+        </div>
+      )}
     </PrivateAccessGate>
   );
 }
