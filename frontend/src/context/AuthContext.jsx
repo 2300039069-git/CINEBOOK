@@ -3,6 +3,15 @@ import { authApi } from '../services/authApi';
 
 const AuthContext = createContext();
 
+// Master Exhibitor Authorization Codes for Theatre Partner Onboarding
+export const VALID_THEATRE_CODES = [
+  'CINE-THEATRE-2026',
+  'THEATRE2026',
+  'CINEPARTNER2026',
+  'EXHIBITOR2026',
+  '2026'
+];
+
 const MOCK_USERS = {
   customer: {
     id: 'usr-001',
@@ -14,12 +23,13 @@ const MOCK_USERS = {
   },
   theatre_admin: {
     id: 'usr-002',
-    name: 'Rajesh Malhotra',
-    email: 'theatre@phoenixcinemas.com',
-    phone: '+91 98111 22334',
+    name: 'K. Siva Rama Krishna',
+    email: 'partner@sivacinemas.com',
+    phone: '+91 98480 12345',
     role: 'THEATRE_ADMIN',
-    theatreId: 'th-001',
-    theatreName: 'CineBook Grand Cinema — Phoenix Mall',
+    theatreId: 'th-gtr-001',
+    theatreName: 'Siva Cinemas (Guntur)',
+    city: 'Guntur',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop'
   },
   super_admin: {
@@ -64,7 +74,7 @@ export const AuthProvider = ({ children }) => {
       email.includes('admin@cinebook')
     ) {
       loggedInUser = MOCK_USERS.super_admin;
-    } else if (role === 'THEATRE_ADMIN' || email.includes('theatre') || email.includes('phoenix')) {
+    } else if (role === 'THEATRE_ADMIN' || email.includes('partner') || email.includes('siva') || email.includes('theatre')) {
       loggedInUser = MOCK_USERS.theatre_admin;
     } else {
       loggedInUser = {
@@ -84,6 +94,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
+    const isTheatreAdmin = userData.role === 'THEATRE_ADMIN';
+    
+    if (isTheatreAdmin) {
+      // Validate Theatre Secret Code
+      const enteredCode = (userData.theatreSecretCode || '').trim();
+      const isValid = VALID_THEATRE_CODES.includes(enteredCode);
+      if (!isValid) {
+        throw new Error('Invalid Theatre Partner Authorization Code! Please enter the official code provided by CineBook Admin.');
+      }
+    }
+
     try {
       const data = await authApi.register(userData);
       if (data?.access_token && data?.user) {
@@ -102,7 +123,9 @@ export const AuthProvider = ({ children }) => {
       name: userData.name,
       email: userData.email,
       phone: userData.phone,
-      role: 'CUSTOMER',
+      role: isTheatreAdmin ? 'THEATRE_ADMIN' : 'CUSTOMER',
+      theatreName: userData.theatreName || (isTheatreAdmin ? 'Siva Cinemas' : undefined),
+      city: userData.city || 'Guntur',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'
     };
 
@@ -121,14 +144,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('cinebook_token');
   };
 
-  const switchRoleForDemo = (roleKey) => {
-    if (MOCK_USERS[roleKey]) {
-      const selected = MOCK_USERS[roleKey];
-      setUser(selected);
-      const mockToken = `jwt_${btoa(JSON.stringify({ id: selected.id, role: selected.role }))}`;
-      setToken(mockToken);
-      localStorage.setItem('cinebook_user', JSON.stringify(selected));
-      localStorage.setItem('cinebook_token', mockToken);
+  const switchRole = (newRole) => {
+    if (newRole === 'SUPER_ADMIN') {
+      setUser(MOCK_USERS.super_admin);
+      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.super_admin));
+    } else if (newRole === 'THEATRE_ADMIN') {
+      setUser(MOCK_USERS.theatre_admin);
+      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.theatre_admin));
+    } else {
+      setUser(MOCK_USERS.customer);
+      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.customer));
     }
   };
 
@@ -152,6 +177,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         token,
+        role: user?.role || 'GUEST',
         isAuthenticated: !!user,
         isSuperAdmin: user?.role === 'SUPER_ADMIN',
         isTheatreAdmin: user?.role === 'THEATRE_ADMIN',
@@ -160,7 +186,7 @@ export const AuthProvider = ({ children }) => {
         register,
         setUserAndToken,
         logout,
-        switchRoleForDemo
+        switchRole
       }}
     >
       {children}

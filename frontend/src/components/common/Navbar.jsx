@@ -14,7 +14,8 @@ import {
   Flame,
   Zap,
   Check,
-  Store
+  Store,
+  LogIn
 } from 'lucide-react';
 import { useLocation } from '../../context/LocationContext';
 import { useAuth } from '../../context/AuthContext';
@@ -42,9 +43,15 @@ const Navbar = () => {
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    setIsUserMenuOpen(false);
+    navigate('/login');
+  };
+
   return (
     <>
-      <header className="sticky top-0 z-40 transition-colors duration-300 glass-panel border-b">
+      <header className="sticky top-0 z-40 transition-colors duration-300 glass-panel border-b border-[var(--theme-border)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20 gap-4">
             {/* 1. BRAND LOGO */}
@@ -86,7 +93,7 @@ const Navbar = () => {
               </div>
             </form>
 
-            {/* 3. RIGHT CONTROLS: Location, Theme Switcher, Persona */}
+            {/* 3. RIGHT CONTROLS: Location, Theme Switcher, Persona/Sign In */}
             <div className="flex items-center gap-3">
               {/* Exhibitor Quick Access Pill */}
               <Link
@@ -162,81 +169,93 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Persona / User Profile */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-full glass-card text-xs font-semibold transition-all"
-                >
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-md">
-                    {user?.name?.[0] || 'D'}
-                  </div>
-                  <span className="hidden sm:inline-block max-w-[80px] truncate font-bold text-theme-primary">{user?.name || 'Dhanush'}</span>
-                  <ChevronDown className="w-3 h-3 text-theme-muted" />
-                </button>
-
-                {/* Dropdown */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-64 bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-3xl p-3.5 shadow-2xl space-y-3 z-50 text-xs backdrop-blur-xl">
-                    <div className="p-2.5 bg-black/5 dark:bg-black/50 rounded-2xl border border-[var(--theme-border)]">
-                      <p className="font-black text-theme-primary truncate">{user?.name || 'Dhanush Kancharla'}</p>
-                      <p className="text-[10px] text-theme-muted truncate">{user?.email || 'kancharladhanush2003@gmail.com'}</p>
-                      <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-500 font-black text-[9px] uppercase border border-pink-500/30">
-                        {role}
-                      </span>
+              {/* User Authentication Menu or Sign In Button */}
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-full glass-card text-xs font-semibold transition-all"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-md">
+                      {user?.name?.[0] || 'U'}
                     </div>
+                    <span className="hidden sm:inline-block max-w-[80px] truncate font-bold text-theme-primary">{user?.name}</span>
+                    <ChevronDown className="w-3 h-3 text-theme-muted" />
+                  </button>
 
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black uppercase text-theme-muted px-1">Switch Portal View</p>
-                      <Link
-                        to="/partner"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="w-full text-left px-3 py-2 rounded-xl font-black bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-500 hover:bg-pink-500 hover:text-white transition-all flex items-center gap-2"
-                      >
-                        <Store className="w-4 h-4" />
-                        <span>🏢 Exhibitor Partner Portal</span>
-                      </Link>
+                  {/* Dropdown */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-3 w-64 bg-[var(--theme-card)] border border-[var(--theme-border)] rounded-3xl p-3.5 shadow-2xl space-y-3 z-50 text-xs backdrop-blur-xl animate-fade-in">
+                      <div className="p-2.5 bg-black/5 dark:bg-black/50 rounded-2xl border border-[var(--theme-border)]">
+                        <p className="font-black text-theme-primary truncate">{user?.name}</p>
+                        <p className="text-[10px] text-theme-muted truncate">{user?.email}</p>
+                        <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-500 font-black text-[9px] uppercase border border-pink-500/30">
+                          {user?.role}
+                        </span>
+                      </div>
 
-                      <button
-                        onClick={() => { switchRole('SUPER_ADMIN'); setIsUserMenuOpen(false); navigate('/admin'); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl font-bold transition-all ${
-                          role === 'SUPER_ADMIN'
-                            ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                            : 'text-theme-secondary hover:bg-black/5 dark:hover:bg-white/10'
-                        }`}
-                      >
-                        ⚡ Super Admin Portal
-                      </button>
-                      <button
-                        onClick={() => { switchRole('CUSTOMER'); setIsUserMenuOpen(false); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl font-bold transition-all ${
-                          role === 'CUSTOMER'
-                            ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                            : 'text-theme-secondary hover:bg-black/5 dark:hover:bg-white/10'
-                        }`}
-                      >
-                        👤 Customer View
-                      </button>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase text-theme-muted px-1">Switch View</p>
+                        <Link
+                          to="/partner"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="w-full text-left px-3 py-2 rounded-xl font-black bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 text-pink-500 hover:bg-pink-500 hover:text-white transition-all flex items-center gap-2"
+                        >
+                          <Store className="w-4 h-4" />
+                          <span>🏢 Theatre Partner Portal</span>
+                        </Link>
+
+                        <button
+                          onClick={() => { switchRole('SUPER_ADMIN'); setIsUserMenuOpen(false); navigate('/admin'); }}
+                          className={`w-full text-left px-3 py-2 rounded-xl font-bold transition-all ${
+                            role === 'SUPER_ADMIN'
+                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                              : 'text-theme-secondary hover:bg-black/5 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          ⚡ Super Admin Portal
+                        </button>
+                        <button
+                          onClick={() => { switchRole('CUSTOMER'); setIsUserMenuOpen(false); }}
+                          className={`w-full text-left px-3 py-2 rounded-xl font-bold transition-all ${
+                            role === 'CUSTOMER'
+                              ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                              : 'text-theme-secondary hover:bg-black/5 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          👤 Customer View
+                        </button>
+                      </div>
+
+                      <div className="pt-2 border-t border-[var(--theme-border)] flex items-center justify-between">
+                        <Link
+                          to="/my-bookings"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="text-theme-secondary hover:text-pink-500 flex items-center gap-1 font-bold"
+                        >
+                          <Ticket className="w-3.5 h-3.5 text-pink-500" /> My Tickets
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="text-rose-500 hover:text-rose-600 font-black flex items-center gap-1 cursor-pointer px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors"
+                        >
+                          <LogOut className="w-3.5 h-3.5" /> Log Out
+                        </button>
+                      </div>
                     </div>
-
-                    <div className="pt-2 border-t border-[var(--theme-border)] flex items-center justify-between">
-                      <Link
-                        to="/my-bookings"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="text-theme-secondary hover:text-pink-500 flex items-center gap-1 font-bold"
-                      >
-                        <Ticket className="w-3.5 h-3.5 text-pink-500" /> My Tickets
-                      </Link>
-                      <button
-                        onClick={() => { logout(); setIsUserMenuOpen(false); }}
-                        className="text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1"
-                      >
-                        <LogOut className="w-3.5 h-3.5" /> Exit
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs font-black shadow-glow-pink transition-all transform hover:scale-105"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -18,13 +18,20 @@ import {
   Plus
 } from 'lucide-react';
 import { THEATRES } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 const PartnerLayout = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [activeTheatreId, setActiveTheatreId] = useState('th-gtr-001');
   const [isTheatreDropdownOpen, setIsTheatreDropdownOpen] = useState(false);
 
   const activeTheatre = THEATRES.find(t => t.id === activeTheatreId) || THEATRES[0];
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const navLinks = [
     { to: '/partner', label: 'Dashboard', icon: LayoutDashboard, exact: true },
@@ -127,7 +134,7 @@ const PartnerLayout = () => {
           </nav>
         </div>
 
-        {/* Bottom Status & T+1 Settlement Summary */}
+        {/* Bottom Status & Actions */}
         <div className="space-y-3 pt-4 border-t border-[var(--theme-border)]">
           <div className="p-3 rounded-2xl glass-card text-xs space-y-1">
             <div className="flex items-center justify-between">
@@ -140,13 +147,23 @@ const PartnerLayout = () => {
             <p className="text-[10px] text-theme-muted">Next batch: 03 Sep, 09:00 AM</p>
           </div>
 
-          <Link
-            to="/"
-            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl glass-panel text-theme-muted hover:text-theme-primary text-xs font-bold transition-colors"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Open Customer Portal</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl glass-panel text-theme-muted hover:text-theme-primary text-xs font-bold transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Customer App</span>
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 text-xs font-black transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Log Out</span>
+            </button>
+          </div>
         </div>
       </aside>
 
