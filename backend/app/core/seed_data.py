@@ -1,0 +1,511 @@
+# Catalog Seed Data for CineBook — Exact 4 Allu Arjun Movies & 22 Theatres
+
+SEED_MOVIES = [
+    {
+        "id": "mov-pushpa-2",
+        "title": "Pushpa 2: The Rule (2024)",
+        "slug": "pushpa-2-the-rule",
+        "tagline": "The Rule Begins • Wildfire on Screen",
+        "description": "Pushpa Raj expands his red sandalwood empire beyond borders, clashing in an intense battle of power and wits with SP Bhanwar Singh Shekhawat. A high-octane mass action thriller celebrating Indian cinema's biggest icon.",
+        "genres": ["Action", "Crime", "Drama", "Thriller"],
+        "languages": ["Telugu", "Hindi", "Tamil", "Malayalam", "Kannada"],
+        "formats": ["IMAX 3D", "2D", "4DX", "Dolby Atmos"],
+        "duration": "3h 20m",
+        "duration_minutes": 200,
+        "release_date": "2024-12-05",
+        "rating": 9.4,
+        "votes": "420.5K",
+        "censor_rating": "UA 16+",
+        "poster_url": "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop",
+        "backdrop_url": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop",
+        "trailer_url": "https://www.youtube.com/watch?v=1kVK0MZlbI4",
+        "director": "Sukumar",
+        "cast": [
+            {"name": "Allu Arjun", "role": "Pushpa Raj", "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Rashmika Mandanna", "role": "Srivalli", "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Fahadh Faasil", "role": "SP Bhanwar Singh Shekhawat", "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Jagapathi Babu", "role": "Prime Antagonist", "photo": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop"}
+        ],
+        "status": "NOW_SHOWING",
+        "is_featured": True,
+        "cities": ["guntur", "vijayawada", "tenali"]
+    },
+    {
+        "id": "mov-pushpa-1",
+        "title": "Pushpa: The Rise (2021)",
+        "slug": "pushpa-the-rise",
+        "tagline": "Thaggedhe Le! • The Journey to the Top",
+        "description": "A laborer named Pushpa Raj rises through the ranks of a red sandalwood smuggling syndicate in the Seshachalam hills of Andhra Pradesh, defying every obstacle with sheer swagger and grit.",
+        "genres": ["Action", "Crime", "Drama"],
+        "languages": ["Telugu", "Hindi", "Tamil", "Malayalam", "Kannada"],
+        "formats": ["2D", "Dolby Atmos"],
+        "duration": "2h 59m",
+        "duration_minutes": 179,
+        "release_date": "2021-12-17",
+        "rating": 9.0,
+        "votes": "350.2K",
+        "censor_rating": "UA",
+        "poster_url": "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop",
+        "backdrop_url": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop",
+        "trailer_url": "https://www.youtube.com/watch?v=pKctPN339Jg",
+        "director": "Sukumar",
+        "cast": [
+            {"name": "Allu Arjun", "role": "Pushpa Raj", "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Rashmika Mandanna", "role": "Srivalli", "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Fahadh Faasil", "role": "SP Bhanwar Singh Shekhawat", "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Sunil", "role": "Mangalam Srinu", "photo": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop"}
+        ],
+        "status": "NOW_SHOWING",
+        "is_featured": True,
+        "cities": ["guntur", "vijayawada", "tenali"]
+    },
+    {
+        "id": "mov-ala-vaikunthapurramuloo",
+        "title": "Ala Vaikunthapurramuloo (2020)",
+        "slug": "ala-vaikunthapurramuloo",
+        "tagline": "Swag, Style & Family Entertainment",
+        "description": "Bantu grows up facing constant neglect from his strict father Valmiki, only to discover a fateful secret about his true heritage as the biological heir of the affluent Vaikunthapuram estate.",
+        "genres": ["Action", "Comedy", "Family", "Drama"],
+        "languages": ["Telugu", "Malayalam", "Hindi"],
+        "formats": ["2D", "Dolby Atmos"],
+        "duration": "2h 45m",
+        "duration_minutes": 165,
+        "release_date": "2020-01-12",
+        "rating": 8.9,
+        "votes": "290.4K",
+        "censor_rating": "UA",
+        "poster_url": "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop",
+        "backdrop_url": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop",
+        "trailer_url": "https://www.youtube.com/watch?v=2K4Vb2p7k1M",
+        "director": "Trivikram Srinivas",
+        "cast": [
+            {"name": "Allu Arjun", "role": "Bantu", "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Pooja Hegde", "role": "Amulya", "photo": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Tabu", "role": "Yasoda", "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Murali Sharma", "role": "Valmiki", "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop"}
+        ],
+        "status": "NOW_SHOWING",
+        "is_featured": True,
+        "cities": ["guntur", "vijayawada", "tenali"]
+    },
+    {
+        "id": "mov-naa-peru-surya",
+        "title": "Naa Peru Surya, Naa Illu India (2018)",
+        "slug": "naa-peru-surya-naa-illu-india",
+        "tagline": "A Soldier’s Battle for Nation & Self-Control",
+        "description": "Surya, a patriotic Indian Army soldier with severe anger management issues, embarks on an emotional journey to get a signature of approval from the nation’s top psychologist to rejoin the military border.",
+        "genres": ["Action", "Drama"],
+        "languages": ["Telugu", "Malayalam", "Hindi"],
+        "formats": ["2D", "Dolby Atmos"],
+        "duration": "2h 48m",
+        "duration_minutes": 168,
+        "release_date": "2018-05-04",
+        "rating": 8.5,
+        "votes": "195.8K",
+        "censor_rating": "UA",
+        "poster_url": "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=800&auto=format&fit=crop",
+        "backdrop_url": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop",
+        "trailer_url": "https://www.youtube.com/watch?v=ZfK4_36bW34",
+        "director": "Vakkantham Vamsi",
+        "cast": [
+            {"name": "Allu Arjun", "role": "Surya", "photo": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Anu Emmanuel", "role": "Varsha", "photo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop"},
+            {"name": "Arjun Sarja", "role": "Prof. Ramakrishna Raju", "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop"},
+            {"name": "R. Sarathkumar", "role": "Challa", "photo": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop"}
+        ],
+        "status": "NOW_SHOWING",
+        "is_featured": True,
+        "cities": ["guntur", "vijayawada", "tenali"]
+    }
+]
+
+# EXACT 22 THEATRES
+SEED_THEATRES = [
+    # --- GUNTUR (7 THEATRES) ---
+    {
+        "id": "th-gtr-001",
+        "name": "Siva Cinemas",
+        "slug": "siva-cinemas-guntur",
+        "city": "guntur",
+        "address": "Near Old Bus Stand, Guntur",
+        "facilities": ["4K Laser Projection", "Dolby Atmos", "Pushback Seats"],
+        "distance": "1.2 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-gtr-01", "name": "Screen 1 4K", "sound": "Dolby Atmos", "total_seats": 280}],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-002",
+        "name": "Studio 81 Cinemas",
+        "slug": "studio-81-cinemas-guntur",
+        "city": "guntur",
+        "address": "Arundelpet Main Road, Guntur",
+        "facilities": ["RGB 4K Laser", "Dolby 7.1 Surround", "Luxury Loungers"],
+        "distance": "2.0 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-gtr-02", "name": "Audi 1", "sound": "Dolby 7.1", "total_seats": 220}],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-003",
+        "name": "Bhaskar Cinemas",
+        "slug": "bhaskar-cinemas-guntur",
+        "city": "guntur",
+        "address": "Kothapet, Main Road, Guntur",
+        "facilities": ["4K Digital Projection", "Dolby Atmos 64-Channel"],
+        "distance": "1.8 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-gtr-03", "name": "Main Screen", "sound": "Dolby Atmos", "total_seats": 310}],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-004",
+        "name": "GS Cinemas",
+        "slug": "gs-cinemas-guntur",
+        "city": "guntur",
+        "address": "Brodipet 4/2, Guntur",
+        "facilities": ["4K Laser 3D", "Dolby Atmos", "Pushback Seats"],
+        "distance": "1.5 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-gtr-04", "name": "Audi 1", "sound": "Dolby Atmos", "total_seats": 250}],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-005",
+        "name": "Naz / Hollywood Theater Complex",
+        "slug": "naz-hollywood-complex-guntur",
+        "city": "guntur",
+        "address": "Naaz Centre, GT Road, Guntur",
+        "facilities": ["Barco 4K Laser", "Dolby Atmos 7.1", "Balcony & First Class"],
+        "distance": "0.9 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [
+            {"id": "scr-gtr-05", "name": "Hollywood Screen", "sound": "Dolby Atmos", "total_seats": 350},
+            {"id": "scr-gtr-06", "name": "Bollywood Screen", "sound": "Dolby 7.1", "total_seats": 300}
+        ],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-006",
+        "name": "Saraswathi Theatre",
+        "slug": "saraswathi-theatre-guntur",
+        "city": "guntur",
+        "address": "Brodipet 2nd Line, Guntur",
+        "facilities": ["Qube 4K Projection", "Dolby Digital Surround"],
+        "distance": "1.4 km away",
+        "cancellation_policy": "Refundable up to 3 hours before showtime",
+        "screens": [{"id": "scr-gtr-07", "name": "Main Hall", "sound": "Dolby 7.1", "total_seats": 290}],
+        "is_active": True
+    },
+    {
+        "id": "th-gtr-007",
+        "name": "Sri Lakshmi Cinema Hall",
+        "slug": "sri-lakshmi-cinema-guntur",
+        "city": "guntur",
+        "address": "Nallapadu Road, Guntur",
+        "facilities": ["4K Digital Projection", "Dolby Surround Sound", "AC Balcony"],
+        "distance": "3.1 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-gtr-08", "name": "Screen 1", "sound": "Dolby Surround", "total_seats": 260}],
+        "is_active": True
+    },
+
+    # --- VIJAYAWADA (8 THEATRES) ---
+    {
+        "id": "th-vja-001",
+        "name": "G3 Raj Yuvraj",
+        "slug": "g3-raj-yuvraj-vijayawada",
+        "city": "vijayawada",
+        "address": "Gandhi Nagar, Vijayawada",
+        "facilities": ["4K Laser 3D", "Dolby Atmos 7.1", "Recliners"],
+        "distance": "1.6 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [
+            {"id": "scr-vja-01", "name": "Raj Screen", "sound": "Dolby Atmos", "total_seats": 320},
+            {"id": "scr-vja-02", "name": "Yuvraj Screen", "sound": "Dolby 7.1", "total_seats": 260}
+        ],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-002",
+        "name": "Ravi Cinemas",
+        "slug": "ravi-cinemas-vijayawada",
+        "city": "vijayawada",
+        "address": "Governorpet, Vijayawada",
+        "facilities": ["4K Digital Cinema", "Dolby Surround"],
+        "distance": "1.0 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-03", "name": "Screen 1", "sound": "Dolby 7.1", "total_seats": 270}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-003",
+        "name": "Apsara Theatre",
+        "slug": "apsara-theatre-vijayawada",
+        "city": "vijayawada",
+        "address": "Gandhi Nagar, Vijayawada",
+        "facilities": ["4K Laser", "Dolby Digital"],
+        "distance": "1.8 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-04", "name": "Main Audi", "sound": "Dolby 7.1", "total_seats": 290}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-004",
+        "name": "Durga Kala Mandir",
+        "slug": "durga-kala-mandir-vijayawada",
+        "city": "vijayawada",
+        "address": "Eluru Road, Governorpet, Vijayawada",
+        "facilities": ["4K Projection", "Dolby Atmos"],
+        "distance": "1.3 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-05", "name": "Screen 1 Atmos", "sound": "Dolby Atmos", "total_seats": 310}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-005",
+        "name": "Alankar Theatre",
+        "slug": "alankar-theatre-vijayawada",
+        "city": "vijayawada",
+        "address": "Alankar Centre, MG Road, Vijayawada",
+        "facilities": ["Barco 4K Laser", "Dolby Atmos", "Premium Recliners"],
+        "distance": "2.0 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-06", "name": "Alankar 4K", "sound": "Dolby Atmos", "total_seats": 340}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-006",
+        "name": "Annapurna Theatre",
+        "slug": "annapurna-theatre-vijayawada",
+        "city": "vijayawada",
+        "address": "Bunder Road, Patamata, Vijayawada",
+        "facilities": ["Qube 4K", "Dolby 7.1"],
+        "distance": "3.5 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-07", "name": "Main Hall", "sound": "Dolby 7.1", "total_seats": 280}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-007",
+        "name": "Sailaja Theatre",
+        "slug": "sailaja-theatre-vijayawada",
+        "city": "vijayawada",
+        "address": "Prakasam Road, Governorpet, Vijayawada",
+        "facilities": ["Barco 4K Laser", "Dolby Atmos 64-Channel"],
+        "distance": "1.1 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-08", "name": "Main Screen 4K", "sound": "Dolby Atmos", "total_seats": 350}],
+        "is_active": True
+    },
+    {
+        "id": "th-vja-008",
+        "name": "Jayaram Theatre",
+        "slug": "jayaram-theatre-vijayawada",
+        "city": "vijayawada",
+        "address": "Governorpet, Vijayawada",
+        "facilities": ["4K Digital Projection", "Dolby Digital"],
+        "distance": "1.2 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-vja-09", "name": "Main Audi", "sound": "Dolby Digital", "total_seats": 260}],
+        "is_active": True
+    },
+
+    # --- TENALI (7 THEATRES) ---
+    {
+        "id": "th-tnl-001",
+        "name": "Asha Cinemas",
+        "slug": "asha-cinemas-tenali",
+        "city": "tenali",
+        "address": "Near Old Bus Stand, Main Road, Tenali",
+        "facilities": ["4K Laser Projection", "Dolby Atmos"],
+        "distance": "0.9 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-01", "name": "Asha Screen 1", "sound": "Dolby Atmos", "total_seats": 280}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-002",
+        "name": "Sangameswara Cinemas",
+        "slug": "sangameswara-cinemas-tenali",
+        "city": "tenali",
+        "address": "Station Road, Tenali",
+        "facilities": ["4K Digital 3D", "Dolby 7.1"],
+        "distance": "0.7 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-02", "name": "Main Hall", "sound": "Dolby 7.1", "total_seats": 290}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-003",
+        "name": "Lakshmi Complex",
+        "slug": "lakshmi-complex-tenali",
+        "city": "tenali",
+        "address": "Ganganamma Temple Street, Tenali",
+        "facilities": ["4K Projection", "Dolby Digital"],
+        "distance": "1.2 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-03", "name": "Lakshmi Screen", "sound": "Dolby Surround", "total_seats": 250}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-004",
+        "name": "SV Cinemas (Priya Complex)",
+        "slug": "sv-cinemas-priya-complex-tenali",
+        "city": "tenali",
+        "address": "Bose Road, Tenali",
+        "facilities": ["Barco 4K Laser", "Dolby Atmos 64-Channel"],
+        "distance": "1.3 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-04", "name": "Priya Screen 1", "sound": "Dolby Atmos", "total_seats": 320}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-005",
+        "name": "Pemmasani Theatre",
+        "slug": "pemmasani-theatre-tenali",
+        "city": "tenali",
+        "address": "Railway Station Road, Tenali",
+        "facilities": ["Qube 4K Projection", "Dolby 7.1"],
+        "distance": "0.8 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-05", "name": "Main Audi", "sound": "Dolby 7.1", "total_seats": 270}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-006",
+        "name": "Swaraj Theatre",
+        "slug": "swaraj-theatre-tenali",
+        "city": "tenali",
+        "address": "Morrispet, Tenali",
+        "facilities": ["4K Digital Projection", "Dolby Digital"],
+        "distance": "1.5 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-06", "name": "Swaraj Screen", "sound": "Dolby Digital", "total_seats": 240}],
+        "is_active": True
+    },
+    {
+        "id": "th-tnl-007",
+        "name": "V-Max Theatre",
+        "slug": "v-max-theatre-tenali",
+        "city": "tenali",
+        "address": "Near Gandhi Statue, Main Road, Tenali",
+        "facilities": ["Laser 4K 3D", "Dolby Atmos"],
+        "distance": "1.0 km away",
+        "cancellation_policy": "Refundable up to 2 hours before showtime",
+        "screens": [{"id": "scr-tnl-07", "name": "V-Max Screen", "sound": "Dolby Atmos", "total_seats": 300}],
+        "is_active": True
+    }
+]
+
+SEED_SHOWS = [
+    {
+        "id": "sh-gtr-01",
+        "movie_id": "mov-pushpa-2",
+        "theatre_id": "th-gtr-001",
+        "theatre_name": "Siva Cinemas",
+        "screen_name": "Screen 1 4K",
+        "format": "2D Dolby Atmos",
+        "language": "Telugu",
+        "show_date": "2026-09-02",
+        "show_time": "11:00 AM",
+        "tier_price": {"CLASSIC": 130, "PREMIUM": 200, "RECLINER": 280},
+        "convenience_fee_per_ticket": 25.0,
+        "tax_percentage": 18.0,
+        "availability": "AVAILABLE",
+        "is_active": True
+    },
+    {
+        "id": "sh-gtr-02",
+        "movie_id": "mov-pushpa-1",
+        "theatre_id": "th-gtr-002",
+        "theatre_name": "Studio 81 Cinemas",
+        "screen_name": "Audi 1",
+        "format": "2D Dolby Atmos",
+        "language": "Telugu",
+        "show_date": "2026-09-02",
+        "show_time": "11:30 AM",
+        "tier_price": {"CLASSIC": 120, "PREMIUM": 180, "RECLINER": 250},
+        "convenience_fee_per_ticket": 25.0,
+        "tax_percentage": 18.0,
+        "availability": "AVAILABLE",
+        "is_active": True
+    },
+    {
+        "id": "sh-gtr-03",
+        "movie_id": "mov-ala-vaikunthapurramuloo",
+        "theatre_id": "th-gtr-005",
+        "theatre_name": "Naz / Hollywood Theater Complex",
+        "screen_name": "Hollywood Screen",
+        "format": "2D Dolby Atmos",
+        "language": "Telugu",
+        "show_date": "2026-09-02",
+        "show_time": "02:15 PM",
+        "tier_price": {"CLASSIC": 130, "PREMIUM": 200, "RECLINER": 280},
+        "convenience_fee_per_ticket": 25.0,
+        "tax_percentage": 18.0,
+        "availability": "FILLING_FAST",
+        "is_active": True
+    },
+    {
+        "id": "sh-gtr-04",
+        "movie_id": "mov-naa-peru-surya",
+        "theatre_id": "th-gtr-006",
+        "theatre_name": "Saraswathi Theatre",
+        "screen_name": "Main Hall",
+        "format": "2D",
+        "language": "Telugu",
+        "show_date": "2026-09-02",
+        "show_time": "06:45 PM",
+        "tier_price": {"CLASSIC": 110, "PREMIUM": 160, "RECLINER": 220},
+        "convenience_fee_per_ticket": 25.0,
+        "tax_percentage": 18.0,
+        "availability": "AVAILABLE",
+        "is_active": True
+    }
+]
+
+SEED_EVENTS = [
+    {
+        "id": "eve-001",
+        "title": "Telugu Comedy Fest — Live Standup Special",
+        "category": "Standup Comedy",
+        "city": "guntur",
+        "venue": "Sri Venkateswara Vignana Mandiram, Guntur",
+        "date": "2025-03-22",
+        "time": "19:00",
+        "banner_url": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop",
+        "price_starting": 499.0,
+        "description": "An evening of non-stop Telugu comedy, relatable middle-class humor, and hilarious storytelling.",
+        "is_featured": True,
+        "is_active": True
+    },
+    {
+        "id": "eve-002",
+        "title": "Anirudh Live in Concert — Hukum Tour",
+        "category": "Music Concert",
+        "city": "vijayawada",
+        "venue": "Indira Gandhi Municipal Stadium, MG Road, Vijayawada",
+        "date": "2025-04-12",
+        "time": "18:30",
+        "banner_url": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop",
+        "price_starting": 999.0,
+        "description": "Rockstar Anirudh Ravichander live in Andhra Pradesh with explosive visual effects, bass, and chartbuster Telugu hits.",
+        "is_featured": True,
+        "is_active": True
+    },
+    {
+        "id": "eve-003",
+        "title": "Tenali Cultural & Drama Mahotsav",
+        "category": "Cultural Theatre",
+        "city": "tenali",
+        "venue": "Tenali Ramakrishna Cultural Auditorium, Tenali",
+        "date": "2025-03-29",
+        "time": "18:00",
+        "banner_url": "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop",
+        "price_starting": 299.0,
+        "description": "Celebrating the rich cultural legacy of the Paris of Andhra with mythological plays, classical music, and dance.",
+        "is_featured": True,
+        "is_active": True
+    }
+]
