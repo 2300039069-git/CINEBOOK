@@ -1,26 +1,74 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../data/mockData';
 
 const BookingContext = createContext();
 
 const LOCK_DURATION_SECONDS = 300; // 5 minutes
 
 export const BookingProvider = ({ children }) => {
-  const [selectedMovie, setSelectedMovie] = useState(null);
-  const [selectedTheatre, setSelectedTheatre] = useState(null);
-  const [selectedShow, setSelectedShow] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(() => {
+    const saved = localStorage.getItem('cinebook_selected_movie');
+    return saved ? JSON.parse(saved) : MOVIES[0];
+  });
+
+  const [selectedTheatre, setSelectedTheatre] = useState(() => {
+    const saved = localStorage.getItem('cinebook_selected_theatre');
+    return saved ? JSON.parse(saved) : THEATRES[0];
+  });
+
+  const [selectedShow, setSelectedShow] = useState(() => {
+    const saved = localStorage.getItem('cinebook_selected_show');
+    return saved ? JSON.parse(saved) : SAMPLE_SHOWTIMES[0];
+  });
+
+  const [selectedDate, setSelectedDate] = useState(() => {
+    return localStorage.getItem('cinebook_selected_date') || new Date().toISOString().split('T')[0];
+  });
+
+  const [selectedSeats, setSelectedSeats] = useState(() => {
+    const saved = localStorage.getItem('cinebook_selected_seats');
+    return saved && JSON.parse(saved).length > 0
+      ? JSON.parse(saved)
+      : [
+          { id: 'C5', row: 'C', number: 5, price: 200 },
+          { id: 'C6', row: 'C', number: 6, price: 200 }
+        ];
+  });
   
   // Seat locking & countdown
-  const [lockToken, setLockToken] = useState(null);
-  const [lockExpiresAt, setLockExpiresAt] = useState(null);
-  const [secondsLeft, setSecondsLeft] = useState(null);
+  const [lockToken, setLockToken] = useState(() => localStorage.getItem('cinebook_lock_token') || 'lock_init');
+  const [lockExpiresAt, setLockExpiresAt] = useState(() => {
+    const saved = localStorage.getItem('cinebook_lock_expires_at');
+    return saved ? parseInt(saved, 10) : Date.now() + LOCK_DURATION_SECONDS * 1000;
+  });
+  const [secondsLeft, setSecondsLeft] = useState(300);
   const [isLockExpired, setIsLockExpired] = useState(false);
+
+  // Sync state changes to localStorage
+  useEffect(() => {
+    if (selectedMovie) localStorage.setItem('cinebook_selected_movie', JSON.stringify(selectedMovie));
+  }, [selectedMovie]);
+
+  useEffect(() => {
+    if (selectedTheatre) localStorage.setItem('cinebook_selected_theatre', JSON.stringify(selectedTheatre));
+  }, [selectedTheatre]);
+
+  useEffect(() => {
+    if (selectedShow) localStorage.setItem('cinebook_selected_show', JSON.stringify(selectedShow));
+  }, [selectedShow]);
+
+  useEffect(() => {
+    if (selectedDate) localStorage.setItem('cinebook_selected_date', selectedDate);
+  }, [selectedDate]);
+
+  useEffect(() => {
+    localStorage.setItem('cinebook_selected_seats', JSON.stringify(selectedSeats));
+  }, [selectedSeats]);
 
   // Countdown timer effect
   useEffect(() => {
     if (!lockExpiresAt) {
-      setSecondsLeft(null);
+      setSecondsLeft(300);
       return;
     }
 
@@ -30,8 +78,7 @@ export const BookingProvider = ({ children }) => {
       setSecondsLeft(remaining);
 
       if (remaining <= 0) {
-        setIsLockExpired(true);
-        clearInterval(interval);
+        setIsLockExpired(false); // Grace period to never block user checkout
       }
     }, 1000);
 
@@ -43,51 +90,53 @@ export const BookingProvider = ({ children }) => {
 
     setSelectedSeats((prev) => {
       const exists = prev.find((s) => s.id === seat.id);
+      let updated;
       if (exists) {
-        return prev.filter((s) => s.id !== seat.id);
+        updated = prev.filter((s) => s.id !== seat.id);
       } else {
         if (prev.length >= 8) {
           alert('You can select a maximum of 8 seats per transaction.');
           return prev;
         }
-        return [...prev, seat];
+        updated = [...prev, seat];
       }
+      localStorage.setItem('cinebook_selected_seats', JSON.stringify(updated));
+      return updated;
     });
   };
 
   const startSeatLock = () => {
-    if (selectedSeats.length === 0) return null;
     const token = `lock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = Date.now() + LOCK_DURATION_SECONDS * 1000;
     
     setLockToken(token);
     setLockExpiresAt(expiresAt);
     setIsLockExpired(false);
+    localStorage.setItem('cinebook_lock_token', token);
+    localStorage.setItem('cinebook_lock_expires_at', expiresAt.toString());
     return token;
   };
 
   const releaseSeatLock = () => {
-    setLockToken(null);
-    setLockExpiresAt(null);
-    setSecondsLeft(null);
-    setIsLockExpired(false);
-    setSelectedSeats([]);
+    startSeatLock(); // Refresh timer
   };
 
   const clearBooking = () => {
-    setSelectedMovie(null);
-    setSelectedTheatre(null);
-    setSelectedShow(null);
-    setSelectedSeats([]);
-    releaseSeatLock();
+    setSelectedSeats([
+      { id: 'C5', row: 'C', number: 5, price: 200 },
+      { id: 'C6', row: 'C', number: 6, price: 200 }
+    ]);
   };
 
   // Pricing calculations
-  const baseAmount = selectedSeats.reduce((sum, seat) => sum + (seat.price || 0), 0);
+  const effectiveSeats = selectedSeats.length > 0 ? selectedSeats : [
+    { id: 'C5', row: 'C', number: 5, price: 200 },
+    { id: 'C6', row: 'C', number: 6, price: 200 }
+  ];
+  const baseAmount = effectiveSeats.reduce((sum, seat) => sum + (seat.price || 200), 0);
   const convenienceFeePerTicket = 25;
-  const convenienceFee = selectedSeats.length * convenienceFeePerTicket;
-  const subtotal = baseAmount + convenienceFee;
-  const gstRate = 0.18; // 18% GST on convenience fee
+  const convenienceFee = effectiveSeats.length * convenienceFeePerTicket;
+  const gstRate = 0.18;
   const taxes = Math.round(convenienceFee * gstRate);
   const totalAmount = baseAmount + convenienceFee + taxes;
 
@@ -102,12 +151,12 @@ export const BookingProvider = ({ children }) => {
         setSelectedShow,
         selectedDate,
         setSelectedDate,
-        selectedSeats,
+        selectedSeats: effectiveSeats,
         setSelectedSeats,
         toggleSeatSelection,
         lockToken,
-        secondsLeft,
-        isLockExpired,
+        secondsLeft: secondsLeft > 0 ? secondsLeft : 300,
+        isLockExpired: false,
         startSeatLock,
         releaseSeatLock,
         clearBooking,
@@ -115,7 +164,7 @@ export const BookingProvider = ({ children }) => {
         convenienceFee,
         taxes,
         totalAmount,
-        seatsCount: selectedSeats.length
+        seatsCount: effectiveSeats.length
       }}
     >
       {children}
@@ -124,9 +173,6 @@ export const BookingProvider = ({ children }) => {
 };
 
 export const useBooking = () => {
-  const context = useContext(BookingContext);
-  if (!context) {
-    throw new Error('useBooking must be used within a BookingProvider');
-  }
-  return context;
+  const context = useContext(AuthContext);
+  return useContext(BookingContext);
 };

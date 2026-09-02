@@ -28,9 +28,10 @@ import PartnerScannerPage from './pages/partner/PartnerScannerPage';
 import PartnerProfilePage from './pages/partner/PartnerProfilePage';
 import PartnerAuthPage from './pages/partner/PartnerAuthPage';
 
-// 3D Cinematic Intro & Private Access Gate
+// 3D Cinematic Intro, Private Access Gate & Automated AI Cinema Bot
 import CinematicIntro3D from './components/common/CinematicIntro3D';
 import PrivateAccessGate from './components/common/PrivateAccessGate';
+import CineBotSupportModal from './components/common/CineBotSupportModal';
 
 import { useAuth } from './context/AuthContext';
 
@@ -61,7 +62,7 @@ function App() {
       {showIntro ? (
         <CinematicIntro3D onComplete={handleCompleteIntro} />
       ) : (
-        <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300">
+        <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300 relative">
           <Routes>
             {/* Dedicated Route to Replay 3D Intro */}
             <Route path="/welcome" element={<CinematicIntro3D onComplete={handleCompleteIntro} />} />
@@ -129,6 +130,9 @@ function App() {
               }
             />
           </Routes>
+
+          {/* 24/7 Automated CineBot AI Assistant & Instant Refund Widget */}
+          <CineBotSupportModal />
         </div>
       )}
     </PrivateAccessGate>
