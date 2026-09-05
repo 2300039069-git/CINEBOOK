@@ -154,6 +154,12 @@ const PartnerDashboardPage = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
+            to="/partner/pos"
+            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-xs shadow-md transition-all transform hover:scale-105"
+          >
+            🎟️ Box-Office Counter POS
+          </Link>
+          <Link
             to="/partner/screens"
             className="px-4 py-2 rounded-2xl glass-card hover:border-pink-500 text-xs font-black text-theme-primary transition-all"
           >

@@ -126,9 +126,9 @@ html.theme-midnight-black {
 }
 
 /* ============================================================================
-   STRICT THEME-PRESERVED PRINT STYLES
-   Ensures the exact active CineBook theme (Cyber Neon, Midnight Dark, or Luxe Platinum)
-   is preserved with 100% fidelity during browser print / PDF download.
+   STRICT THEME-PRESERVED & 80MM THERMAL RECEIPT PRINT STYLES
+   - Preserves exact active CineBook theme (Cyber Neon, Midnight Dark, or Luxe Platinum)
+   - Supports 80mm / 58mm continuous POS thermal paper roll printing for cinema box-office
    ============================================================================ */
 @media print {
   * {
@@ -137,24 +137,27 @@ html.theme-midnight-black {
     color-adjust: exact !important;
   }
 
-  /* Hide navigation, header, footer, action buttons during print */
+  /* Global Print Resets */
   header,
   footer,
   nav,
   button,
   .no-print,
-  [role="navigation"] {
+  [role="navigation"],
+  #cinebot-modal,
+  .cinebot-widget {
     display: none !important;
   }
 
-  body {
+  /* 1. STANDARD THEMED TICKET PRINTING */
+  body:not(.printing-thermal) {
     background-color: var(--theme-bg) !important;
     color: var(--theme-text-primary) !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  #printable-ticket {
+  body:not(.printing-thermal) #printable-ticket {
     display: block !important;
     max-width: 650px !important;
     margin: 20px auto !important;
@@ -164,7 +167,40 @@ html.theme-midnight-black {
     page-break-inside: avoid !important;
   }
 
-  /* Ensure gradient text renders cleanly on print */
+  /* 2. 80MM CONTINUOUS THERMAL ROLL PRINTER STYLING */
+  @page {
+    margin: 0;
+  }
+
+  body.printing-thermal {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.printing-thermal #printable-ticket,
+  body.printing-thermal .public-layout-header,
+  body.printing-thermal .public-layout-footer {
+    display: none !important;
+  }
+
+  body.printing-thermal #thermal-receipt-slip,
+  body.printing-thermal .thermal-receipt-container {
+    display: block !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
+    margin: 0 auto !important;
+    padding: 3mm 4mm !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Courier New', Courier, monospace, sans-serif !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* High contrast colors for print */
   .gradient-text-neon {
     -webkit-text-fill-color: #EC4899 !important;
     color: #EC4899 !important;

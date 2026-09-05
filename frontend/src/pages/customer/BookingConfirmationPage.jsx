@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import confetti from 'canvas-confetti';
@@ -15,10 +15,13 @@ import {
   ShieldCheck,
   Sparkles,
   Printer,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ReceiptText,
+  FileText
 } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 import { useTheme } from '../../context/ThemeContext';
+import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
@@ -39,6 +42,8 @@ const BookingConfirmationPage = () => {
     paymentId: `pay_rzp_${Date.now()}`
   };
 
+  const [showThermalModal, setShowThermalModal] = useState(false);
+
   useEffect(() => {
     // Fire confetti celebration on successful booking
     confetti({
@@ -52,7 +57,12 @@ const BookingConfirmationPage = () => {
   }, []);
 
   const handlePrint = () => {
+    document.body.classList.remove('printing-thermal');
     window.print();
+  };
+
+  const handlePrintThermal = () => {
+    setShowThermalModal(true);
   };
 
   // Direct HTML5 Canvas PNG Themed Ticket Downloader
@@ -316,7 +326,17 @@ const BookingConfirmationPage = () => {
           <span>Print {theme.name} Ticket</span>
         </button>
 
-        {/* 2. Download as Themed PNG */}
+        {/* 2. Print 80mm Thermal Slip (POS Counter Paper) */}
+        <button
+          type="button"
+          onClick={handlePrintThermal}
+          className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black uppercase tracking-wider shadow-md transition-all transform hover:scale-105 cursor-pointer"
+        >
+          <ReceiptText className="w-4 h-4" />
+          <span>Print 80mm Thermal Slip</span>
+        </button>
+
+        {/* 3. Download as Themed PNG */}
         <button
           type="button"
           onClick={handleDownloadImage}
@@ -342,6 +362,40 @@ const BookingConfirmationPage = () => {
           <span>Home</span>
         </Link>
       </div>
+
+      {/* 4. MODAL: 80MM CONTINUOUS THERMAL RECEIPT SLIP */}
+      {showThermalModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass-panel p-6 rounded-3xl max-w-md w-full border border-[var(--theme-border)] shadow-2xl space-y-4 animate-scale-up">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--theme-border)] no-print">
+              <div className="flex items-center gap-2">
+                <ReceiptText className="w-5 h-5 text-amber-500" />
+                <div>
+                  <h3 className="font-black text-sm text-theme-primary">80mm Box-Office Thermal Slip</h3>
+                  <p className="text-[10px] text-theme-muted">Formatted for continuous thermal POS paper roll</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowThermalModal(false)}
+                className="w-7 h-7 rounded-full glass-card flex items-center justify-center text-theme-muted hover:text-theme-primary text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <ThermalTicketReceipt
+              booking={booking}
+              onClose={() => setShowThermalModal(false)}
+              onPrint={() => {
+                document.body.classList.add('printing-thermal');
+                window.print();
+                document.body.classList.remove('printing-thermal');
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

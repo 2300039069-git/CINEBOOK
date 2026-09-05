@@ -15,6 +15,7 @@ import {
   Bell,
   CheckCircle2,
   ExternalLink,
+  Printer,
   Plus
 } from 'lucide-react';
 import { THEATRES } from '../../data/mockData';
@@ -35,6 +36,7 @@ const PartnerLayout = () => {
 
   const navLinks = [
     { to: '/partner', label: 'Dashboard', icon: LayoutDashboard, exact: true },
+    { to: '/partner/pos', label: 'Box-Office Counter POS', icon: Printer },
     { to: '/partner/screens', label: 'Screen & Seat Layouts', icon: Grid3X3 },
     { to: '/partner/shows', label: 'Show Schedules & Pricing', icon: CalendarDays },
     { to: '/partner/settlements', label: 'Daily T+1 Settlements', icon: ReceiptText },
@@ -181,11 +183,19 @@ const PartnerLayout = () => {
 
           <div className="flex items-center gap-3">
             <Link
+              to="/partner/pos"
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-xs shadow-md transition-all transform hover:scale-105"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Counter POS</span>
+            </Link>
+
+            <Link
               to="/partner/scanner"
               className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-xs font-black shadow-glow-pink transition-all transform hover:scale-105"
             >
               <QrCode className="w-4 h-4" />
-              <span>Gatekeeper QR Scanner</span>
+              <span>Gatekeeper Scanner</span>
             </Link>
 
             <Link

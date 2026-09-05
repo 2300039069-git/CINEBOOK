@@ -27,6 +27,7 @@ import PartnerSettlementsPage from './pages/partner/PartnerSettlementsPage';
 import PartnerScannerPage from './pages/partner/PartnerScannerPage';
 import PartnerProfilePage from './pages/partner/PartnerProfilePage';
 import PartnerAuthPage from './pages/partner/PartnerAuthPage';
+import PartnerCounterPosPage from './pages/partner/PartnerCounterPosPage';
 
 // 3D Cinematic Intro & Private Access Gate & CineBot
 import CinematicIntro3D from './components/common/CinematicIntro3D';
@@ -57,6 +58,7 @@ function App() {
           <Route path="/partner/register" element={<PartnerAuthPage />} />
           <Route path="/partner" element={<PartnerLayout />}>
             <Route index element={<PartnerDashboardPage />} />
+            <Route path="pos" element={<PartnerCounterPosPage />} />
             <Route path="screens" element={<PartnerScreensPage />} />
             <Route path="shows" element={<PartnerShowsPage />} />
             <Route path="settlements" element={<PartnerSettlementsPage />} />
