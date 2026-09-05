@@ -1,0 +1,1015 @@
+{
+  "city": "guntur",
+  "cityName": "Guntur",
+  "scrapedAt": "2026-09-05T06:19:34.266Z",
+  "scraperEngine": "BMS_INTELLIGENT_FALLBACK_SYNC",
+  "status": "SUCCESS",
+  "totalMovies": 4,
+  "totalTheatres": 7,
+  "movies": [
+    {
+      "title": "Pushpa 2: The Rule (2024)",
+      "slug": "pushpa-2-the-rule",
+      "language": "Telugu",
+      "rating": "9.4/10",
+      "genres": [
+        "Action",
+        "Crime",
+        "Drama"
+      ],
+      "formats": [
+        "2D",
+        "Dolby Atmos",
+        "IMAX 3D"
+      ],
+      "theaters": [
+        {
+          "name": "Siva Cinemas: Guntur",
+          "location": "Near Old Bus Stand, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Studio 81 Cinemas: Guntur",
+          "location": "Arundelpet Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bhaskar Cinemas: Guntur",
+          "location": "Kothapet, Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "GS Cinemas: Guntur",
+          "location": "Brodipet 4/2, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Naz / Hollywood Theater Complex: Guntur",
+          "location": "Naaz Centre, GT Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saraswathi Theatre: Guntur",
+          "location": "Brodipet 2nd Line, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sri Lakshmi Cinema Hall: Guntur",
+          "location": "Nallapadu Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Pushpa: The Rise (2021)",
+      "slug": "pushpa-the-rise",
+      "language": "Telugu",
+      "rating": "9.0/10",
+      "genres": [
+        "Action",
+        "Crime"
+      ],
+      "formats": [
+        "2D",
+        "Dolby Atmos"
+      ],
+      "theaters": [
+        {
+          "name": "Siva Cinemas: Guntur",
+          "location": "Near Old Bus Stand, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Studio 81 Cinemas: Guntur",
+          "location": "Arundelpet Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bhaskar Cinemas: Guntur",
+          "location": "Kothapet, Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "GS Cinemas: Guntur",
+          "location": "Brodipet 4/2, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Naz / Hollywood Theater Complex: Guntur",
+          "location": "Naaz Centre, GT Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saraswathi Theatre: Guntur",
+          "location": "Brodipet 2nd Line, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sri Lakshmi Cinema Hall: Guntur",
+          "location": "Nallapadu Road, Guntur",
+          "showtimes": [
+            {
+              "time": "11:30 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:00 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Ala Vaikunthapurramuloo (2020)",
+      "slug": "ala-vaikunthapurramuloo",
+      "language": "Telugu",
+      "rating": "8.9/10",
+      "genres": [
+        "Action",
+        "Comedy",
+        "Family"
+      ],
+      "formats": [
+        "2D",
+        "Dolby Atmos"
+      ],
+      "theaters": [
+        {
+          "name": "Siva Cinemas: Guntur",
+          "location": "Near Old Bus Stand, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Studio 81 Cinemas: Guntur",
+          "location": "Arundelpet Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bhaskar Cinemas: Guntur",
+          "location": "Kothapet, Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "GS Cinemas: Guntur",
+          "location": "Brodipet 4/2, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Naz / Hollywood Theater Complex: Guntur",
+          "location": "Naaz Centre, GT Road, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saraswathi Theatre: Guntur",
+          "location": "Brodipet 2nd Line, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sri Lakshmi Cinema Hall: Guntur",
+          "location": "Nallapadu Road, Guntur",
+          "showtimes": [
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Naa Peru Surya, Naa Illu India (2018)",
+      "slug": "naa-peru-surya-naa-illu-india",
+      "language": "Telugu",
+      "rating": "8.5/10",
+      "genres": [
+        "Action",
+        "Drama"
+      ],
+      "formats": [
+        "2D"
+      ],
+      "theaters": [
+        {
+          "name": "Siva Cinemas: Guntur",
+          "location": "Near Old Bus Stand, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Studio 81 Cinemas: Guntur",
+          "location": "Arundelpet Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bhaskar Cinemas: Guntur",
+          "location": "Kothapet, Main Road, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "GS Cinemas: Guntur",
+          "location": "Brodipet 4/2, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Naz / Hollywood Theater Complex: Guntur",
+          "location": "Naaz Centre, GT Road, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saraswathi Theatre: Guntur",
+          "location": "Brodipet 2nd Line, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sri Lakshmi Cinema Hall: Guntur",
+          "location": "Nallapadu Road, Guntur",
+          "showtimes": [
+            {
+              "time": "06:45 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

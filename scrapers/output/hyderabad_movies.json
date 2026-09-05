@@ -1,0 +1,803 @@
+{
+  "city": "hyderabad",
+  "cityName": "Hyderabad",
+  "scrapedAt": "2026-09-05T06:19:39.073Z",
+  "scraperEngine": "BMS_INTELLIGENT_FALLBACK_SYNC",
+  "status": "SUCCESS",
+  "totalMovies": 3,
+  "totalTheatres": 5,
+  "movies": [
+    {
+      "title": "Pushpa 2: The Rule (2024)",
+      "slug": "pushpa-2-the-rule",
+      "language": "Telugu",
+      "rating": "9.5/10",
+      "genres": [
+        "Action",
+        "Crime",
+        "Drama"
+      ],
+      "formats": [
+        "IMAX 3D",
+        "4DX",
+        "Dolby Atmos",
+        "2D"
+      ],
+      "theaters": [
+        {
+          "name": "Prasads Multiplex: IMAX Screen: Hyderabad",
+          "location": "Necklace Road, Hyderabad",
+          "showtimes": [
+            {
+              "time": "08:00 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "11:30 AM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:45 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "AMB Cinemas: Gachibowli: Hyderabad",
+          "location": "Sarath City Capital Mall, Gachibowli",
+          "showtimes": [
+            {
+              "time": "08:00 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "11:30 AM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:45 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "PVR: Inorbit Mall, Cyberabad: Hyderabad",
+          "location": "Hitech City, Madhapur",
+          "showtimes": [
+            {
+              "time": "08:00 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "11:30 AM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:45 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sudarshan 35MM: Hyderabad",
+          "location": "RTC X Roads, Chikkadpally",
+          "showtimes": [
+            {
+              "time": "08:00 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "11:30 AM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:45 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sandhya 70MM: Hyderabad",
+          "location": "RTC X Roads, Hyderabad",
+          "showtimes": [
+            {
+              "time": "08:00 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "11:30 AM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:45 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Devara: Part 1",
+      "slug": "devara-part-1",
+      "language": "Telugu",
+      "rating": "9.1/10",
+      "genres": [
+        "Action",
+        "Drama"
+      ],
+      "formats": [
+        "IMAX 2D",
+        "Dolby Atmos"
+      ],
+      "theaters": [
+        {
+          "name": "Prasads Multiplex: IMAX Screen: Hyderabad",
+          "location": "Necklace Road, Hyderabad",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "IMAX 2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "IMAX 2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "AMB Cinemas: Gachibowli: Hyderabad",
+          "location": "Sarath City Capital Mall, Gachibowli",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "IMAX 2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "IMAX 2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "PVR: Inorbit Mall, Cyberabad: Hyderabad",
+          "location": "Hitech City, Madhapur",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "IMAX 2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "IMAX 2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sudarshan 35MM: Hyderabad",
+          "location": "RTC X Roads, Chikkadpally",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "IMAX 2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "IMAX 2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sandhya 70MM: Hyderabad",
+          "location": "RTC X Roads, Hyderabad",
+          "showtimes": [
+            {
+              "time": "11:00 AM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:30 PM",
+              "format": "IMAX 2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:15 PM",
+              "format": "IMAX 2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:45 PM",
+              "format": "IMAX 2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Kalki 2898 AD",
+      "slug": "kalki-2898-ad",
+      "language": "Telugu",
+      "rating": "9.2/10",
+      "genres": [
+        "Sci-Fi",
+        "Action"
+      ],
+      "formats": [
+        "IMAX 3D",
+        "3D",
+        "2D"
+      ],
+      "theaters": [
+        {
+          "name": "Prasads Multiplex: IMAX Screen: Hyderabad",
+          "location": "Necklace Road, Hyderabad",
+          "showtimes": [
+            {
+              "time": "10:45 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:00 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "AMB Cinemas: Gachibowli: Hyderabad",
+          "location": "Sarath City Capital Mall, Gachibowli",
+          "showtimes": [
+            {
+              "time": "10:45 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:00 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "PVR: Inorbit Mall, Cyberabad: Hyderabad",
+          "location": "Hitech City, Madhapur",
+          "showtimes": [
+            {
+              "time": "10:45 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:00 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sudarshan 35MM: Hyderabad",
+          "location": "RTC X Roads, Chikkadpally",
+          "showtimes": [
+            {
+              "time": "10:45 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:00 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sandhya 70MM: Hyderabad",
+          "location": "RTC X Roads, Hyderabad",
+          "showtimes": [
+            {
+              "time": "10:45 AM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "IMAX 3D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:00 PM",
+              "format": "IMAX 3D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "09:30 PM",
+              "format": "IMAX 3D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
