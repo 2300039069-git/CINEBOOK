@@ -124,3 +124,54 @@ html.theme-midnight-black {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--theme-accent);
 }
+
+/* ============================================================================
+   STRICT THEME-PRESERVED PRINT STYLES
+   Ensures the exact active CineBook theme (Cyber Neon, Midnight Dark, or Luxe Platinum)
+   is preserved with 100% fidelity during browser print / PDF download.
+   ============================================================================ */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Hide navigation, header, footer, action buttons during print */
+  header,
+  footer,
+  nav,
+  button,
+  .no-print,
+  [role="navigation"] {
+    display: none !important;
+  }
+
+  body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-text-primary) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #printable-ticket {
+    display: block !important;
+    max-width: 650px !important;
+    margin: 20px auto !important;
+    border: 2px solid var(--theme-border) !important;
+    background: var(--theme-card) !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure gradient text renders cleanly on print */
+  .gradient-text-neon {
+    -webkit-text-fill-color: #EC4899 !important;
+    color: #EC4899 !important;
+  }
+
+  .gradient-text-gold {
+    -webkit-text-fill-color: #F59E0B !important;
+    color: #F59E0B !important;
+  }
+}
