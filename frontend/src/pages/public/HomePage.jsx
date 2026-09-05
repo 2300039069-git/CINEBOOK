@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Film,
   Calendar,
@@ -16,10 +16,10 @@ import {
 import { MOVIES, EVENTS, THEATRES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useBooking } from '../../context/BookingContext';
 import HeroCarousel from '../../components/movies/HeroCarousel';
 import MovieCard from '../../components/movies/MovieCard';
 import TheatreShowtimesCard from '../../components/theatres/TheatreShowtimesCard';
-import SeatSelectionModal from '../../components/booking/SeatSelectionModal';
 import TrailerModal from '../../components/movies/TrailerModal';
 import Footer from '../../components/layout/Footer';
 
@@ -34,6 +34,8 @@ const CATEGORY_CAPSULES = [
 const HomePage = () => {
   const { selectedCity, setIsCityModalOpen } = useLocation();
   const { theme } = useTheme();
+  const { setSelectedMovie, setSelectedTheatre, setSelectedShow } = useBooking();
+  const navigate = useNavigate();
 
   // Filter theatres strictly for the active selected city
   const cityTheatres = THEATRES.filter(t => t.city === selectedCity.id);
@@ -41,20 +43,21 @@ const HomePage = () => {
   // Selected theatre state (defaults to first theatre of selected city)
   const [selectedTheatreIndex, setSelectedTheatreIndex] = useState(0);
   const activeTheatre = cityTheatres[selectedTheatreIndex] || cityTheatres[0] || THEATRES[0];
-
-  const [isSeatModalOpen, setIsSeatModalOpen] = useState(false);
-  const [selectedMovieForBooking, setSelectedMovieForBooking] = useState(MOVIES[0]);
-  const [selectedSlotForBooking, setSelectedSlotForBooking] = useState('11:00 AM');
   const [selectedTrailerMovie, setSelectedTrailerMovie] = useState(null);
 
-  const handleOpenSeatModal = (movie, theatreName, time = '11:00 AM') => {
-    setSelectedMovieForBooking(movie || MOVIES[0]);
-    setSelectedSlotForBooking(time);
-    setIsSeatModalOpen(true);
-  };
-
   const handleVenueBook = ({ theatreName, time }) => {
-    handleOpenSeatModal(MOVIES[0], theatreName, time);
+    const movie = MOVIES[0];
+    setSelectedMovie(movie);
+    setSelectedTheatre(activeTheatre);
+    setSelectedShow({
+      id: `sh-${activeTheatre.id}-01`,
+      movieId: movie.id,
+      theatreId: activeTheatre.id,
+      theatreName: activeTheatre.name,
+      time: time || '11:00 AM',
+      format: '2D Dolby Atmos'
+    });
+    navigate(`/seat-selection/sh-${activeTheatre.id}-01`);
   };
 
   return (
@@ -101,7 +104,7 @@ const HomePage = () => {
             {/* City Selector Pill */}
             <button
               onClick={() => setIsCityModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:border-pink-500 text-xs font-black transition-all shadow-md self-start sm:self-auto"
+              className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:border-pink-500 text-xs font-black transition-all shadow-md self-start sm:self-auto cursor-pointer"
             >
               <span className="text-base">{selectedCity.icon}</span>
               <span className="uppercase text-theme-primary">LOCATION: {selectedCity.name}</span>
@@ -118,7 +121,6 @@ const HomePage = () => {
                   <MovieCard
                     key={movie.id}
                     movie={movie}
-                    onBookClick={(m) => handleOpenSeatModal(m, activeTheatre.name, '11:00 AM')}
                   />
                 ))}
               </div>
@@ -156,7 +158,7 @@ const HomePage = () => {
                       <button
                         key={theatre.id}
                         onClick={() => setSelectedTheatreIndex(idx)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                           isSelected
                             ? 'bg-gradient-to-r from-pink-500 to-purple-600 border-transparent text-white shadow-md scale-102'
                             : 'glass-panel text-theme-secondary hover:border-pink-500'
@@ -218,21 +220,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* 4. SELECT SHOWTIME & INTERACTIVE SEAT MATRIX MODAL */}
-      <SeatSelectionModal
-        isOpen={isSeatModalOpen}
-        onClose={() => setIsSeatModalOpen(false)}
-        movie={{
-          title: selectedMovieForBooking.title,
-          censor: selectedMovieForBooking.censorRating || 'UA',
-          language: selectedMovieForBooking.languages?.join(' • ') || 'Telugu',
-          posterUrl: selectedMovieForBooking.posterUrl
-        }}
-        theatreName={activeTheatre.name}
-        selectedTime={selectedSlotForBooking}
-      />
-
-      {/* 5. TRAILER PREVIEW MODAL */}
+      {/* 4. TRAILER PREVIEW MODAL */}
       {selectedTrailerMovie && (
         <TrailerModal
           isOpen={!!selectedTrailerMovie}
@@ -242,7 +230,7 @@ const HomePage = () => {
         />
       )}
 
-      {/* 6. MINIMAL 3-COLUMN FOOTER */}
+      {/* 5. MINIMAL 3-COLUMN FOOTER */}
       <Footer />
     </div>
   );
