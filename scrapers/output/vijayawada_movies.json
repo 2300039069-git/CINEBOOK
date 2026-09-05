@@ -1,11 +1,11 @@
 {
-  "city": "guntur",
-  "cityName": "Guntur",
-  "scrapedAt": "2026-09-05T06:21:32.096Z",
+  "city": "vijayawada",
+  "cityName": "Vijayawada",
+  "scrapedAt": "2026-09-05T06:21:32.100Z",
   "scraperEngine": "BMS_INTELLIGENT_FALLBACK_SYNC",
   "status": "SUCCESS",
-  "totalMovies": 4,
-  "totalTheatres": 7,
+  "totalMovies": 3,
+  "totalTheatres": 8,
   "movies": [
     {
       "title": "Pushpa 2: The Rule (2024)",
@@ -20,15 +20,15 @@
       "formats": [
         "2D",
         "Dolby Atmos",
-        "IMAX 3D"
+        "4K Laser"
       ],
       "theaters": [
         {
-          "name": "Siva Cinemas: Guntur",
-          "location": "Near Old Bus Stand, Guntur",
+          "name": "G3 Raj Yuvraj: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -38,7 +38,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -48,7 +48,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -58,7 +58,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -70,11 +70,11 @@
           ]
         },
         {
-          "name": "Studio 81 Cinemas: Guntur",
-          "location": "Arundelpet Main Road, Guntur",
+          "name": "Ravi Cinemas: Vijayawada",
+          "location": "Beside Bus Station, Governorpet",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -84,7 +84,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -94,7 +94,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -104,7 +104,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -116,11 +116,11 @@
           ]
         },
         {
-          "name": "Bhaskar Cinemas: Guntur",
-          "location": "Kothapet, Main Road, Guntur",
+          "name": "Apsara Theatre: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -130,7 +130,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -140,7 +140,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -150,7 +150,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -162,11 +162,11 @@
           ]
         },
         {
-          "name": "GS Cinemas: Guntur",
-          "location": "Brodipet 4/2, Guntur",
+          "name": "Durga Kala Mandir: Vijayawada",
+          "location": "Eluru Road, Governorpet",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -176,7 +176,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -186,7 +186,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -196,7 +196,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -208,11 +208,11 @@
           ]
         },
         {
-          "name": "Naz / Hollywood Theater Complex: Guntur",
-          "location": "Naaz Centre, GT Road, Guntur",
+          "name": "Alankar Theatre: Vijayawada",
+          "location": "Alankar Centre, MG Road",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -222,7 +222,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -232,7 +232,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -242,7 +242,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -254,11 +254,11 @@
           ]
         },
         {
-          "name": "Saraswathi Theatre: Guntur",
-          "location": "Brodipet 2nd Line, Guntur",
+          "name": "Annapurna Theatre: Vijayawada",
+          "location": "Bunder Road, Patamata",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -268,7 +268,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -278,7 +278,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -288,7 +288,7 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -300,11 +300,11 @@
           ]
         },
         {
-          "name": "Sri Lakshmi Cinema Hall: Guntur",
-          "location": "Nallapadu Road, Guntur",
+          "name": "Sailaja Theatre: Vijayawada",
+          "location": "Prakasam Road, Governorpet",
           "showtimes": [
             {
-              "time": "11:00 AM",
+              "time": "11:15 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -314,7 +314,7 @@
               }
             },
             {
-              "time": "02:30 PM",
+              "time": "02:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -324,7 +324,7 @@
               }
             },
             {
-              "time": "06:15 PM",
+              "time": "06:30 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -334,7 +334,53 @@
               }
             },
             {
-              "time": "09:45 PM",
+              "time": "10:00 PM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Jayaram Theatre: Vijayawada",
+          "location": "Governorpet, Vijayawada",
+          "showtimes": [
+            {
+              "time": "11:15 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "02:15 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "06:30 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "10:00 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -362,11 +408,11 @@
       ],
       "theaters": [
         {
-          "name": "Siva Cinemas: Guntur",
-          "location": "Near Old Bus Stand, Guntur",
+          "name": "G3 Raj Yuvraj: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -376,7 +422,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -386,7 +432,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -398,11 +444,11 @@
           ]
         },
         {
-          "name": "Studio 81 Cinemas: Guntur",
-          "location": "Arundelpet Main Road, Guntur",
+          "name": "Ravi Cinemas: Vijayawada",
+          "location": "Beside Bus Station, Governorpet",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -412,7 +458,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -422,7 +468,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -434,11 +480,11 @@
           ]
         },
         {
-          "name": "Bhaskar Cinemas: Guntur",
-          "location": "Kothapet, Main Road, Guntur",
+          "name": "Apsara Theatre: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -448,7 +494,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -458,7 +504,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -470,11 +516,11 @@
           ]
         },
         {
-          "name": "GS Cinemas: Guntur",
-          "location": "Brodipet 4/2, Guntur",
+          "name": "Durga Kala Mandir: Vijayawada",
+          "location": "Eluru Road, Governorpet",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -484,7 +530,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -494,7 +540,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -506,11 +552,11 @@
           ]
         },
         {
-          "name": "Naz / Hollywood Theater Complex: Guntur",
-          "location": "Naaz Centre, GT Road, Guntur",
+          "name": "Alankar Theatre: Vijayawada",
+          "location": "Alankar Centre, MG Road",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -520,7 +566,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -530,7 +576,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -542,11 +588,11 @@
           ]
         },
         {
-          "name": "Saraswathi Theatre: Guntur",
-          "location": "Brodipet 2nd Line, Guntur",
+          "name": "Annapurna Theatre: Vijayawada",
+          "location": "Bunder Road, Patamata",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -556,7 +602,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -566,7 +612,7 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -578,11 +624,11 @@
           ]
         },
         {
-          "name": "Sri Lakshmi Cinema Hall: Guntur",
-          "location": "Nallapadu Road, Guntur",
+          "name": "Sailaja Theatre: Vijayawada",
+          "location": "Prakasam Road, Governorpet",
           "showtimes": [
             {
-              "time": "11:30 AM",
+              "time": "11:45 AM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -592,7 +638,7 @@
               }
             },
             {
-              "time": "03:00 PM",
+              "time": "03:15 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -602,7 +648,43 @@
               }
             },
             {
-              "time": "06:45 PM",
+              "time": "07:00 PM",
+              "format": "2D",
+              "availability": "ALMOST_FULL",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Jayaram Theatre: Vijayawada",
+          "location": "Governorpet, Vijayawada",
+          "showtimes": [
+            {
+              "time": "11:45 AM",
+              "format": "2D",
+              "availability": "AVAILABLE",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "03:15 PM",
+              "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            },
+            {
+              "time": "07:00 PM",
               "format": "2D",
               "availability": "ALMOST_FULL",
               "price": {
@@ -622,8 +704,7 @@
       "rating": "8.9/10",
       "genres": [
         "Action",
-        "Comedy",
-        "Family"
+        "Comedy"
       ],
       "formats": [
         "2D",
@@ -631,11 +712,11 @@
       ],
       "theaters": [
         {
-          "name": "Siva Cinemas: Guntur",
-          "location": "Near Old Bus Stand, Guntur",
+          "name": "G3 Raj Yuvraj: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "02:15 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -644,196 +725,25 @@
                 "CLASSIC": 130
               }
             },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "Studio 81 Cinemas: Guntur",
-          "location": "Arundelpet Main Road, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "Bhaskar Cinemas: Guntur",
-          "location": "Kothapet, Main Road, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "GS Cinemas: Guntur",
-          "location": "Brodipet 4/2, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "Naz / Hollywood Theater Complex: Guntur",
-          "location": "Naaz Centre, GT Road, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "Saraswathi Theatre: Guntur",
-          "location": "Brodipet 2nd Line, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sri Lakshmi Cinema Hall: Guntur",
-          "location": "Nallapadu Road, Guntur",
-          "showtimes": [
-            {
-              "time": "02:15 PM",
-              "format": "2D",
-              "availability": "AVAILABLE",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            },
-            {
-              "time": "06:30 PM",
-              "format": "2D",
-              "availability": "FILLING_FAST",
-              "price": {
-                "RECLINER": 280,
-                "PREMIUM": 190,
-                "CLASSIC": 130
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Naa Peru Surya, Naa Illu India (2018)",
-      "slug": "naa-peru-surya-naa-illu-india",
-      "language": "Telugu",
-      "rating": "8.5/10",
-      "genres": [
-        "Action",
-        "Drama"
-      ],
-      "formats": [
-        "2D"
-      ],
-      "theaters": [
-        {
-          "name": "Siva Cinemas: Guntur",
-          "location": "Near Old Bus Stand, Guntur",
-          "showtimes": [
             {
               "time": "06:45 PM",
               "format": "2D",
+              "availability": "FILLING_FAST",
+              "price": {
+                "RECLINER": 280,
+                "PREMIUM": 190,
+                "CLASSIC": 130
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ravi Cinemas: Vijayawada",
+          "location": "Beside Bus Station, Governorpet",
+          "showtimes": [
+            {
+              "time": "02:30 PM",
+              "format": "2D",
               "availability": "AVAILABLE",
               "price": {
                 "RECLINER": 280,
@@ -842,7 +752,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -854,11 +764,11 @@
           ]
         },
         {
-          "name": "Studio 81 Cinemas: Guntur",
-          "location": "Arundelpet Main Road, Guntur",
+          "name": "Apsara Theatre: Vijayawada",
+          "location": "Gandhi Nagar, Vijayawada",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -868,7 +778,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -880,11 +790,11 @@
           ]
         },
         {
-          "name": "Bhaskar Cinemas: Guntur",
-          "location": "Kothapet, Main Road, Guntur",
+          "name": "Durga Kala Mandir: Vijayawada",
+          "location": "Eluru Road, Governorpet",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -894,7 +804,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -906,11 +816,11 @@
           ]
         },
         {
-          "name": "GS Cinemas: Guntur",
-          "location": "Brodipet 4/2, Guntur",
+          "name": "Alankar Theatre: Vijayawada",
+          "location": "Alankar Centre, MG Road",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -920,7 +830,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -932,11 +842,11 @@
           ]
         },
         {
-          "name": "Naz / Hollywood Theater Complex: Guntur",
-          "location": "Naaz Centre, GT Road, Guntur",
+          "name": "Annapurna Theatre: Vijayawada",
+          "location": "Bunder Road, Patamata",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -946,7 +856,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -958,11 +868,11 @@
           ]
         },
         {
-          "name": "Saraswathi Theatre: Guntur",
-          "location": "Brodipet 2nd Line, Guntur",
+          "name": "Sailaja Theatre: Vijayawada",
+          "location": "Prakasam Road, Governorpet",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -972,7 +882,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {
@@ -984,11 +894,11 @@
           ]
         },
         {
-          "name": "Sri Lakshmi Cinema Hall: Guntur",
-          "location": "Nallapadu Road, Guntur",
+          "name": "Jayaram Theatre: Vijayawada",
+          "location": "Governorpet, Vijayawada",
           "showtimes": [
             {
-              "time": "06:45 PM",
+              "time": "02:30 PM",
               "format": "2D",
               "availability": "AVAILABLE",
               "price": {
@@ -998,7 +908,7 @@
               }
             },
             {
-              "time": "09:30 PM",
+              "time": "06:45 PM",
               "format": "2D",
               "availability": "FILLING_FAST",
               "price": {

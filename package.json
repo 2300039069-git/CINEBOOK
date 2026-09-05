@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node server.js",
+    "start:api": "node server.js",
+    "scrape": "node scrapers/bmsScraper.js",
+    "scrape:all": "node scrapers/cronRunner.js --once",
+    "scrape:cron": "node scrapers/cronRunner.js"
   }
 }
