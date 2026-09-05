@@ -11,14 +11,18 @@ const ThermalTicketReceipt = ({ booking, onClose, onPrint, autoPrint = false }) 
     if (onPrint) {
       onPrint();
     } else {
+      document.body.classList.add('printing-thermal');
       window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-thermal');
+      }, 500);
     }
   };
 
   React.useEffect(() => {
     if (autoPrint) {
       const timer = setTimeout(() => {
-        window.print();
+        handlePrint();
       }, 400);
       return () => clearTimeout(timer);
     }

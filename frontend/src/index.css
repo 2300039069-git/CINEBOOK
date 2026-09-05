@@ -169,6 +169,7 @@ html.theme-midnight-black {
 
   /* 2. 80MM CONTINUOUS THERMAL ROLL PRINTER STYLING */
   @page {
+    size: 80mm auto;
     margin: 0;
   }
 
@@ -177,27 +178,37 @@ html.theme-midnight-black {
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
   }
 
-  body.printing-thermal #printable-ticket,
-  body.printing-thermal .public-layout-header,
-  body.printing-thermal .public-layout-footer {
-    display: none !important;
+  body.printing-thermal * {
+    visibility: hidden !important;
+  }
+
+  body.printing-thermal #thermal-receipt-slip,
+  body.printing-thermal #thermal-receipt-slip *,
+  body.printing-thermal .thermal-receipt-container,
+  body.printing-thermal .thermal-receipt-container * {
+    visibility: visible !important;
   }
 
   body.printing-thermal #thermal-receipt-slip,
   body.printing-thermal .thermal-receipt-container {
-    display: block !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 80mm !important;
     max-width: 80mm !important;
     margin: 0 auto !important;
-    padding: 3mm 4mm !important;
+    padding: 2mm 3mm !important;
     background: #FFFFFF !important;
     color: #000000 !important;
     font-family: 'Courier New', Courier, monospace, sans-serif !important;
     box-shadow: none !important;
     border: none !important;
     page-break-inside: avoid !important;
+    display: block !important;
+    z-index: 999999 !important;
   }
 
   /* High contrast colors for print */

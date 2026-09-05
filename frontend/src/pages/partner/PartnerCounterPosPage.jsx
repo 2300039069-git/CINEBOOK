@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Printer,
   Ticket,
@@ -16,13 +16,16 @@ import {
   Phone,
   ArrowRight,
   ShieldCheck,
-  ReceiptText
+  ReceiptText,
+  X,
+  Lock,
+  Ban
 } from 'lucide-react';
 import { MOVIES, THEATRES } from '../../data/mockData';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
 
-// Default Screen 1 Seat Layout with Tiers
-const INITIAL_SEAT_LAYOUT = {
+// Base Screen 1 Seat Layout Template
+const BASE_SEAT_LAYOUT = {
   screen_name: 'Screen 1 4K Laser',
   tiers: [
     {
@@ -30,8 +33,8 @@ const INITIAL_SEAT_LAYOUT = {
       name: 'Balcony (Gold Recliner)',
       price: 280,
       rows: [
-        { rowLetter: 'A', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [1, 2], booked: [5, 6, 7] },
-        { rowLetter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [], booked: [8, 9] }
+        { rowLetter: 'A', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [1, 2], initialBooked: [5, 6, 7] },
+        { rowLetter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [], initialBooked: [8, 9] }
       ]
     },
     {
@@ -39,9 +42,9 @@ const INITIAL_SEAT_LAYOUT = {
       name: 'Premium Executive',
       price: 200,
       rows: [
-        { rowLetter: 'C', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], booked: [10, 11, 12] },
-        { rowLetter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], booked: [4, 5] },
-        { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], booked: [] }
+        { rowLetter: 'C', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [10, 11, 12] },
+        { rowLetter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [4, 5] },
+        { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], initialBooked: [] }
       ]
     },
     {
@@ -49,9 +52,9 @@ const INITIAL_SEAT_LAYOUT = {
       name: 'Classic Second Class',
       price: 130,
       rows: [
-        { rowLetter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], booked: [8, 9, 10] },
-        { rowLetter: 'G', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], booked: [] },
-        { rowLetter: 'H', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [], booked: [11, 12] }
+        { rowLetter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [8, 9, 10] },
+        { rowLetter: 'G', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [] },
+        { rowLetter: 'H', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [], initialBooked: [11, 12] }
       ]
     }
   ]
@@ -83,6 +86,41 @@ const PartnerCounterPosPage = () => {
   // Active printed receipt modal
   const [activeReceipt, setActiveReceipt] = useState(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  // Dynamic Blocked/Booked Seats per Show Key
+  const getShowKey = (theatreId, movieId, showId, date) =>
+    `cinebook_booked_${theatreId || 'th-gtr-001'}_${movieId || 'mov-pushpa-2'}_${showId || 'sh-1'}_${date || 'today'}`;
+
+  const [bookedSeatsSet, setBookedSeatsSet] = useState(new Set());
+
+  // Load booked seats when theatre, movie, show, or date changes
+  useEffect(() => {
+    const key = getShowKey(selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate);
+    const saved = localStorage.getItem(key);
+    let initialList = [];
+
+    if (saved) {
+      try {
+        initialList = JSON.parse(saved);
+      } catch (e) {}
+    } else {
+      // Collect baseline initial booked seats from template
+      BASE_SEAT_LAYOUT.tiers.forEach((tier) => {
+        tier.rows.forEach((row) => {
+          (row.initialBooked || []).forEach((seatNum) => {
+            initialList.push(`${row.rowLetter}${seatNum}`);
+          });
+        });
+      });
+      // Save initial baseline
+      try {
+        localStorage.setItem(key, JSON.stringify(initialList));
+      } catch (e) {}
+    }
+
+    setBookedSeatsSet(new Set(initialList));
+    setSelectedSeats([]); // Clear current selection on show change
+  }, [selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate]);
 
   // Counter transaction history loaded from localStorage
   const [counterHistory, setCounterHistory] = useState(() => {
@@ -123,8 +161,8 @@ const PartnerCounterPosPage = () => {
   const changeDue = Number(cashTendered) > totalPayable ? Number(cashTendered) - totalPayable : 0;
 
   // Toggle seat selection
-  const handleToggleSeat = (seatId, tierName, price, isBooked) => {
-    if (isBooked) return;
+  const handleToggleSeat = (seatId, tierName, price, isBlocked) => {
+    if (isBlocked) return;
     setSelectedSeats((prev) => {
       const exists = prev.find((s) => s.id === seatId);
       if (exists) {
@@ -134,8 +172,8 @@ const PartnerCounterPosPage = () => {
     });
   };
 
-  // Issue Ticket and Trigger 80mm Print
-  const handleIssueTicket = async () => {
+  // Issue Ticket and Block Seats Permanently
+  const handleIssueTicket = () => {
     if (selectedSeats.length === 0) {
       alert('Please select at least one seat to issue counter ticket.');
       return;
@@ -167,18 +205,28 @@ const PartnerCounterPosPage = () => {
       bookedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    // Save locally
+    // 1. BLOCK THE SEATS PERMANENTLY IN STATE & STORAGE
+    const newBookedSeatIds = selectedSeats.map((s) => s.id);
+    const updatedBookedSet = new Set([...bookedSeatsSet, ...newBookedSeatIds]);
+    setBookedSeatsSet(updatedBookedSet);
+
+    const key = getShowKey(selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate);
+    try {
+      localStorage.setItem(key, JSON.stringify(Array.from(updatedBookedSet)));
+    } catch (e) {}
+
+    // 2. Save transaction locally
     const updatedHistory = [newReceipt, ...counterHistory];
     setCounterHistory(updatedHistory);
     try {
       localStorage.setItem('cinebook_counter_pos_history', JSON.stringify(updatedHistory));
-      
-      // Also register in global cinebook_bookings for Gatekeeper QR validation
+
+      // Register in global cinebook_bookings for Gatekeeper QR Scanner verification
       const existingAll = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
       localStorage.setItem('cinebook_bookings', JSON.stringify([newReceipt, ...existingAll]));
     } catch (e) {}
 
-    // Post to server if online
+    // 3. Post to backend server if online
     try {
       fetch('http://localhost:5000/api/book', {
         method: 'POST',
@@ -187,14 +235,41 @@ const PartnerCounterPosPage = () => {
       }).catch(() => {});
     } catch (e) {}
 
-    // Set active receipt and open modal for instant 80mm print
+    // 4. Open Modal for 80mm Print
     setActiveReceipt(newReceipt);
     setIsSuccessModalOpen(true);
 
-    // Reset selection for next customer
+    // 5. Reset selection for next customer
     setSelectedSeats([]);
     setCashTendered('');
   };
+
+  // Modal Close handler
+  const handleCloseModal = useCallback(() => {
+    setIsSuccessModalOpen(false);
+    setActiveReceipt(null);
+  }, []);
+
+  // Print execution handler
+  const handleTriggerPrint = useCallback(() => {
+    document.body.classList.add('printing-thermal');
+    window.print();
+    setTimeout(() => {
+      document.body.classList.remove('printing-thermal');
+    }, 500);
+  }, []);
+
+  // Global Keyboard listener for modal: Escape to close, Enter to print
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isSuccessModalOpen) return;
+      if (e.key === 'Escape') {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSuccessModalOpen, handleCloseModal]);
 
   const handleReprint = (receipt) => {
     setActiveReceipt(receipt);
@@ -206,7 +281,7 @@ const PartnerCounterPosPage = () => {
   const totalCounterTickets = counterHistory.reduce((acc, h) => acc + (h.seats?.length || 1), 0);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in relative">
       {/* 1. HEADER & REALTIME POS DESK STATUS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--theme-border)]">
         <div>
@@ -307,24 +382,29 @@ const PartnerCounterPosPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT 2 COLS: VISUAL HALL SEATING MATRIX */}
         <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl glass-panel border border-[var(--theme-border)] shadow-2xl space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--theme-border)] text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--theme-border)] text-xs">
             <div>
               <h3 className="font-black text-theme-primary text-base">
                 {selectedMovie.title} • {selectedShow.time}
               </h3>
-              <p className="text-theme-muted text-xs">Click seats below to select for counter ticket issuance</p>
+              <p className="text-theme-muted text-xs">
+                Selected: <strong className="text-pink-500">{selectedSeats.length} seats</strong> • Blocked / Sold: <strong className="text-rose-400">{bookedSeatsSet.size} seats</strong>
+              </p>
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-3 text-[11px]">
+            <div className="flex flex-wrap items-center gap-3 text-[11px]">
               <span className="flex items-center gap-1 text-theme-muted">
                 <span className="w-3.5 h-3.5 rounded glass-panel border border-[var(--theme-border)] block" /> Available
               </span>
               <span className="flex items-center gap-1 text-amber-500 font-bold">
-                <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-500 block" /> Counter Hold
+                <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-500 flex items-center justify-center text-[8px]">🔒</span> Counter Quota
               </span>
               <span className="flex items-center gap-1 text-pink-500 font-bold">
                 <span className="w-3.5 h-3.5 rounded bg-gradient-to-r from-pink-500 to-purple-600 block" /> Selected
+              </span>
+              <span className="flex items-center gap-1 text-rose-500 font-bold">
+                <span className="w-3.5 h-3.5 rounded bg-rose-950/60 border border-rose-500/50 flex items-center justify-center text-[9px] text-rose-400 font-black">✕</span> Blocked / Sold
               </span>
             </div>
           </div>
@@ -332,7 +412,7 @@ const PartnerCounterPosPage = () => {
           {/* Seat Grid */}
           <div className="overflow-x-auto pb-4">
             <div className="min-w-[620px] mx-auto space-y-6">
-              {INITIAL_SEAT_LAYOUT.tiers.map((tier) => (
+              {BASE_SEAT_LAYOUT.tiers.map((tier) => (
                 <div key={tier.id} className="space-y-2">
                   <div className="flex justify-between items-center text-xs pb-1 border-b border-[var(--theme-border)]">
                     <span className="font-black uppercase tracking-wider text-theme-primary">{tier.name}</span>
@@ -347,28 +427,34 @@ const PartnerCounterPosPage = () => {
                         <div className="flex items-center gap-1.5">
                           {row.seats.map((seatNum) => {
                             const seatId = `${row.rowLetter}${seatNum}`;
-                            const isBooked = row.booked.includes(seatNum);
-                            const isCounterHeld = row.counterHeld.includes(seatNum);
+                            const isBlocked = bookedSeatsSet.has(seatId);
+                            const isCounterHeld = row.counterHeld.includes(seatNum) && !isBlocked;
                             const isSelected = selectedSeats.some((s) => s.id === seatId);
 
                             return (
                               <React.Fragment key={seatNum}>
                                 <button
                                   type="button"
-                                  disabled={isBooked}
-                                  onClick={() => handleToggleSeat(seatId, tier.name, tier.price, isBooked)}
-                                  title={`Seat ${seatId} - ₹${tier.price}`}
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center ${
-                                    isBooked
-                                      ? 'bg-black/20 dark:bg-white/5 text-gray-500 cursor-not-allowed border border-gray-700/30 line-through opacity-40'
+                                  disabled={isBlocked}
+                                  onClick={() => handleToggleSeat(seatId, tier.name, tier.price, isBlocked)}
+                                  title={
+                                    isBlocked
+                                      ? `Seat ${seatId} is BLOCKED / ALREADY BOOKED`
+                                      : isCounterHeld
+                                      ? `Seat ${seatId} (Counter Quota) - ₹${tier.price}`
+                                      : `Seat ${seatId} - ₹${tier.price}`
+                                  }
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center relative ${
+                                    isBlocked
+                                      ? 'bg-rose-950/60 border border-rose-500/50 text-rose-400 cursor-not-allowed opacity-60 line-through'
                                       : isSelected
-                                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-glow-pink scale-110'
+                                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-glow-pink scale-110 ring-2 ring-pink-400'
                                       : isCounterHeld
                                       ? 'bg-amber-500/20 border border-amber-500 text-amber-400 hover:scale-105'
                                       : 'glass-panel text-theme-primary hover:border-pink-500 hover:scale-105'
                                   }`}
                                 >
-                                  {isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
+                                  {isBlocked ? '✕' : isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
                                 </button>
                                 {seatNum === 4 || seatNum === row.seats.length - 4 ? <div className="w-3 sm:w-4" /> : null}
                               </React.Fragment>
@@ -402,7 +488,7 @@ const PartnerCounterPosPage = () => {
                 <Ticket className="w-4 h-4 text-pink-500" />
                 <span>Counter Checkout</span>
               </h3>
-              <span className="text-xs font-bold text-emerald-500">Zero Internet Fee (₹0)</span>
+              <span className="text-xs font-bold text-emerald-500">Zero Fee (₹0)</span>
             </div>
 
             {/* Selected Seats Pill Display */}
@@ -616,34 +702,80 @@ const PartnerCounterPosPage = () => {
         </div>
       </div>
 
-      {/* 5. MODAL: 80MM THERMAL SLIP PREVIEW & DIRECT PRINT */}
+      {/* 5. MODAL: 80MM THERMAL SLIP PREVIEW & BULLETPROOF PRINT / CLOSE CONTROLS */}
       {isSuccessModalOpen && activeReceipt && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="glass-panel p-6 rounded-3xl max-w-md w-full border border-[var(--theme-border)] shadow-2xl space-y-4 animate-scale-up">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--theme-border)]">
+        <div
+          className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-start overflow-y-auto p-3 sm:p-6"
+          onClick={handleCloseModal}
+        >
+          {/* MODAL WRAPPER (Stops Propagation so clicking receipt won't close) */}
+          <div
+            className="glass-panel p-4 sm:p-6 rounded-3xl max-w-lg w-full border border-pink-500/30 shadow-2xl space-y-4 my-auto animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Fixed Control Bar */}
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--theme-border)] no-print">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-theme-primary">Ticket Issued Successfully!</h3>
-                  <p className="text-[10px] text-theme-muted">80mm Continuous Thermal Receipt Ready</p>
+                  <h3 className="font-black text-sm text-theme-primary">Ticket Issued & Blocked!</h3>
+                  <p className="text-[10px] text-theme-muted font-mono">{activeReceipt.bookingId}</p>
                 </div>
               </div>
+
+              {/* Close Button (X) */}
               <button
                 type="button"
-                onClick={() => setIsSuccessModalOpen(false)}
-                className="w-7 h-7 rounded-full glass-card flex items-center justify-center text-theme-muted hover:text-theme-primary text-xs"
+                onClick={handleCloseModal}
+                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 flex items-center gap-1 text-xs font-black transition-all cursor-pointer"
               >
-                ✕
+                <X className="w-4 h-4" />
+                <span>Close (Esc)</span>
               </button>
             </div>
 
-            {/* 80mm Thermal Receipt Component */}
-            <ThermalTicketReceipt
-              booking={activeReceipt}
-              onClose={() => setIsSuccessModalOpen(false)}
-            />
+            {/* Quick Action Buttons on Top of Ticket */}
+            <div className="flex items-center justify-center gap-3 no-print">
+              <button
+                type="button"
+                onClick={handleTriggerPrint}
+                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-xs font-black uppercase tracking-wider shadow-glow-pink transition-all transform hover:scale-102 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>🖨️ Print 80mm Slip Now</span>
+              </button>
+            </div>
+
+            {/* Receipt Preview Component Container */}
+            <div className="flex justify-center bg-slate-900/50 p-2 sm:p-4 rounded-2xl border border-[var(--theme-border)]">
+              <ThermalTicketReceipt
+                booking={activeReceipt}
+                onPrint={handleTriggerPrint}
+                onClose={handleCloseModal}
+              />
+            </div>
+
+            {/* Bottom Footer Actions */}
+            <div className="pt-2 flex items-center justify-between gap-3 border-t border-[var(--theme-border)] no-print">
+              <button
+                type="button"
+                onClick={handleTriggerPrint}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card hover:border-pink-500 text-xs font-bold text-theme-primary transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-pink-500" />
+                <span>Print Copy</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="px-5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/40 text-xs font-black transition-all cursor-pointer"
+              >
+                ✓ Done • Next Customer
+              </button>
+            </div>
           </div>
         </div>
       )}
