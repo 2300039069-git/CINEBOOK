@@ -173,6 +173,9 @@ export const BookingProvider = ({ children }) => {
 };
 
 export const useBooking = () => {
-  const context = useContext(AuthContext);
-  return useContext(BookingContext);
+  const context = useContext(BookingContext);
+  if (!context) {
+    throw new Error('useBooking must be used within a BookingProvider');
+  }
+  return context;
 };
