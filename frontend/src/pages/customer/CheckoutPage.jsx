@@ -141,30 +141,29 @@ const CheckoutPage = () => {
           description: `Tickets for ${movie.title} (${seats.length} Seats)`,
           image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
           order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
-          handler: async function (response) {
-            // Once user authorizes payment in Razorpay popup, show confirmation progress
+          handler: function (response) {
+            // Once user authorizes payment in Razorpay popup, show confirmation progress and navigate fast
             setIsSubmitting(false);
             setProcessing(true);
             setProcessingStep(1);
 
-            try {
-              await paymentApi.verifyPayment({
-                booking_id: bookingTempId,
-                razorpay_order_id: response.razorpay_order_id || orderData?.order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature || 'sim_sig_verified'
-              });
-            } catch (err) {
-              console.warn('Backend verification fallback:', err);
-            }
+            // Fire verification in background so network latency doesn't block UI navigation
+            paymentApi.verifyPayment({
+              booking_id: bookingTempId,
+              razorpay_order_id: response.razorpay_order_id || orderData?.order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature || 'sim_sig_verified'
+            }).catch(() => {});
 
-            setProcessingStep(2);
             setTimeout(() => {
-              setProcessingStep(3);
+              setProcessingStep(2);
               setTimeout(() => {
-                finalizeBooking(response.razorpay_payment_id, response.razorpay_order_id, 'RAZORPAY_GATEWAY');
-              }, 600);
-            }, 600);
+                setProcessingStep(3);
+                setTimeout(() => {
+                  finalizeBooking(response.razorpay_payment_id, response.razorpay_order_id, 'RAZORPAY_GATEWAY');
+                }, 200);
+              }, 200);
+            }, 180);
           },
           prefill: {
             name: user?.name || 'Cinema Guest',
@@ -212,9 +211,9 @@ const CheckoutPage = () => {
         setProcessingStep(3);
         setTimeout(() => {
           finalizeBooking(`pay_instant_${Date.now()}`, `ord_${Date.now()}`, paymentMethod);
-        }, 600);
-      }, 600);
-    }, 600);
+        }, 200);
+      }, 200);
+    }, 200);
   };
 
   return (
