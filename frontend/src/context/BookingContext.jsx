@@ -3,7 +3,7 @@ import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../data/mockData';
 
 const BookingContext = createContext();
 
-const LOCK_DURATION_SECONDS = 300; // 5 minutes
+const LOCK_DURATION_SECONDS = 480; // 8 minutes atomic seat lock
 
 export const BookingProvider = ({ children }) => {
   const [selectedMovie, setSelectedMovie] = useState(() => {
@@ -41,7 +41,7 @@ export const BookingProvider = ({ children }) => {
     const saved = localStorage.getItem('cinebook_lock_expires_at');
     return saved ? parseInt(saved, 10) : Date.now() + LOCK_DURATION_SECONDS * 1000;
   });
-  const [secondsLeft, setSecondsLeft] = useState(300);
+  const [secondsLeft, setSecondsLeft] = useState(480);
   const [isLockExpired, setIsLockExpired] = useState(false);
 
   // Sync state changes to localStorage
@@ -68,7 +68,7 @@ export const BookingProvider = ({ children }) => {
   // Countdown timer effect
   useEffect(() => {
     if (!lockExpiresAt) {
-      setSecondsLeft(300);
+      setSecondsLeft(480);
       return;
     }
 
@@ -86,7 +86,7 @@ export const BookingProvider = ({ children }) => {
   }, [lockExpiresAt]);
 
   const toggleSeatSelection = (seat) => {
-    if (seat.status === 'BOOKED' || seat.status === 'LOCKED') return;
+    if (seat.status === 'BOOKED' || seat.status === 'LOCKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') return;
 
     setSelectedSeats((prev) => {
       const exists = prev.find((s) => s.id === seat.id);
@@ -155,7 +155,7 @@ export const BookingProvider = ({ children }) => {
         setSelectedSeats,
         toggleSeatSelection,
         lockToken,
-        secondsLeft: secondsLeft > 0 ? secondsLeft : 300,
+        secondsLeft: secondsLeft > 0 ? secondsLeft : 480,
         isLockExpired: false,
         startSeatLock,
         releaseSeatLock,

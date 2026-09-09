@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Clock, Ticket, Sparkles, Check, Lock } from 'lucide-react';
+import { ShieldCheck, Clock, Ticket, Sparkles, Check, Lock, Store } from 'lucide-react';
 
 const SeatGrid = ({
   seatLayout = [],
@@ -7,43 +7,67 @@ const SeatGrid = ({
   onToggleSeat
 }) => {
   return (
-    <div className="w-full glass-panel rounded-3xl p-6 sm:p-10 border border-[var(--theme-border)] shadow-2xl space-y-10">
-      {/* 1. SEAT STATE LEGEND */}
-      <div className="flex flex-wrap items-center justify-center gap-6 py-3 px-6 rounded-2xl glass-card text-xs">
+    <div className="w-full glass-panel rounded-3xl p-6 sm:p-10 border border-white/[0.08] shadow-2xl space-y-8">
+      {/* 1. DUAL-QUOTA PROTECTION NOTICE */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 px-5 rounded-2xl bg-amber-500/[0.06] border border-[#D4AF37]/30 text-xs">
+        <div className="flex items-center gap-2.5 text-slate-200">
+          <ShieldCheck className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+          <span>
+            <strong className="text-[#D4AF37]">Single-Screen Protection:</strong> Offline Box-Office counter quota is locked for physical window sales.
+          </span>
+        </div>
+        <span className="text-[10px] uppercase font-black tracking-widest px-2.5 py-1 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 flex-shrink-0">
+          Dual-Quota Active
+        </span>
+      </div>
+
+      {/* 2. SEAT STATE LEGEND */}
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-3 px-6 rounded-2xl glass-card text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg border border-slate-500 bg-black/10 dark:bg-white/5"></div>
-          <span className="text-theme-secondary font-medium">Available</span>
+          <div className="w-5 h-5 rounded-lg border border-slate-500 bg-white/[0.04]"></div>
+          <span className="text-slate-300 font-medium text-[11px]">Available (App)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center shadow-glow-pink">
             <Check className="w-3.5 h-3.5 stroke-[3]" />
           </div>
-          <span className="text-theme-primary font-black">Selected</span>
+          <span className="text-white font-black text-[11px]">Selected</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center text-[10px]">
+            <Lock className="w-3 h-3" />
+          </div>
+          <span className="text-[#D4AF37] font-bold text-[11px]">🔒 Box Office Quota</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-500 text-amber-400 flex items-center justify-center text-[10px]">
-            <Lock className="w-3 h-3" />
+            <Clock className="w-3 h-3" />
           </div>
-          <span className="text-amber-500 font-bold">Locked (5m)</span>
+          <span className="text-amber-400 font-bold text-[11px]">Locked (8m)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-black/20 dark:bg-white/5 opacity-30 border border-slate-700"></div>
-          <span className="text-theme-muted line-through">Booked</span>
+          <div className="w-5 h-5 rounded-lg bg-white/[0.02] border border-slate-800 opacity-40"></div>
+          <span className="text-slate-500 line-through text-[11px]">Booked</span>
         </div>
       </div>
 
-      {/* 2. CINEMA SEAT TIERS */}
+      {/* 3. CINEMA SEAT TIERS */}
       <div className="overflow-x-auto pb-6">
         <div className="min-w-[680px] max-w-4xl mx-auto space-y-8">
           {seatLayout.map((tier) => (
             <div key={tier.name} className="space-y-3">
               {/* Tier Header with Price */}
-              <div className="flex items-center justify-between pb-1.5 border-b border-[var(--theme-border)] text-xs">
-                <span className="font-black text-theme-primary uppercase tracking-wider">
-                  {tier.label}
+              <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.08] text-xs">
+                <span className="font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <span>{tier.label}</span>
+                  {tier.name === 'RECLINER' && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[9px] font-black border border-[#D4AF37]/30">
+                      VIP Atmos
+                    </span>
+                  )}
                 </span>
                 <span className="gradient-text-gold font-black">
-                  ₹{tier.price} <span className="text-theme-muted font-normal">/ seat</span>
+                  ₹{tier.price} <span className="text-slate-400 font-normal">/ seat</span>
                 </span>
               </div>
 
@@ -52,7 +76,7 @@ const SeatGrid = ({
                 {tier.rows.map((row) => (
                   <div key={row.rowLetter} className="flex items-center justify-center gap-2.5">
                     {/* Row Letter Left */}
-                    <span className="w-5 text-center text-xs font-black text-theme-muted">
+                    <span className="w-5 text-center text-xs font-black text-slate-400">
                       {row.rowLetter}
                     </span>
 
@@ -60,35 +84,43 @@ const SeatGrid = ({
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       {row.seats.map((seat) => {
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
+                        const isCounterQuota = seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE';
                         const isBooked = seat.status === 'BOOKED';
                         const isLocked = seat.status === 'LOCKED';
 
                         return (
                           <React.Fragment key={seat.id}>
                             <button
-                              disabled={isBooked || isLocked}
+                              type="button"
+                              disabled={isBooked || isLocked || isCounterQuota}
                               onClick={() => onToggleSeat(seat)}
                               title={
-                                isBooked
-                                  ? `${seat.id} (Booked)`
+                                isCounterQuota
+                                  ? `${seat.id} — Box Office Counter Quota (Held for offline theatre ticket window)`
+                                  : isBooked
+                                  ? `${seat.id} (Booked / Sold Out)`
                                   : isLocked
-                                  ? `${seat.id} (Reserved)`
+                                  ? `${seat.id} (Temporarily Reserved)`
                                   : `${seat.id} — ₹${seat.price}`
                               }
-                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center ${
+                              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
                                 isSelected
-                                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white scale-110 shadow-glow-pink'
+                                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white scale-110 shadow-glow-pink ring-2 ring-pink-400'
+                                  : isCounterQuota
+                                  ? 'bg-[#D4AF37]/10 border border-[#D4AF37]/50 text-[#D4AF37] cursor-not-allowed opacity-90'
                                   : isBooked
-                                  ? 'bg-black/10 dark:bg-white/5 border border-slate-700/50 text-slate-500 cursor-not-allowed opacity-30'
+                                  ? 'bg-white/[0.02] border border-slate-800 text-slate-600 cursor-not-allowed opacity-30 line-through'
                                   : isLocked
                                   ? 'bg-amber-500/20 border border-amber-500/60 text-amber-400 cursor-not-allowed'
-                                  : 'glass-panel text-theme-primary hover:border-pink-500'
+                                  : 'glass-panel text-white hover:border-pink-500 hover:scale-105'
                               }`}
                             >
                               {isSelected ? (
                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              ) : isCounterQuota ? (
+                                <Lock className="w-3 h-3 text-[#D4AF37]" />
                               ) : isLocked ? (
-                                <Lock className="w-3 h-3" />
+                                <Clock className="w-3 h-3" />
                               ) : (
                                 seat.number
                               )}
@@ -100,7 +132,7 @@ const SeatGrid = ({
                     </div>
 
                     {/* Row Letter Right */}
-                    <span className="w-5 text-center text-xs font-black text-theme-muted">
+                    <span className="w-5 text-center text-xs font-black text-slate-400">
                       {row.rowLetter}
                     </span>
                   </div>
@@ -109,12 +141,12 @@ const SeatGrid = ({
             </div>
           ))}
 
-          {/* 3. CURVED CINEMA SCREEN WITH HOLOGRAPHIC GLOW */}
+          {/* 4. CURVED CINEMA SCREEN WITH HOLOGRAPHIC GLOW */}
           <div className="pt-12 text-center space-y-3">
-            <div className="relative mx-auto w-3/4 sm:w-2/3 h-2 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90 animate-pulse" />
-            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-500 flex items-center justify-center gap-1.5">
+            <div className="relative mx-auto w-3/4 sm:w-2/3 h-2.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90 animate-pulse" />
+            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-400 flex items-center justify-center gap-1.5 font-display">
               <Sparkles className="w-3.5 h-3.5 text-pink-500" />
-              All Eyes This Way • Cinema Screen
+              All Eyes This Way • 4K Laser Projection Screen
             </p>
           </div>
         </div>

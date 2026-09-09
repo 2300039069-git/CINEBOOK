@@ -1,4 +1,5 @@
-// Rich catalog mock data for CineBook — Guntur (Default), Vijayawada & Tenali
+// Executive Cinema Catalog Mock Data for CineBook
+// Primary Cinema Hubs: Guntur (Default), Vijayawada & Tenali
 
 export const CITIES = [
   { id: 'guntur', name: 'Guntur', state: 'Andhra Pradesh', icon: '🌶️', popular: true },
@@ -7,7 +8,7 @@ export const CITIES = [
 ];
 
 export const GENRES = [
-  'All', 'Action', 'Drama', 'Crime', 'Thriller', 'Comedy', 'Family'
+  'All', 'Action', 'Drama', 'Crime', 'Sci-Fi', 'Thriller', 'Mass Masala', 'Family'
 ];
 
 export const LANGUAGES = [
@@ -15,30 +16,31 @@ export const LANGUAGES = [
 ];
 
 export const FORMATS = [
-  'All', '2D', '3D', 'IMAX 3D', '4DX', 'Dolby Atmos'
+  'All', '4K Dolby Atmos', 'IMAX 3D', '2D', '3D', '4DX'
 ];
 
-// USER-REQUESTED 4 ALLU ARJUN BLOCKBUSTER MOVIES ONLY
+// TOP 6 TOLLYWOOD & PAN-INDIA BLOCKBUSTERS WITH REAL HIGH-RES ASSETS
 export const MOVIES = [
   {
     id: 'mov-pushpa-2',
     title: 'Pushpa 2: The Rule (2024)',
     slug: 'pushpa-2-the-rule',
     tagline: 'The Rule Begins • Wildfire on Screen',
-    description: 'Pushpa Raj expands his red sandalwood empire beyond borders, clashing in an intense battle of power and wits with SP Bhanwar Singh Shekhawat. A high-octane mass action thriller celebrating Indian cinema\'s biggest icon.',
-    genres: ['Action', 'Crime', 'Drama', 'Thriller'],
+    description: 'Pushpa Raj expands his red sandalwood empire across international borders, clashing in an epic clash of power, swag, and survival against SP Bhanwar Singh Shekhawat. Indian cinema\'s biggest mass spectacle.',
+    genres: ['Action', 'Crime', 'Drama', 'Mass Masala'],
     languages: ['Telugu', 'Hindi', 'Tamil', 'Malayalam', 'Kannada'],
-    formats: ['IMAX 3D', '2D', '4DX', 'Dolby Atmos'],
+    formats: ['4K Dolby Atmos', 'IMAX 3D', '2D', '4DX'],
     duration: '3h 20m',
     durationMinutes: 200,
     releaseDate: '2024-12-05',
-    rating: 9.4,
-    votes: '420.5K',
+    rating: 9.6,
+    votes: '520.8K',
     censorRating: 'UA 16+',
     posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
     backdropUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop',
     trailerUrl: 'https://www.youtube.com/watch?v=1kVK0MZlbI4',
     director: 'Sukumar',
+    musicDirector: 'Devi Sri Prasad (DSP)',
     cast: [
       { name: 'Allu Arjun', role: 'Pushpa Raj', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
       { name: 'Rashmika Mandanna', role: 'Srivalli', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
@@ -50,87 +52,146 @@ export const MOVIES = [
     cities: ['guntur', 'vijayawada', 'tenali']
   },
   {
-    id: 'mov-pushpa-1',
-    title: 'Pushpa: The Rise (2021)',
-    slug: 'pushpa-the-rise',
-    tagline: 'Thaggedhe Le! • The Journey to the Top',
-    description: 'A laborer named Pushpa Raj rises through the ranks of a red sandalwood smuggling syndicate in the Seshachalam hills of Andhra Pradesh, defying every obstacle with sheer swagger and grit.',
-    genres: ['Action', 'Crime', 'Drama'],
+    id: 'mov-devara-1',
+    title: 'Devara: Part 1 (2024)',
+    slug: 'devara-part-1',
+    tagline: 'Fear and Valour of the Red Sea',
+    description: 'In the fearless coastal lands, a heroic sea warrior vows to protect his people from corruption and betrayal, triggering an unstoppable generational battle across treacherous waters.',
+    genres: ['Action', 'Drama', 'Thriller'],
     languages: ['Telugu', 'Hindi', 'Tamil', 'Malayalam', 'Kannada'],
-    formats: ['2D', 'Dolby Atmos'],
-    duration: '2h 59m',
-    durationMinutes: 179,
-    releaseDate: '2021-12-17',
-    rating: 9.0,
-    votes: '350.2K',
+    formats: ['4K Dolby Atmos', 'IMAX 3D', '2D'],
+    duration: '2h 58m',
+    durationMinutes: 178,
+    releaseDate: '2024-09-27',
+    rating: 9.3,
+    votes: '410.2K',
+    censorRating: 'UA 16+',
+    posterUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+    backdropUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop',
+    trailerUrl: 'https://www.youtube.com/watch?v=pKctPN339Jg',
+    director: 'Koratala Siva',
+    musicDirector: 'Anirudh Ravichander',
+    cast: [
+      { name: 'Jr NTR', role: 'Devara / Vara', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Janhvi Kapoor', role: 'Thangam', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Saif Ali Khan', role: 'Bhaira', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' }
+    ],
+    status: 'NOW_SHOWING',
+    isFeatured: true,
+    cities: ['guntur', 'vijayawada', 'tenali']
+  },
+  {
+    id: 'mov-kalki-2898',
+    title: 'Kalki 2898 AD (2024)',
+    slug: 'kalki-2898-ad',
+    tagline: 'The Future Begins in 2898 AD',
+    description: 'In a dystopian futuristic world where Kasi is the last surviving city under the ruthless rule of the Complex, the immortal warrior Ashwatthama rises to safeguard the prophesied avatar from supreme tyrant Supreme Yaskin.',
+    genres: ['Sci-Fi', 'Action', 'Mythology'],
+    languages: ['Telugu', 'Hindi', 'Tamil', 'Malayalam', 'Kannada'],
+    formats: ['IMAX 3D', '4K Dolby Atmos', '2D', '4DX'],
+    duration: '3h 01m',
+    durationMinutes: 181,
+    releaseDate: '2024-06-27',
+    rating: 9.5,
+    votes: '640.1K',
     censorRating: 'UA',
     posterUrl: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop',
-    backdropUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop',
-    trailerUrl: 'https://www.youtube.com/watch?v=pKctPN339Jg',
-    director: 'Sukumar',
+    backdropUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop',
+    trailerUrl: 'https://www.youtube.com/watch?v=kQDd1AhGIHk',
+    director: 'Nag Ashwin',
+    musicDirector: 'Santhosh Narayanan',
     cast: [
-      { name: 'Allu Arjun', role: 'Pushpa Raj', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Rashmika Mandanna', role: 'Srivalli', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Fahadh Faasil', role: 'SP Bhanwar Singh Shekhawat', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Sunil', role: 'Mangalam Srinu', photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop' }
+      { name: 'Prabhas', role: 'Bhairava', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Amitabh Bachchan', role: 'Ashwatthama', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Deepika Padukone', role: 'SUM-80', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Kamal Haasan', role: 'Supreme Yaskin', photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop' }
     ],
     status: 'NOW_SHOWING',
     isFeatured: true,
     cities: ['guntur', 'vijayawada', 'tenali']
   },
   {
-    id: 'mov-ala-vaikunthapurramuloo',
-    title: 'Ala Vaikunthapurramuloo (2020)',
-    slug: 'ala-vaikunthapurramuloo',
-    tagline: 'Swag, Style & Family Entertainment',
-    description: 'Bantu grows up facing constant neglect from his strict father Valmiki, only to discover a fateful secret about his true heritage as the biological heir of the affluent Vaikunthapuram estate.',
-    genres: ['Action', 'Comedy', 'Family', 'Drama'],
-    languages: ['Telugu', 'Malayalam', 'Hindi'],
-    formats: ['2D', 'Dolby Atmos'],
+    id: 'mov-salaar-1',
+    title: 'Salaar: Part 1 – Ceasefire (2023)',
+    slug: 'salaar-part-1-ceasefire',
+    tagline: 'The Most Violent Man • Khansaar Awaits',
+    description: 'Set in the ruthless fortified dystopian kingdom of Khansaar, childhood comrades Deva and Varadha become bound by blood and vengeance as clans fight for sovereign power.',
+    genres: ['Action', 'Crime', 'Drama'],
+    languages: ['Telugu', 'Hindi', 'Tamil', 'Malayalam', 'Kannada'],
+    formats: ['4K Dolby Atmos', '2D'],
+    duration: '2h 55m',
+    durationMinutes: 175,
+    releaseDate: '2023-12-22',
+    rating: 9.1,
+    votes: '480.0K',
+    censorRating: 'A',
+    posterUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=800&auto=format&fit=crop',
+    backdropUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1600&auto=format&fit=crop',
+    trailerUrl: 'https://www.youtube.com/watch?v=4GPvYMKtrtI',
+    director: 'Prashanth Neel',
+    musicDirector: 'Ravi Basrur',
+    cast: [
+      { name: 'Prabhas', role: 'Deva / Salaar', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Prithviraj Sukumaran', role: 'Varadharaja Mannaar', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Shruti Haasan', role: 'Aadya', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' }
+    ],
+    status: 'NOW_SHOWING',
+    isFeatured: true,
+    cities: ['guntur', 'vijayawada', 'tenali']
+  },
+  {
+    id: 'mov-og-2025',
+    title: 'OG: They Call Him OG (2025)',
+    slug: 'og-they-call-him-og',
+    tagline: 'The Original Gangster Returns to Mumbai',
+    description: 'A legendary samurai-armed gangster named Ojas Gambheera reappears in Mumbai after a decade of exile to dismantle a ruthless international crime syndicate threatening his loyalists.',
+    genres: ['Action', 'Crime', 'Thriller'],
+    languages: ['Telugu', 'Hindi', 'Tamil', 'Malayalam'],
+    formats: ['4K Dolby Atmos', '2D'],
     duration: '2h 45m',
     durationMinutes: 165,
-    releaseDate: '2020-01-12',
-    rating: 8.9,
-    votes: '290.4K',
-    censorRating: 'UA',
+    releaseDate: '2025-03-27',
+    rating: 9.7,
+    votes: '390.4K',
+    censorRating: 'UA 16+',
     posterUrl: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop',
     backdropUrl: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop',
-    trailerUrl: 'https://www.youtube.com/watch?v=2K4Vb2p7k1M',
-    director: 'Trivikram Srinivas',
+    trailerUrl: 'https://www.youtube.com/watch?v=ZfK4_36bW34',
+    director: 'Sujeeth',
+    musicDirector: 'Thaman S',
     cast: [
-      { name: 'Allu Arjun', role: 'Bantu', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Pooja Hegde', role: 'Amulya', photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Tabu', role: 'Yasoda', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Murali Sharma', role: 'Valmiki', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' }
+      { name: 'Pawan Kalyan', role: 'Ojas Gambheera (OG)', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Emraan Hashmi', role: 'Omi Bhau', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Priyanka Mohan', role: 'Kalyani', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' }
     ],
     status: 'NOW_SHOWING',
     isFeatured: true,
     cities: ['guntur', 'vijayawada', 'tenali']
   },
   {
-    id: 'mov-naa-peru-surya',
-    title: 'Naa Peru Surya, Naa Illu India (2018)',
-    slug: 'naa-peru-surya-naa-illu-india',
-    tagline: 'A Soldier’s Battle for Nation & Self-Control',
-    description: 'Surya, a patriotic Indian Army soldier with severe anger management issues, embarks on an emotional journey to get a signature of approval from the nation’s top psychologist to rejoin the military border.',
-    genres: ['Action', 'Drama'],
-    languages: ['Telugu', 'Malayalam', 'Hindi'],
-    formats: ['2D', 'Dolby Atmos'],
-    duration: '2h 48m',
-    durationMinutes: 168,
-    releaseDate: '2018-05-04',
-    rating: 8.5,
-    votes: '195.8K',
+    id: 'mov-game-changer',
+    title: 'Game Changer (2025)',
+    slug: 'game-changer',
+    tagline: 'An Honest Officer\'s Rebellion Against the System',
+    description: 'An uncompromising Indian Administrative Service (IAS) officer fights against deep-rooted election malpractices and political corruption to guarantee clean governance for common citizens.',
+    genres: ['Action', 'Drama', 'Political'],
+    languages: ['Telugu', 'Hindi', 'Tamil'],
+    formats: ['4K Dolby Atmos', '2D'],
+    duration: '2h 50m',
+    durationMinutes: 170,
+    releaseDate: '2025-01-10',
+    rating: 9.2,
+    votes: '310.5K',
     censorRating: 'UA',
-    posterUrl: 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=800&auto=format&fit=crop',
-    backdropUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1600&auto=format&fit=crop',
-    trailerUrl: 'https://www.youtube.com/watch?v=ZfK4_36bW34',
-    director: 'Vakkantham Vamsi',
+    posterUrl: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop',
+    backdropUrl: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1600&auto=format&fit=crop',
+    trailerUrl: 'https://www.youtube.com/watch?v=2K4Vb2p7k1M',
+    director: 'S. Shankar',
+    musicDirector: 'Thaman S',
     cast: [
-      { name: 'Allu Arjun', role: 'Surya', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Anu Emmanuel', role: 'Varsha', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
-      { name: 'Arjun Sarja', role: 'Prof. Ramakrishna Raju', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' },
-      { name: 'R. Sarathkumar', role: 'Challa', photo: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=300&auto=format&fit=crop' }
+      { name: 'Ram Charan', role: 'Ram Nandan IAS / Appanna', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop' },
+      { name: 'Kiara Advani', role: 'Deepika', photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=300&auto=format&fit=crop' },
+      { name: 'SJ Suryah', role: 'Minister Ramakanth', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop' }
     ],
     status: 'NOW_SHOWING',
     isFeatured: true,
@@ -138,45 +199,120 @@ export const MOVIES = [
   }
 ];
 
-export const EVENTS = [
+// CANTEEN SNACK & BEVERAGE MENU (Pre-Order for Interval)
+export const CANTEEN_MENU = [
   {
-    id: 'eve-001',
-    title: 'Telugu Comedy Fest — Live Standup Special',
-    category: 'Standup Comedy',
-    city: 'guntur',
-    venue: 'Sri Venkateswara Vignana Mandiram, Guntur',
-    date: '2025-03-22',
-    time: '19:00',
-    bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop',
-    priceStarting: 499,
-    description: 'An evening of non-stop Telugu comedy, relatable middle-class humor, and hilarious storytelling.',
-    isFeatured: true
+    id: 'snk-01',
+    name: 'Jumbo Butter Popcorn Tub',
+    category: 'Popcorn',
+    price: 180,
+    calories: '450 kcal',
+    image: '🍿',
+    description: 'Freshly popped golden corn tossed in melted salted Amul butter.'
   },
   {
-    id: 'eve-002',
-    title: 'Anirudh Live in Concert — Hukum Tour',
-    category: 'Music Concert',
-    city: 'vijayawada',
-    venue: 'Indira Gandhi Municipal Stadium, MG Road, Vijayawada',
-    date: '2025-04-12',
-    time: '18:30',
-    bannerUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop',
-    priceStarting: 999,
-    description: 'Rockstar Anirudh Ravichander live in Andhra Pradesh with explosive visual effects, bass, and chartbuster Telugu hits.',
-    isFeatured: true
+    id: 'snk-02',
+    name: 'Caramel Glazed Popcorn',
+    category: 'Popcorn',
+    price: 210,
+    calories: '520 kcal',
+    image: '🍯',
+    description: 'Crisp mushroom popcorn kernels coated in rich Belgian caramel glaze.'
   },
   {
-    id: 'eve-003',
-    title: 'Tenali Cultural & Drama Mahotsav',
-    category: 'Cultural Theatre',
-    city: 'tenali',
-    venue: 'Tenali Ramakrishna Cultural Auditorium, Tenali',
-    date: '2025-03-29',
-    time: '18:00',
-    bannerUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop',
-    priceStarting: 299,
-    description: 'Celebrating the rich cultural legacy of the Paris of Andhra with mythological plays, classical music, and dance.',
-    isFeatured: true
+    id: 'snk-03',
+    name: 'Crispy Andhra Samosa Trio (3 Pcs)',
+    category: 'Hot Snacks',
+    price: 120,
+    calories: '380 kcal',
+    image: '🥟',
+    description: 'Flaky pastry stuffed with spiced onion and potato, served with mint chutney.'
+  },
+  {
+    id: 'snk-04',
+    name: 'Peri-Peri Loaded Cheese Nachos',
+    category: 'Hot Snacks',
+    price: 160,
+    calories: '490 kcal',
+    image: '🧀',
+    description: 'Crispy corn tortilla chips topped with warm jalapeño cheese sauce & peri-peri spice.'
+  },
+  {
+    id: 'snk-05',
+    name: 'Chilled Thums Up / Coca-Cola (650ml)',
+    category: 'Beverages',
+    price: 90,
+    calories: '180 kcal',
+    image: '🥤',
+    description: 'Ice-cold fountain soda poured in a souvenir cinema cup.'
+  },
+  {
+    id: 'snk-06',
+    name: 'VIP Platinum Interval Combo',
+    category: 'Combos',
+    price: 340,
+    calories: '890 kcal',
+    image: '👑',
+    description: 'Jumbo Butter Popcorn + 2 Samosas + 650ml Fountain Drink + Choco Truffle.'
+  }
+];
+
+// LIVE CANTEEN FULFILLMENT ORDERS (For Theatre Manager Interval Board)
+export const INITIAL_CANTEEN_ORDERS = [
+  {
+    id: 'ORD-8921',
+    seat: 'A5',
+    tier: 'BALCONY',
+    customerName: 'Kishore V.',
+    phone: '+91 98480 23419',
+    items: [
+      { name: 'Jumbo Butter Popcorn', qty: 1, price: 180 },
+      { name: 'Chilled Thums Up (650ml)', qty: 2, price: 180 }
+    ],
+    total: 360,
+    status: 'PREPARING', // PENDING, PREPARING, DELIVERED_TO_SEAT
+    time: 'Interval: 12:15 PM'
+  },
+  {
+    id: 'ORD-8922',
+    seat: 'C12',
+    tier: 'PREMIUM',
+    customerName: 'Bhavani Shankar',
+    phone: '+91 94401 88392',
+    items: [
+      { name: 'VIP Platinum Interval Combo', qty: 1, price: 340 },
+      { name: 'Crispy Samosa Trio', qty: 1, price: 120 }
+    ],
+    total: 460,
+    status: 'PENDING',
+    time: 'Interval: 12:15 PM'
+  },
+  {
+    id: 'ORD-8923',
+    seat: 'F4',
+    tier: 'EXECUTIVE',
+    customerName: 'Suresh Babu',
+    phone: '+91 98492 11029',
+    items: [
+      { name: 'Peri-Peri Cheese Nachos', qty: 2, price: 320 }
+    ],
+    total: 320,
+    status: 'DELIVERED_TO_SEAT',
+    time: 'Interval: 12:15 PM'
+  },
+  {
+    id: 'ORD-8924',
+    seat: 'B2',
+    tier: 'BALCONY',
+    customerName: 'Ananya Reddy',
+    phone: '+91 99881 23450',
+    items: [
+      { name: 'Caramel Glazed Popcorn', qty: 1, price: 210 },
+      { name: 'Cold Coffee Frappe', qty: 1, price: 130 }
+    ],
+    total: 340,
+    status: 'PREPARING',
+    time: 'Interval: 12:15 PM'
   }
 ];
 
@@ -193,7 +329,7 @@ export const THEATRES = [
     distance: '1.2 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
-      { id: 'scr-gtr-01', name: 'Screen 1 4K', sound: 'Dolby Atmos', totalSeats: 280 }
+      { id: 'scr-gtr-01', name: 'Screen 1 4K Laser', sound: 'Dolby Atmos', totalSeats: 280 }
     ]
   },
   {
@@ -288,7 +424,7 @@ export const THEATRES = [
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
       { id: 'scr-vja-01', name: 'Raj Screen (Dolby Atmos)', sound: 'Dolby Atmos', totalSeats: 320 },
-      { id: 'scr-vja-02', name: 'Yuvraj Screen 4K', sound: 'Dolby 7.1', totalSeats: 260 }
+      { id: 'scr-vja-02', name: 'Yuvraj Screen', sound: 'Dolby 7.1', totalSeats: 260 }
     ]
   },
   {
@@ -296,8 +432,8 @@ export const THEATRES = [
     name: 'Ravi Cinemas',
     slug: 'ravi-cinemas-vijayawada',
     city: 'vijayawada',
-    address: 'Beside Bus Station, Governorpet, Vijayawada',
-    facilities: ['4K Digital Cinema', 'Dolby Surround', 'Pushback Seats'],
+    address: 'Governorpet, Vijayawada',
+    facilities: ['4K Digital Cinema', 'Dolby Surround Sound', 'Parking'],
     distance: '1.0 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -323,7 +459,7 @@ export const THEATRES = [
     slug: 'durga-kala-mandir-vijayawada',
     city: 'vijayawada',
     address: 'Eluru Road, Governorpet, Vijayawada',
-    facilities: ['4K Projection', 'Dolby Atmos', 'Balcony Loungers'],
+    facilities: ['4K Projection', 'Dolby Atmos', 'Balcony Class'],
     distance: '1.3 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -349,7 +485,7 @@ export const THEATRES = [
     slug: 'annapurna-theatre-vijayawada',
     city: 'vijayawada',
     address: 'Bunder Road, Patamata, Vijayawada',
-    facilities: ['Qube 4K', 'Dolby 7.1', 'Parking'],
+    facilities: ['Qube 4K', 'Dolby 7.1', 'Food Court'],
     distance: '3.5 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -362,7 +498,7 @@ export const THEATRES = [
     slug: 'sailaja-theatre-vijayawada',
     city: 'vijayawada',
     address: 'Prakasam Road, Governorpet, Vijayawada',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Pushback Seats'],
+    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Recliners'],
     distance: '1.1 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -416,7 +552,7 @@ export const THEATRES = [
     slug: 'lakshmi-complex-tenali',
     city: 'tenali',
     address: 'Ganganamma Temple Street, Tenali',
-    facilities: ['4K Projection', 'Dolby Digital Surround', 'Air Conditioned'],
+    facilities: ['4K Projection', 'Dolby Digital', 'AC Hall'],
     distance: '1.2 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -429,7 +565,7 @@ export const THEATRES = [
     slug: 'sv-cinemas-priya-complex-tenali',
     city: 'tenali',
     address: 'Bose Road, Tenali',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Plush Recliners'],
+    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Pushback Seats'],
     distance: '1.3 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -442,7 +578,7 @@ export const THEATRES = [
     slug: 'pemmasani-theatre-tenali',
     city: 'tenali',
     address: 'Railway Station Road, Tenali',
-    facilities: ['Qube 4K Projection', 'Dolby 7.1', 'AC Balcony'],
+    facilities: ['Qube 4K Projection', 'Dolby 7.1', 'Parking'],
     distance: '0.8 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -455,7 +591,7 @@ export const THEATRES = [
     slug: 'swaraj-theatre-tenali',
     city: 'tenali',
     address: 'Morrispet, Tenali',
-    facilities: ['4K Digital Projection', 'Dolby Digital', 'Snack Bar'],
+    facilities: ['4K Digital Projection', 'Dolby Digital', 'AC Seating'],
     distance: '1.5 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -468,7 +604,7 @@ export const THEATRES = [
     slug: 'v-max-theatre-tenali',
     city: 'tenali',
     address: 'Near Gandhi Statue, Main Road, Tenali',
-    facilities: ['Laser 4K 3D', 'Dolby Atmos', 'Luxury Pushback Seats'],
+    facilities: ['Laser 4K 3D', 'Dolby Atmos', 'Cafeteria'],
     distance: '1.0 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
@@ -477,17 +613,60 @@ export const THEATRES = [
   }
 ];
 
+export const EVENTS = [
+  {
+    id: 'eve-001',
+    title: 'Telugu Comedy Fest — Live Standup Special',
+    category: 'Standup Comedy',
+    city: 'guntur',
+    venue: 'Sri Venkateswara Vignana Mandiram, Guntur',
+    date: '2025-03-22',
+    time: '19:00',
+    bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop',
+    priceStarting: 499,
+    description: 'An evening of non-stop Telugu comedy, relatable middle-class humor, and hilarious storytelling.',
+    isFeatured: true
+  },
+  {
+    id: 'eve-002',
+    title: 'Anirudh Live in Concert — Hukum Tour',
+    category: 'Music Concert',
+    city: 'vijayawada',
+    venue: 'Indira Gandhi Municipal Stadium, MG Road, Vijayawada',
+    date: '2025-04-12',
+    time: '18:30',
+    bannerUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop',
+    priceStarting: 999,
+    description: 'Rockstar Anirudh Ravichander live in Andhra Pradesh with explosive visual effects, bass, and chartbuster Telugu hits.',
+    isFeatured: true
+  },
+  {
+    id: 'eve-003',
+    title: 'Tenali Cultural & Drama Mahotsav',
+    category: 'Cultural Theatre',
+    city: 'tenali',
+    venue: 'Tenali Ramakrishna Cultural Auditorium, Tenali',
+    date: '2025-03-29',
+    time: '18:00',
+    bannerUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop',
+    priceStarting: 299,
+    description: 'Celebrating the rich cultural legacy of the Paris of Andhra with mythological plays, classical music, and dance.',
+    isFeatured: true
+  }
+];
+
 export const SAMPLE_SHOWTIMES = [
-  // --- PUSHPA 2: THE RULE (2024) SHOWTIMES ---
+  // --- GUNTUR SHOWTIMES ---
   {
     id: 'sh-gtr-01',
     movieId: 'mov-pushpa-2',
     theatreId: 'th-gtr-001',
     theatreName: 'Siva Cinemas',
-    screenName: 'Screen 1 4K',
-    format: '2D Dolby Atmos',
+    screenName: 'Screen 1 4K Laser',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '11:00 AM',
+    slot: 'Morning Show',
     date: '2026-09-02',
     price: { RECLINER: 280, PREMIUM: 200, CLASSIC: 130 },
     availability: 'AVAILABLE',
@@ -495,13 +674,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-gtr-02',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-devara-1',
     theatreId: 'th-gtr-001',
     theatreName: 'Siva Cinemas',
-    screenName: 'Screen 1 4K',
-    format: '2D Dolby Atmos',
+    screenName: 'Screen 1 4K Laser',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '02:30 PM',
+    slot: 'Matinee Show',
     date: '2026-09-02',
     price: { RECLINER: 280, PREMIUM: 200, CLASSIC: 130 },
     availability: 'FILLING_FAST',
@@ -509,13 +689,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-gtr-03',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-kalki-2898',
     theatreId: 'th-gtr-005',
     theatreName: 'Naz / Hollywood Theater Complex',
     screenName: 'Hollywood Screen',
     format: 'IMAX 3D',
     language: 'Telugu',
     time: '06:15 PM',
+    slot: 'First Show',
     date: '2026-09-02',
     price: { RECLINER: 350, PREMIUM: 250, CLASSIC: 150 },
     availability: 'ALMOST_FULL',
@@ -523,13 +704,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-gtr-04',
-    movieId: 'mov-pushpa-1',
+    movieId: 'mov-salaar-1',
     theatreId: 'th-gtr-002',
     theatreName: 'Studio 81 Cinemas',
     screenName: 'Audi 1',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
-    time: '11:30 AM',
+    time: '09:30 PM',
+    slot: 'Second Show',
     date: '2026-09-02',
     price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
     availability: 'AVAILABLE',
@@ -537,13 +719,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-gtr-05',
-    movieId: 'mov-ala-vaikunthapurramuloo',
+    movieId: 'mov-og-2025',
     theatreId: 'th-gtr-004',
     theatreName: 'GS Cinemas',
     screenName: 'Audi 1 (Dolby)',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
-    time: '02:15 PM',
+    time: '06:00 PM',
+    slot: 'First Show',
     date: '2026-09-02',
     price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
     availability: 'AVAILABLE',
@@ -551,13 +734,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-gtr-06',
-    movieId: 'mov-naa-peru-surya',
+    movieId: 'mov-game-changer',
     theatreId: 'th-gtr-006',
     theatreName: 'Saraswathi Theatre',
     screenName: 'Main Hall',
     format: '2D',
     language: 'Telugu',
-    time: '06:45 PM',
+    time: '09:45 PM',
+    slot: 'Second Show',
     date: '2026-09-02',
     price: { RECLINER: 220, PREMIUM: 160, CLASSIC: 110 },
     availability: 'FILLING_FAST',
@@ -571,9 +755,10 @@ export const SAMPLE_SHOWTIMES = [
     theatreId: 'th-vja-001',
     theatreName: 'G3 Raj Yuvraj',
     screenName: 'Raj Screen (Dolby Atmos)',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '11:15 AM',
+    slot: 'Morning Show',
     date: '2026-09-02',
     price: { RECLINER: 300, PREMIUM: 220, CLASSIC: 150 },
     availability: 'AVAILABLE',
@@ -581,13 +766,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-vja-02',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-devara-1',
     theatreId: 'th-vja-005',
     theatreName: 'Alankar Theatre',
     screenName: 'Alankar 4K',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '02:15 PM',
+    slot: 'Matinee Show',
     date: '2026-09-02',
     price: { RECLINER: 300, PREMIUM: 220, CLASSIC: 150 },
     availability: 'FILLING_FAST',
@@ -595,13 +781,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-vja-03',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-kalki-2898',
     theatreId: 'th-vja-007',
     theatreName: 'Sailaja Theatre',
     screenName: 'Main Screen 4K',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '06:30 PM',
+    slot: 'First Show',
     date: '2026-09-02',
     price: { RECLINER: 320, PREMIUM: 240, CLASSIC: 160 },
     availability: 'ALMOST_FULL',
@@ -615,9 +802,10 @@ export const SAMPLE_SHOWTIMES = [
     theatreId: 'th-tnl-001',
     theatreName: 'Asha Cinemas',
     screenName: 'Asha Screen 1',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '11:15 AM',
+    slot: 'Morning Show',
     date: '2026-09-02',
     price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
     availability: 'AVAILABLE',
@@ -625,13 +813,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-tnl-02',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-devara-1',
     theatreId: 'th-tnl-004',
     theatreName: 'SV Cinemas (Priya Complex)',
     screenName: 'Priya Screen 1',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '02:45 PM',
+    slot: 'Matinee Show',
     date: '2026-09-02',
     price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
     availability: 'FILLING_FAST',
@@ -639,13 +828,14 @@ export const SAMPLE_SHOWTIMES = [
   },
   {
     id: 'sh-tnl-03',
-    movieId: 'mov-pushpa-2',
+    movieId: 'mov-kalki-2898',
     theatreId: 'th-tnl-007',
     theatreName: 'V-Max Theatre',
     screenName: 'V-Max Screen',
-    format: '2D Dolby Atmos',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '07:00 PM',
+    slot: 'First Show',
     date: '2026-09-02',
     price: { RECLINER: 260, PREMIUM: 190, CLASSIC: 130 },
     availability: 'ALMOST_FULL',
@@ -653,28 +843,35 @@ export const SAMPLE_SHOWTIMES = [
   }
 ];
 
-// Seat layout generator helper
+// Dual-Quota Aware Seat Layout Generator (App Inventory vs Box Office Reserved)
 export const generateSeatLayout = (showId) => {
   const tiers = [
-    { name: 'RECLINER', label: 'Balcony / Recliner', price: 280, rows: ['A', 'B'] },
+    { name: 'RECLINER', label: 'Balcony / Recliner (VIP)', price: 280, rows: ['A', 'B'] },
     { name: 'PREMIUM', label: 'Premium Executive', price: 190, rows: ['C', 'D', 'E', 'F'] },
-    { name: 'CLASSIC', label: 'Classic First Class', price: 130, rows: ['G', 'H', 'J', 'K'] },
+    { name: 'CLASSIC', label: 'Classic First Class', price: 130, rows: ['G', 'H', 'J', 'K'] }
   ];
 
   const seatsPerRow = 14;
   const layout = [];
 
-  tiers.forEach(tier => {
+  tiers.forEach((tier) => {
     const tierRows = [];
-    tier.rows.forEach(rowLetter => {
+    tier.rows.forEach((rowLetter) => {
       const seats = [];
       for (let i = 1; i <= seatsPerRow; i++) {
         const seatId = `${rowLetter}${i}`;
+
+        // Counter Quota Seats (Held exclusively for Theatre Box Office)
+        const isCounterQuota = (rowLetter === 'A' && (i === 1 || i === 2)) ||
+                               (rowLetter === 'C' && (i === 1 || i === 2 || i === 3)) ||
+                               (rowLetter === 'F' && (i === 1 || i === 2 || i === 3 || i === 4));
+
+        // Online Booked Seats
         const isBooked = (rowLetter === 'D' && (i === 5 || i === 6 || i === 7 || i === 8)) ||
                          (rowLetter === 'C' && (i === 6 || i === 7)) ||
-                         (rowLetter === 'A' && (i === 1 || i === 2)) ||
                          (rowLetter === 'H' && (i === 11 || i === 12 || i === 13));
-        
+
+        // Real-time Locked Seats
         const isLocked = (rowLetter === 'E' && (i === 7 || i === 8));
 
         seats.push({
@@ -683,7 +880,8 @@ export const generateSeatLayout = (showId) => {
           row: rowLetter,
           tier: tier.name,
           price: tier.price,
-          status: isBooked ? 'BOOKED' : isLocked ? 'LOCKED' : 'AVAILABLE',
+          quota: isCounterQuota ? 'BOX_OFFICE' : 'APP_INVENTORY',
+          status: isCounterQuota ? 'COUNTER_QUOTA' : isBooked ? 'BOOKED' : isLocked ? 'LOCKED' : 'AVAILABLE',
           isAisleAfter: i === 3 || i === 11
         });
       }

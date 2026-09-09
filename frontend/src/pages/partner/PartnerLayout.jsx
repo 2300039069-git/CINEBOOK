@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   ExternalLink,
   Printer,
-  Plus
+  Plus,
+  UtensilsCrossed
 } from 'lucide-react';
 import { THEATRES } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
@@ -37,6 +38,7 @@ const PartnerLayout = () => {
   const navLinks = [
     { to: '/partner', label: 'Dashboard', icon: LayoutDashboard, exact: true },
     { to: '/partner/pos', label: 'Box-Office Counter POS', icon: Printer },
+    { to: '/partner/canteen', label: 'Interval Canteen Orders', icon: UtensilsCrossed },
     { to: '/partner/screens', label: 'Screen & Seat Layouts', icon: Grid3X3 },
     { to: '/partner/shows', label: 'Show Schedules & Pricing', icon: CalendarDays },
     { to: '/partner/settlements', label: 'Daily T+1 Settlements', icon: ReceiptText },

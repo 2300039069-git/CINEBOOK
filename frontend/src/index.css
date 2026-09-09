@@ -2,9 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* THEME VARIABLES FOR HIGH CONTRAST & CRYSTAL CLEAR READABILITY */
-:root {
-  /* Default: Cyber Neon */
+/* ============================================================================
+   EXECUTIVE CINEMA THEME VARIABLES (Midnight Obsidian & Champagne Gold)
+   ============================================================================ */
+:root,
+html.theme-midnight-obsidian {
+  /* Default: Midnight Obsidian & Champagne Warm Gold */
+  --theme-bg: #0B0E14;
+  --theme-surface: rgba(18, 24, 36, 0.88);
+  --theme-card: #121824;
+  --theme-border: rgba(212, 175, 55, 0.22);
+  --theme-border-hover: #D4AF37;
+  --theme-text-primary: #FFFFFF;
+  --theme-text-secondary: #CBD5E1;
+  --theme-text-muted: #94A3B8;
+  --theme-accent: #D4AF37;
+  --theme-crimson: #E50914;
+  --theme-card-shadow: 0 10px 35px -10px rgba(0, 0, 0, 0.85);
+}
+
+/* Cyber Neon Alternative Theme */
+html.theme-cyber-neon {
   --theme-bg: #0A0B14;
   --theme-surface: rgba(19, 21, 39, 0.85);
   --theme-card: #131527;
@@ -14,42 +32,30 @@
   --theme-text-secondary: #CBD5E1;
   --theme-text-muted: #94A3B8;
   --theme-accent: #EC4899;
+  --theme-crimson: #E50914;
   --theme-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
 
 /* Light Theme: Luxe Platinum (High Contrast Black on White) */
 html.theme-luxe-white {
-  --theme-bg: #F1F5F9;
+  --theme-bg: #F8FAFC;
   --theme-surface: rgba(255, 255, 255, 0.95);
   --theme-card: #FFFFFF;
   --theme-border: #E2E8F0;
-  --theme-border-hover: #4F46E5;
+  --theme-border-hover: #D4AF37;
   --theme-text-primary: #0F172A;
   --theme-text-secondary: #334155;
   --theme-text-muted: #64748B;
-  --theme-accent: #4F46E5;
+  --theme-accent: #D4AF37;
+  --theme-crimson: #E50914;
   --theme-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
-}
-
-/* Dark Theme: Midnight Black (High Contrast White on Pitch Black) */
-html.theme-midnight-black {
-  --theme-bg: #070709;
-  --theme-surface: rgba(17, 17, 22, 0.9);
-  --theme-card: #111116;
-  --theme-border: rgba(255, 255, 255, 0.12);
-  --theme-border-hover: #FF003A;
-  --theme-text-primary: #FFFFFF;
-  --theme-text-secondary: #CBD5E1;
-  --theme-text-muted: #8E8EA0;
-  --theme-accent: #FF003A;
-  --theme-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.9);
 }
 
 @layer base {
   body {
     background-color: var(--theme-bg);
     color: var(--theme-text-primary);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
@@ -68,7 +74,7 @@ html.theme-midnight-black {
   color: var(--theme-text-muted) !important;
 }
 
-/* High-Contrast Dynamic Glassmorphic Panels */
+/* Frosted Glassmorphism Panels */
 .glass-panel {
   background: var(--theme-surface);
   backdrop-filter: blur(16px);
@@ -88,22 +94,81 @@ html.theme-midnight-black {
 }
 
 .glass-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   border-color: var(--theme-border-hover);
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3), 0 0 20px -5px var(--theme-border-hover);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px var(--theme-border-hover);
 }
 
-/* Radiant Text Gradients */
+/* Radiant Luxury Text Gradients */
+.gradient-text-gold {
+  background: linear-gradient(135deg, #FDE047 0%, #D4AF37 50%, #B48B1E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-crimson {
+  background: linear-gradient(135deg, #FF4B55 0%, #E50914 50%, #B20710 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .gradient-text-neon {
   background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.gradient-text-gold {
-  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #D97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Glow Shadows */
+.shadow-glow-gold {
+  box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.45);
+}
+
+.shadow-glow-crimson {
+  box-shadow: 0 0 25px -5px rgba(229, 9, 20, 0.55);
+}
+
+.shadow-glow-pink {
+  box-shadow: 0 0 25px -5px rgba(236, 72, 153, 0.45);
+}
+
+.shadow-glow-screen {
+  box-shadow: 0 0 35px 5px rgba(6, 182, 212, 0.4);
+}
+
+/* Laser Scanner Sweep Animation */
+@keyframes laserSweep {
+  0% {
+    top: 5%;
+    opacity: 0.9;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.9;
+  }
+}
+
+.animate-laser-sweep {
+  animation: laserSweep 2.2s ease-in-out infinite;
+}
+
+/* Pulse Glow Animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Custom Scrollbars */
@@ -127,8 +192,6 @@ html.theme-midnight-black {
 
 /* ============================================================================
    STRICT THEME-PRESERVED & 80MM THERMAL RECEIPT PRINT STYLES
-   - Preserves exact active CineBook theme (Cyber Neon, Midnight Dark, or Luxe Platinum)
-   - Supports 80mm / 58mm continuous POS thermal paper roll printing for cinema box-office
    ============================================================================ */
 @media print {
   * {
@@ -212,13 +275,13 @@ html.theme-midnight-black {
   }
 
   /* High contrast colors for print */
-  .gradient-text-neon {
-    -webkit-text-fill-color: #EC4899 !important;
-    color: #EC4899 !important;
+  .gradient-text-gold {
+    -webkit-text-fill-color: #D4AF37 !important;
+    color: #D4AF37 !important;
   }
 
-  .gradient-text-gold {
-    -webkit-text-fill-color: #F59E0B !important;
-    color: #F59E0B !important;
+  .gradient-text-crimson {
+    -webkit-text-fill-color: #E50914 !important;
+    color: #E50914 !important;
   }
 }

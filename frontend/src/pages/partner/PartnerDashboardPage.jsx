@@ -16,33 +16,130 @@ import {
   Sparkles,
   ArrowUpRight,
   ShieldCheck,
-  CreditCard
+  CreditCard,
+  Printer,
+  FileSpreadsheet,
+  Lock,
+  UtensilsCrossed,
+  Layers,
+  Activity,
+  DollarSign
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// Mock Screen 1 Heatmap Matrix
+const AUDITORIUM_HEATMAP = {
+  screenName: 'Screen 1 4K Laser (Main Hall)',
+  capacity: 280,
+  tiers: [
+    {
+      name: 'Balcony (Gold Recliners)',
+      price: 280,
+      rows: [
+        { letter: 'A', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], booked: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterQuota: [1, 2], locked: [] },
+        { letter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], booked: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], counterQuota: [], locked: [12, 13] }
+      ]
+    },
+    {
+      name: 'Premium Executive',
+      price: 200,
+      rows: [
+        { letter: 'C', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], booked: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13], counterQuota: [1, 2, 3], locked: [14] },
+        { letter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], booked: [4, 5, 6, 7, 8, 9, 10, 11], counterQuota: [1, 2, 3], locked: [] },
+        { letter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], booked: [1, 2, 3, 7, 8, 9, 10, 11, 12], counterQuota: [], locked: [5, 6] }
+      ]
+    },
+    {
+      name: 'Classic Second Class',
+      price: 130,
+      rows: [
+        { letter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], booked: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterQuota: [1, 2, 3, 4], locked: [] },
+        { letter: 'G', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], booked: [5, 6, 7, 8, 9, 10], counterQuota: [1, 2, 3, 4], locked: [] },
+        { letter: 'H', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], booked: [1, 2, 3, 4, 8, 9, 10, 11, 12], counterQuota: [], locked: [] }
+      ]
+    }
+  ]
+};
 
 const PartnerDashboardPage = () => {
-  const [shows, setShows] = useState([]);
+  const [shows, setShows] = useState([
+    {
+      id: 'sh-gtr-01',
+      movie_title: 'Pushpa 2: The Rule (2024)',
+      show_time: '11:00 AM',
+      show_slot: 'Morning Show',
+      screen_name: 'Screen 1 4K Laser',
+      format: '4K Dolby Atmos',
+      booking_status: 'OPEN',
+      tickets_sold_online: 210,
+      tickets_sold_counter: 45,
+      gross_collected: 58650,
+      tier_price: { BALCONY: 280, PREMIUM: 200, EXECUTIVE: 130 }
+    },
+    {
+      id: 'sh-gtr-02',
+      movie_title: 'Devara: Part 1 (2024)',
+      show_time: '02:30 PM',
+      show_slot: 'Matinee Show',
+      screen_name: 'Screen 1 4K Laser',
+      format: '4K Dolby Atmos',
+      booking_status: 'OPEN',
+      tickets_sold_online: 195,
+      tickets_sold_counter: 40,
+      gross_collected: 54200,
+      tier_price: { BALCONY: 280, PREMIUM: 200, EXECUTIVE: 130 }
+    },
+    {
+      id: 'sh-gtr-03',
+      movie_title: 'Kalki 2898 AD (2024)',
+      show_time: '06:00 PM',
+      show_slot: 'First Show',
+      screen_name: 'Screen 1 4K Laser',
+      format: 'IMAX 3D',
+      booking_status: 'OPEN',
+      tickets_sold_online: 240,
+      tickets_sold_counter: 35,
+      gross_collected: 68400,
+      tier_price: { BALCONY: 320, PREMIUM: 240, EXECUTIVE: 160 }
+    },
+    {
+      id: 'sh-gtr-04',
+      movie_title: 'Salaar: Part 1 – Ceasefire',
+      show_time: '09:30 PM',
+      show_slot: 'Second Show',
+      screen_name: 'Screen 1 4K Laser',
+      format: '4K Dolby Atmos',
+      booking_status: 'OPEN',
+      tickets_sold_online: 175,
+      tickets_sold_counter: 25,
+      gross_collected: 44250,
+      tier_price: { BALCONY: 280, PREMIUM: 200, EXECUTIVE: 130 }
+    }
+  ]);
+
   const [summary, setSummary] = useState({
-    gross_revenue: 173160,
-    total_tickets_sold: 825,
-    tickets_sold_online: 735,
-    tickets_sold_counter: 90,
+    gross_revenue: 184650,
+    total_tickets_sold: 890,
+    tickets_sold_online: 760,
+    tickets_sold_counter: 130,
+    online_revenue: 156400,
+    counter_revenue: 28250,
+    occupancy_pct: 79.4,
     settlement_status: 'PROCESSING_T1',
-    net_payout_amount: 173160
+    net_payout_amount: 184650
   });
-  const [loading, setLoading] = useState(true);
+
+  const [isDcrModalOpen, setIsDcrModalOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch live partner data
+    // Fetch live partner data if backend available
     fetch('http://127.0.0.1:8000/api/v1/partner/reports/daily-summary?theatre_id=th-gtr-001')
       .then(res => res.json())
       .then(data => {
-        if (data.summary) setSummary(data.summary);
-        if (data.shows_breakdown) setShows(data.shows_breakdown);
-        setLoading(false);
+        if (data.summary) setSummary(prev => ({ ...prev, ...data.summary }));
+        if (data.shows_breakdown && data.shows_breakdown.length > 0) setShows(data.shows_breakdown);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => {});
   }, []);
 
   const toggleShowStatus = (showId) => {
@@ -57,143 +154,239 @@ const PartnerDashboardPage = () => {
     );
   };
 
+  const handlePrintDcr = () => {
+    window.print();
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* 1. TOP METRICS STRIP */}
+      {/* 1. EXECUTIVE LIVE BOX-OFFICE TICKER STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Metric 1: Today's Gross Ticket Revenue */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden">
+        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-[#D4AF37]/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-theme-muted tracking-wider">
+            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
               Today's Gross Revenue
             </span>
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-pink-500/20 to-purple-600/20 text-pink-500">
+            <div className="p-2.5 rounded-2xl bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 shadow-glow-gold">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black gradient-text-neon font-display">
+            <h3 className="text-2xl sm:text-3xl font-black gradient-text-gold font-display">
               ₹{summary.gross_revenue?.toLocaleString()}
             </h3>
-            <p className="text-[11px] text-emerald-500 font-bold flex items-center gap-1">
-              <ArrowUpRight className="w-3.5 h-3.5" /> +28% vs Yesterday's Matinee
-            </p>
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold pt-1">
+              <span className="text-[#D4AF37]">Online: ₹{summary.online_revenue?.toLocaleString()}</span>
+              <span>•</span>
+              <span className="text-emerald-400">Counter: ₹{summary.counter_revenue?.toLocaleString()}</span>
+            </div>
           </div>
         </div>
 
-        {/* Metric 2: Total Tickets Sold */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden">
+        {/* Metric 2: Total Tickets Sold & Occupancy */}
+        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-theme-muted tracking-wider">
-              Total Tickets Sold
+            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
+              Tickets & Occupancy
             </span>
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-cyan-400/20 to-blue-600/20 text-cyan-400">
+            <div className="p-2.5 rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
               <Ticket className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-theme-primary font-display">
-              {summary.total_tickets_sold} <span className="text-xs text-theme-muted font-normal">/ 1120 seats</span>
+            <h3 className="text-2xl sm:text-3xl font-black text-white font-display">
+              {summary.total_tickets_sold} <span className="text-xs text-slate-400 font-normal">/ 1120 seats</span>
             </h3>
-            <div className="flex items-center gap-3 text-[11px] text-theme-secondary font-bold">
-              <span className="text-cyan-500">Online: {summary.tickets_sold_online}</span>
+            <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold pt-1">
+              <span className="text-cyan-400">{summary.occupancy_pct}% Occupancy</span>
               <span>•</span>
-              <span className="text-amber-500">Counter: {summary.tickets_sold_counter}</span>
+              <span className="text-slate-400">4 Shows Active</span>
             </div>
           </div>
         </div>
 
-        {/* Metric 3: T+1 Payout Amount */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden">
+        {/* Metric 3: T+1 Payout Guarantee */}
+        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-theme-muted tracking-wider">
-              T+1 Net Payout (₹0 Fee)
+            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
+              T+1 Net Settlement (₹0 Fee)
             </span>
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-amber-400/20 to-orange-500/20 text-amber-400">
+            <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <CreditCard className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black gradient-text-gold font-display">
+            <h3 className="text-2xl sm:text-3xl font-black text-emerald-400 font-display">
               ₹{summary.net_payout_amount?.toLocaleString()}
             </h3>
-            <p className="text-[11px] text-emerald-500 font-bold flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Direct Bank Transfer Scheduled
+            <p className="text-[11px] text-emerald-400/90 font-bold flex items-center gap-1 pt-1">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Direct Bank Payout Scheduled
             </p>
           </div>
         </div>
 
-        {/* Metric 4: Gatekeeper QR Scans */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden">
+        {/* Metric 4: Gate Admissions Verified */}
+        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-theme-muted tracking-wider">
-              Gate Admissions Verified
+            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
+              Gate Admissions Admitted
             </span>
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-emerald-400/20 to-teal-600/20 text-emerald-400">
+            <div className="p-2.5 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
               <QrCode className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-theme-primary font-display">
-              640 <span className="text-xs text-theme-muted font-normal">checked-in</span>
+            <h3 className="text-2xl sm:text-3xl font-black text-white font-display">
+              640 <span className="text-xs text-slate-400 font-normal">checked-in</span>
             </h3>
-            <p className="text-[11px] text-theme-secondary font-medium">
-              Zero duplicate entries detected
+            <p className="text-[11px] text-slate-300 font-medium pt-1">
+              0 Duplicate entries detected
             </p>
           </div>
         </div>
       </div>
 
-      {/* 2. QUICK ACTION BAR */}
-      <div className="p-4 rounded-3xl glass-panel flex flex-wrap items-center justify-between gap-4">
+      {/* 2. THEATRE QUICK ACTIONS HUB */}
+      <div className="p-4 sm:p-5 rounded-3xl glass-panel border border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-black text-pink-500 uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" /> Exhibitor Quick Actions:
+          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" /> Exhibitor Command Hub:
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            to="/partner/pos"
-            className="px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-black text-xs shadow-md transition-all transform hover:scale-105"
+            to="/partner/counter-pos"
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-glow-gold transition-all transform hover:scale-102 flex items-center gap-1.5"
           >
-            🎟️ Box-Office Counter POS
+            <Printer className="w-4 h-4" />
+            <span>Counter POS & Thermal Print</span>
           </Link>
           <Link
-            to="/partner/screens"
-            className="px-4 py-2 rounded-2xl glass-card hover:border-pink-500 text-xs font-black text-theme-primary transition-all"
+            to="/partner/canteen"
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5"
           >
-            💺 Screen Layout & Counter Hold
-          </Link>
-          <Link
-            to="/partner/shows"
-            className="px-4 py-2 rounded-2xl glass-card hover:border-pink-500 text-xs font-black text-theme-primary transition-all"
-          >
-            🎬 Schedule New Showtime
-          </Link>
-          <Link
-            to="/partner/settlements"
-            className="px-4 py-2 rounded-2xl glass-card hover:border-pink-500 text-xs font-black text-theme-primary transition-all"
-          >
-            📄 Download Audit Statement
+            <UtensilsCrossed className="w-4 h-4" />
+            <span>Canteen Interval Pre-Orders</span>
           </Link>
           <Link
             to="/partner/scanner"
-            className="px-5 py-2 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs font-black shadow-glow-pink transition-all"
+            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#E50914] to-rose-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-black shadow-glow-crimson transition-all flex items-center gap-1.5"
           >
-            ⚡ Open Gate Scanner
+            <QrCode className="w-4 h-4" />
+            <span>Gatekeeper QR Scanner</span>
           </Link>
+          <button
+            type="button"
+            onClick={() => setIsDcrModalOpen(true)}
+            className="px-4 py-2.5 rounded-2xl glass-card hover:border-[#D4AF37] text-xs font-black text-[#D4AF37] transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Daily Collection Report (DCR)</span>
+          </button>
         </div>
       </div>
 
-      {/* 3. TODAY'S SHOW SCHEDULES & LIVE BOOKING CONTROLS */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]">
+      {/* 3. LIVE AUDITORIUM SEATING HEATMAP */}
+      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-white/[0.08] shadow-2xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
           <div>
-            <h3 className="text-lg font-black text-theme-primary">Today's Live Showtimes (4 Shows Scheduled)</h3>
-            <p className="text-xs text-theme-muted">Manage online booking statuses, occupancy, and dynamic ticket pricing in real time</p>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <h3 className="text-lg font-black text-white">{AUDITORIUM_HEATMAP.screenName} — Live Heatmap</h3>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Live seat inventory status for Pushpa 2: The Rule (11:00 AM Morning Show)
+            </p>
           </div>
-          <Link to="/partner/shows" className="text-xs font-black text-pink-500 hover:underline">
+
+          {/* Heatmap Legend */}
+          <div className="flex flex-wrap items-center gap-3 text-[11px]">
+            <span className="flex items-center gap-1 text-slate-400">
+              <span className="w-3.5 h-3.5 rounded glass-panel border border-white/20 block" /> Free (App)
+            </span>
+            <span className="flex items-center gap-1 text-[#E50914] font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-[#E50914] text-white flex items-center justify-center text-[8px] font-black">✓</span> Online Booked
+            </span>
+            <span className="flex items-center gap-1 text-[#D4AF37] font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-[#D4AF37]/30 border border-[#D4AF37] flex items-center justify-center text-[8px]">🔒</span> Counter Quota
+            </span>
+            <span className="flex items-center gap-1 text-purple-400 font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-purple-600/40 border border-purple-400 block" /> Active Lock (8m)
+            </span>
+          </div>
+        </div>
+
+        {/* Visual Seat Map */}
+        <div className="overflow-x-auto pb-4">
+          <div className="min-w-[640px] max-w-4xl mx-auto space-y-6">
+            {AUDITORIUM_HEATMAP.tiers.map((tier) => (
+              <div key={tier.name} className="space-y-2">
+                <div className="flex justify-between items-center text-xs pb-1 border-b border-white/[0.05]">
+                  <span className="font-black uppercase tracking-wider text-slate-200">{tier.name}</span>
+                  <span className="text-[#D4AF37] font-bold">₹{tier.price} / ticket</span>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  {tier.rows.map((row) => (
+                    <div key={row.letter} className="flex items-center justify-center gap-2">
+                      <span className="w-5 text-center text-xs font-black text-slate-400">{row.letter}</span>
+
+                      <div className="flex items-center gap-1.5">
+                        {row.seats.map((seatNum) => {
+                          const isBooked = row.booked.includes(seatNum);
+                          const isCounterQuota = row.counterQuota.includes(seatNum);
+                          const isLocked = row.locked.includes(seatNum);
+
+                          return (
+                            <React.Fragment key={seatNum}>
+                              <div
+                                title={`Seat ${row.letter}${seatNum} — ${isBooked ? 'Online Sold' : isCounterQuota ? 'Box Office Held' : isLocked ? 'Locked (Checkout)' : 'Available'}`}
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center ${
+                                  isBooked
+                                    ? 'bg-[#E50914] text-white shadow-sm'
+                                    : isCounterQuota
+                                    ? 'bg-[#D4AF37]/25 border border-[#D4AF37] text-[#D4AF37]'
+                                    : isLocked
+                                    ? 'bg-purple-600/40 border border-purple-400 text-purple-200 animate-pulse'
+                                    : 'glass-panel text-slate-300 border border-white/10'
+                                }`}
+                              >
+                                {isBooked ? '✓' : isCounterQuota ? '🔒' : isLocked ? '⏳' : seatNum}
+                              </div>
+                              {seatNum === 4 || seatNum === row.seats.length - 4 ? <div className="w-3 sm:w-4" /> : null}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+
+                      <span className="w-5 text-center text-xs font-black text-slate-400">{row.letter}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Screen Arc */}
+            <div className="pt-6 text-center space-y-1.5">
+              <div className="h-1.5 w-3/4 mx-auto bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90" />
+              <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">
+                Cinema 4K Silver Screen
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. TODAY'S SHOW SCHEDULES & LIVE BOOKING CONTROLS */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+          <div>
+            <h3 className="text-lg font-black text-white">Today's Live Showtimes (4 Shows Scheduled)</h3>
+            <p className="text-xs text-slate-400">Manage online booking statuses, occupancy, and dynamic ticket pricing in real time</p>
+          </div>
+          <Link to="/partner/shows" className="text-xs font-black text-[#D4AF37] hover:underline">
             Manage All Shows →
           </Link>
         </div>
@@ -206,15 +399,15 @@ const PartnerDashboardPage = () => {
             const occupancyPct = Math.round((totalSold / totalCapacity) * 100);
 
             return (
-              <div key={show.id} className="p-6 rounded-3xl glass-card space-y-4">
+              <div key={show.id} className="p-6 rounded-3xl glass-card space-y-4 border border-white/[0.08]">
                 {/* Header: Movie title & Slot */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-pink-500/10 text-pink-500 border border-pink-500/20 text-[10px] font-black uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-black uppercase">
                       {show.show_slot || 'Showtime'} • {show.show_time}
                     </span>
-                    <h4 className="text-base font-black text-theme-primary mt-1">{show.movie_title}</h4>
-                    <p className="text-xs text-theme-muted">{show.screen_name} • {show.format || '2D Dolby Atmos'}</p>
+                    <h4 className="text-base font-black text-white mt-1">{show.movie_title}</h4>
+                    <p className="text-xs text-slate-400">{show.screen_name} • {show.format || '4K Dolby Atmos'}</p>
                   </div>
 
                   {/* Booking Status Toggle Switch */}
@@ -222,8 +415,8 @@ const PartnerDashboardPage = () => {
                     onClick={() => toggleShowStatus(show.id)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-black transition-all border ${
                       isBookingOpen
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-500'
-                        : 'bg-rose-500/15 border-rose-500/40 text-rose-500'
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
+                        : 'bg-rose-500/15 border-rose-500/40 text-rose-400'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${isBookingOpen ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
@@ -234,12 +427,12 @@ const PartnerDashboardPage = () => {
                 {/* Occupancy Progress Bar */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold">
-                    <span className="text-theme-muted">Hall Occupancy</span>
-                    <span className="text-theme-primary font-black">{occupancyPct}% ({totalSold}/{totalCapacity} Seats)</span>
+                    <span className="text-slate-400">Hall Occupancy</span>
+                    <span className="text-white font-black">{occupancyPct}% ({totalSold}/{totalCapacity} Seats)</span>
                   </div>
-                  <div className="h-2.5 w-full bg-black/10 dark:bg-white/5 rounded-full overflow-hidden border border-[var(--theme-border)]">
+                  <div className="h-2.5 w-full bg-white/[0.05] rounded-full overflow-hidden border border-white/[0.08]">
                     <div
-                      className="h-full bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-400 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[#D4AF37] via-amber-500 to-[#E50914] rounded-full transition-all duration-500"
                       style={{ width: `${occupancyPct}%` }}
                     />
                   </div>
@@ -248,26 +441,26 @@ const PartnerDashboardPage = () => {
                 {/* Tier Pricing Breakdown */}
                 <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
                   <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-theme-muted block font-bold">Balcony</span>
-                    <span className="font-black text-amber-500">₹{show.tier_price?.BALCONY || 280}</span>
+                    <span className="text-[10px] text-slate-400 block font-bold">Balcony</span>
+                    <span className="font-black text-[#D4AF37]">₹{show.tier_price?.BALCONY || 280}</span>
                   </div>
                   <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-theme-muted block font-bold">Premium</span>
-                    <span className="font-black text-pink-500">₹{show.tier_price?.PREMIUM || 200}</span>
+                    <span className="text-[10px] text-slate-400 block font-bold">Premium</span>
+                    <span className="font-black text-slate-200">₹{show.tier_price?.PREMIUM || 200}</span>
                   </div>
                   <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-theme-muted block font-bold">Classic</span>
-                    <span className="font-black text-cyan-500">₹{show.tier_price?.EXECUTIVE || 130}</span>
+                    <span className="text-[10px] text-slate-400 block font-bold">Classic</span>
+                    <span className="font-black text-slate-300">₹{show.tier_price?.EXECUTIVE || 130}</span>
                   </div>
                 </div>
 
                 {/* Footer: Revenue & Counter quota */}
-                <div className="pt-3 border-t border-[var(--theme-border)] flex items-center justify-between text-xs">
-                  <span className="text-theme-muted">
-                    Counter Quota Held: <strong className="text-theme-primary">{show.counter_held_seats?.length || 16} seats</strong>
+                <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
+                  <span className="text-slate-400">
+                    Counter Quota Held: <strong className="text-white">16 seats</strong>
                   </span>
-                  <span className="font-black gradient-text-neon text-sm">
-                    ₹{(show.gross_collected || 34820).toLocaleString()} Collected
+                  <span className="font-black gradient-text-gold text-sm">
+                    ₹{(show.gross_collected || 54200).toLocaleString()} Collected
                   </span>
                 </div>
               </div>
@@ -275,6 +468,117 @@ const PartnerDashboardPage = () => {
           })}
         </div>
       </div>
+
+      {/* 5. MODAL: 1-CLICK DAILY COLLECTION REPORT (DCR) */}
+      {isDcrModalOpen && (
+        <div
+          className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+          onClick={() => setIsDcrModalOpen(false)}
+        >
+          <div
+            className="glass-panel p-6 sm:p-8 rounded-3xl max-w-2xl w-full border border-[#D4AF37]/40 shadow-2xl space-y-6 animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 no-print">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center">
+                  <FileSpreadsheet className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-white">Daily Collection Report (DCR)</h3>
+                  <p className="text-[10px] text-slate-400">Official Single-Screen Exhibitor & Distributor Statement</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsDcrModalOpen(false)}
+                className="w-8 h-8 rounded-full glass-card flex items-center justify-center text-slate-400 hover:text-white text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Printable Statement Document */}
+            <div className="bg-white text-slate-950 p-6 rounded-2xl shadow-inner font-mono text-xs space-y-4">
+              <div className="text-center border-b border-dashed border-slate-400 pb-3">
+                <h2 className="font-black text-base uppercase">SIVA CINEMAS 4K LASER — GUNTUR</h2>
+                <p className="text-[10px] text-slate-600">DAILY COLLECTION REPORT (DCR) • DATE: 02-SEP-2026</p>
+                <p className="text-[9px] text-slate-500">GSTIN: 37AAACB2948L1Z9 • THEATRE CODE: GTR-SIVA-01</p>
+              </div>
+
+              <table className="w-full text-left text-[11px]">
+                <thead>
+                  <tr className="border-b border-slate-400">
+                    <th className="py-1">Show Slot</th>
+                    <th className="py-1">Movie</th>
+                    <th className="py-1 text-center">Tix</th>
+                    <th className="py-1 text-right">Gross (₹)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {shows.map((s) => (
+                    <tr key={s.id}>
+                      <td className="py-1.5 font-bold">{s.show_slot} ({s.show_time})</td>
+                      <td className="py-1.5">{s.movie_title.split('(')[0]}</td>
+                      <td className="py-1.5 text-center font-bold">{(s.tickets_sold_online || 0) + (s.tickets_sold_counter || 0)}</td>
+                      <td className="py-1.5 text-right font-black">₹{s.gross_collected.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="border-t-2 border-slate-900 pt-2 space-y-1 text-xs">
+                <div className="flex justify-between font-bold">
+                  <span>TOTAL TICKETS SOLD:</span>
+                  <span>{summary.total_tickets_sold} Tickets (84% Online / 16% Counter)</span>
+                </div>
+                <div className="flex justify-between font-black text-sm">
+                  <span>GROSS COLLECTION:</span>
+                  <span>₹{summary.gross_revenue.toLocaleString()}.00</span>
+                </div>
+                <div className="flex justify-between text-[11px] text-slate-700">
+                  <span>LESS: GST @ 18% (CGST 9% + SGST 9%):</span>
+                  <span>₹{Math.round(summary.gross_revenue * 0.18 / 1.18).toLocaleString()}.00</span>
+                </div>
+                <div className="flex justify-between text-[11px] text-slate-700">
+                  <span>NET TICKET REVENUE:</span>
+                  <span>₹{Math.round(summary.gross_revenue / 1.18).toLocaleString()}.00</span>
+                </div>
+                <div className="flex justify-between text-[11px] text-emerald-800 font-bold pt-1 border-t border-dotted border-slate-400">
+                  <span>DISTRIBUTOR SHARE (50%):</span>
+                  <span>₹{Math.round((summary.gross_revenue / 1.18) * 0.5).toLocaleString()}.00</span>
+                </div>
+                <div className="flex justify-between text-[11px] text-emerald-800 font-bold">
+                  <span>EXHIBITOR SHARE (50%):</span>
+                  <span>₹{Math.round((summary.gross_revenue / 1.18) * 0.5).toLocaleString()}.00</span>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-500 pt-1">
+                  <span>CINEBOOK PLATFORM DEDUCTION:</span>
+                  <span>₹0.00 (Zero Fee Guarantee)</span>
+                </div>
+              </div>
+
+              <div className="pt-2 text-center text-[9px] text-slate-500 border-t border-dashed border-slate-400">
+                Generated via CineBook Exhibitor Engine • Verified Bank Reference: SBI ****29481
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-3 no-print">
+              <button
+                type="button"
+                onClick={handlePrintDcr}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-glow-gold flex items-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Print Official DCR</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
