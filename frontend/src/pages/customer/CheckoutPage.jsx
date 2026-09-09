@@ -6,19 +6,11 @@ import {
   CreditCard,
   Ticket,
   ChevronRight,
-  RotateCcw,
   Film,
   MapPin,
   CheckCircle2,
   Sparkles,
   Lock,
-  ArrowRight,
-  QrCode,
-  Smartphone,
-  Landmark,
-  Wallet,
-  ExternalLink,
-  Zap,
   Check,
   AlertCircle
 } from 'lucide-react';
@@ -283,7 +275,7 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Dedicated Razorpay Payment Gateway */}
+            {/* Payment Gateway - Exclusively Razorpay */}
             <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 border border-border">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2">
@@ -291,10 +283,10 @@ const CheckoutPage = () => {
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                      Razorpay Payment Gateway
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                      Payment Gateway
                     </h2>
-                    <p className="text-[11px] text-text-muted">Official PCI-DSS Level 1 Encrypted Gateway</p>
+                    <p className="text-[11px] text-text-muted">Direct Official Integration</p>
                   </div>
                 </div>
                 <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
@@ -303,65 +295,33 @@ const CheckoutPage = () => {
                 </span>
               </div>
 
-              {/* Razorpay Banner & Supported Options */}
-              <div className="p-4 sm:p-5 rounded-xl bg-surface-elevated border border-border space-y-3.5">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-text-primary">Razorpay Fast Checkout</span>
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide border border-emerald-500/20">
-                        Active Gateway
-                      </span>
+              {/* Single Dedicated Razorpay Card */}
+              <div className="p-5 rounded-xl bg-surface-elevated border border-accent/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="px-2.5 py-1 rounded bg-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
+                      Razorpay
                     </div>
-                    <p className="text-xs text-text-secondary mt-1 leading-relaxed">
-                      All payment modes are securely processed through Razorpay. You can pay using any of the supported methods in the official checkout popup.
-                    </p>
+                    <div>
+                      <h3 className="text-sm font-bold text-text-primary">Razorpay Official Gateway</h3>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified & Active</p>
+                    </div>
+                  </div>
+                  <div className="w-6 h-6 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+                    <Check className="w-4 h-4" />
                   </div>
                 </div>
 
-                {/* Supported Payment Channels */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-                  <div className="p-3 rounded-lg bg-surface border border-border flex flex-col gap-1 text-left">
-                    <div className="flex items-center gap-1.5 text-accent font-bold text-xs">
-                      <Smartphone className="w-4 h-4" />
-                      <span>UPI & QR</span>
-                    </div>
-                    <span className="text-[10px] text-text-muted leading-tight">GPay, PhonePe, Paytm, BHIM, CRED</span>
-                  </div>
+                <p className="text-xs text-text-secondary leading-relaxed pt-1">
+                  Your payment is securely processed exclusively by <strong>Razorpay</strong>. Click the button below to open the Razorpay checkout and authorize your transaction.
+                </p>
 
-                  <div className="p-3 rounded-lg bg-surface border border-border flex flex-col gap-1 text-left">
-                    <div className="flex items-center gap-1.5 text-blue-500 font-bold text-xs">
-                      <CreditCard className="w-4 h-4" />
-                      <span>Cards</span>
-                    </div>
-                    <span className="text-[10px] text-text-muted leading-tight">Visa, MasterCard, RuPay, Maestro</span>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-surface border border-border flex flex-col gap-1 text-left">
-                    <div className="flex items-center gap-1.5 text-amber-500 font-bold text-xs">
-                      <Landmark className="w-4 h-4" />
-                      <span>NetBanking</span>
-                    </div>
-                    <span className="text-[10px] text-text-muted leading-tight">SBI, HDFC, ICICI, Axis + 50 Banks</span>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-surface border border-border flex flex-col gap-1 text-left">
-                    <div className="flex items-center gap-1.5 text-purple-500 font-bold text-xs">
-                      <Wallet className="w-4 h-4" />
-                      <span>Wallets</span>
-                    </div>
-                    <span className="text-[10px] text-text-muted leading-tight">Amazon Pay, Mobikwik, LazyPay</span>
-                  </div>
+                <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-text-muted">
+                  <span>Merchant: <strong className="text-text-primary font-semibold">CINEBOOK</strong></span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> PCI-DSS Level 1 Certified
+                  </span>
                 </div>
-              </div>
-
-              {/* Gateway Indicator */}
-              <div className="p-3 rounded-lg bg-surface-elevated border border-border flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-text-muted">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span>Razorpay Status: <strong className="text-emerald-500">{razorpayLoaded ? 'Live & Connected' : 'Connecting...'}</strong></span>
-                </div>
-                <span className="text-[11px] text-text-muted">Instant Booking Pass Delivery</span>
               </div>
             </div>
           </div>
