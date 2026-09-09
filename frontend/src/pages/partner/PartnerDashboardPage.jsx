@@ -159,16 +159,16 @@ const PartnerDashboardPage = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in bg-background text-text-primary transition-colors">
       {/* 1. 30-MIN AUTO-RELEASE SAFEGUARD BANNER */}
-      <div className="p-4 px-6 rounded-2xl bg-amber-500/10 border border-gold/40 text-gold shadow-gold-glow flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-semibold">
+      <div className="p-4 px-6 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-semibold">
         <div className="flex items-center gap-3">
-          <span className="p-1.5 rounded-lg bg-gold/20 text-gold">⚡</span>
+          <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-500">⚡</span>
           <span>
-            <strong>30-Min Auto-Release Active:</strong> Unsold app seats release to counter at 06:00 PM
+            <strong className="text-text-primary">30-Min Auto-Release Active:</strong> Unsold app seats release to counter at 06:00 PM
           </span>
         </div>
-        <span className="px-3 py-1 rounded-full bg-gold/20 border border-gold/50 text-gold text-[10px] font-black uppercase tracking-wider flex-shrink-0">
+        <span className="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 text-[10px] font-bold uppercase tracking-wider flex-shrink-0">
           Theatre Protection Active
         </span>
       </div>
@@ -176,48 +176,48 @@ const PartnerDashboardPage = () => {
       {/* 2. TOP STATS ROW (3-COLUMN GRID) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Metric 1: Today's Gross Collection */}
-        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-gold/30">
+        <div className="bg-surface rounded-2xl p-6 space-y-3 relative overflow-hidden border border-border shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+            <span className="text-xs font-bold uppercase text-text-muted tracking-wider">
               Today's Gross Collection
             </span>
-            <div className="p-2.5 rounded-xl bg-gold/15 text-gold border border-gold/30 shadow-gold-glow">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-gold text-3xl font-bold">
+            <h3 className="text-amber-500 text-3xl font-extrabold">
               ₹1,84,500
             </h3>
-            <div className="flex items-center justify-between text-[11px] text-text-secondary font-medium pt-1">
-              <span className="text-gold">Online: ₹1,56,250</span>
+            <div className="flex items-center justify-between text-[11px] text-text-muted font-medium pt-1">
+              <span className="text-amber-500 font-bold">Online: ₹1,56,250</span>
               <span>•</span>
-              <span className="text-emerald-400">Counter: ₹28,250</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">Counter: ₹28,250</span>
             </div>
           </div>
         </div>
 
         {/* Metric 2: Occupancy Rate */}
-        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-white/[0.08]">
+        <div className="bg-surface rounded-2xl p-6 space-y-3 relative overflow-hidden border border-border shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+            <span className="text-xs font-bold uppercase text-text-muted tracking-wider">
               Occupancy Rate
             </span>
-            <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <Activity className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <h3 className="text-3xl font-bold text-white">
+              <h3 className="text-3xl font-extrabold text-text-primary">
                 88%
               </h3>
               <span className="text-xs text-text-muted font-medium">350 / 400 Seats Filled</span>
             </div>
             {/* Animated Green Progress Bar */}
-            <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden border border-white/[0.08]">
+            <div className="h-2 w-full bg-surface-elevated rounded-full overflow-hidden border border-border">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out animate-pulse"
+                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out"
                 style={{ width: '88%' }}
               />
             </div>
@@ -225,52 +225,52 @@ const PartnerDashboardPage = () => {
         </div>
 
         {/* Metric 3: Quota Breakdown */}
-        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-white/[0.08]">
+        <div className="bg-surface rounded-2xl p-6 space-y-3 relative overflow-hidden border border-border shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+            <span className="text-xs font-bold uppercase text-text-muted tracking-wider">
               Quota Breakdown
             </span>
-            <div className="p-2.5 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
               <Layers className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+            <h3 className="text-xl sm:text-2xl font-extrabold text-text-primary leading-tight">
               40 Online <span className="text-xs font-normal text-text-muted">(Cinebook)</span> vs 310 Counter Seats
             </h3>
-            <p className="text-[11px] text-text-secondary font-medium pt-1 flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-gold" /> Guaranteed offline walk-in seats
+            <p className="text-[11px] text-text-muted font-medium pt-1 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-500" /> Guaranteed offline walk-in seats
             </p>
           </div>
         </div>
       </div>
 
       {/* 3. THEATRE QUICK ACTIONS HUB */}
-      <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-border flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-black text-gold uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-gold" /> Exhibitor Command Hub:
+          <span className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Exhibitor Command Hub:
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/partner/counter-pos"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-gold via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-bold text-xs shadow-gold-glow transition-all transform hover:scale-102 flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shadow-sm transition-all transform hover:scale-102 flex items-center gap-1.5"
           >
             <Printer className="w-4 h-4" />
             <span>Counter POS & Thermal Print</span>
           </Link>
           <Link
             to="/partner/canteen"
-            className="px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-text-primary font-bold text-xs shadow-sm transition-all flex items-center gap-1.5"
           >
-            <UtensilsCrossed className="w-4 h-4 text-gold" />
+            <UtensilsCrossed className="w-4 h-4 text-amber-500" />
             <span>Canteen Interval Pre-Orders</span>
           </Link>
           <Link
             to="/partner/scanner"
-            className="px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-cinema-glow transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
           >
             <QrCode className="w-4 h-4" />
             <span>Gatekeeper QR Scanner</span>
@@ -278,7 +278,7 @@ const PartnerDashboardPage = () => {
           <button
             type="button"
             onClick={() => setIsDcrModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl border border-gold text-gold hover:bg-gold hover:text-black font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-gold-glow"
+            className="px-4 py-2.5 rounded-xl border border-amber-500 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-black font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Export Daily Collection Sheet (DCR)</span>
@@ -287,31 +287,31 @@ const PartnerDashboardPage = () => {
       </div>
 
       {/* 3. LIVE AUDITORIUM SEATING HEATMAP */}
-      <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-white/[0.08] shadow-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-white/[0.08]">
+      <div className="p-6 sm:p-8 rounded-3xl bg-surface border border-border shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-              <h3 className="text-lg font-black text-white">{AUDITORIUM_HEATMAP.screenName} — Live Heatmap</h3>
+              <h3 className="text-lg font-bold text-text-primary">{AUDITORIUM_HEATMAP.screenName} — Live Heatmap</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-text-muted mt-0.5">
               Live seat inventory status for Pushpa 2: The Rule (11:00 AM Morning Show)
             </p>
           </div>
 
           {/* Heatmap Legend */}
           <div className="flex flex-wrap items-center gap-3 text-[11px]">
-            <span className="flex items-center gap-1 text-slate-400">
-              <span className="w-3.5 h-3.5 rounded glass-panel border border-white/20 block" /> Free (App)
+            <span className="flex items-center gap-1 text-text-muted">
+              <span className="w-3.5 h-3.5 rounded bg-surface-elevated border border-border block" /> Free (App)
             </span>
-            <span className="flex items-center gap-1 text-[#E50914] font-bold">
-              <span className="w-3.5 h-3.5 rounded bg-[#E50914] text-white flex items-center justify-center text-[8px] font-black">✓</span> Online Booked
+            <span className="flex items-center gap-1 text-accent font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-accent text-white flex items-center justify-center text-[8px] font-bold">✓</span> Online Booked
             </span>
-            <span className="flex items-center gap-1 text-[#D4AF37] font-bold">
-              <span className="w-3.5 h-3.5 rounded bg-[#D4AF37]/30 border border-[#D4AF37] flex items-center justify-center text-[8px]">🔒</span> Counter Quota
+            <span className="flex items-center gap-1 text-amber-500 font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-amber-500/20 border border-amber-500 flex items-center justify-center text-[8px]">🔒</span> Counter Quota
             </span>
-            <span className="flex items-center gap-1 text-purple-400 font-bold">
-              <span className="w-3.5 h-3.5 rounded bg-purple-600/40 border border-purple-400 block" /> Active Lock (8m)
+            <span className="flex items-center gap-1 text-purple-500 font-bold">
+              <span className="w-3.5 h-3.5 rounded bg-purple-500/30 border border-purple-400 block" /> Active Lock (8m)
             </span>
           </div>
         </div>
@@ -321,15 +321,15 @@ const PartnerDashboardPage = () => {
           <div className="min-w-[640px] max-w-4xl mx-auto space-y-6">
             {AUDITORIUM_HEATMAP.tiers.map((tier) => (
               <div key={tier.name} className="space-y-2">
-                <div className="flex justify-between items-center text-xs pb-1 border-b border-white/[0.05]">
-                  <span className="font-black uppercase tracking-wider text-slate-200">{tier.name}</span>
-                  <span className="text-[#D4AF37] font-bold">₹{tier.price} / ticket</span>
+                <div className="flex justify-between items-center text-xs pb-1 border-b border-border">
+                  <span className="font-bold uppercase tracking-wider text-text-primary">{tier.name}</span>
+                  <span className="text-amber-500 font-bold">₹{tier.price} / ticket</span>
                 </div>
 
                 <div className="space-y-1.5 pt-1">
                   {tier.rows.map((row) => (
                     <div key={row.letter} className="flex items-center justify-center gap-2">
-                      <span className="w-5 text-center text-xs font-black text-slate-400">{row.letter}</span>
+                      <span className="w-5 text-center text-xs font-bold text-text-muted">{row.letter}</span>
 
                       <div className="flex items-center gap-1.5">
                         {row.seats.map((seatNum) => {
@@ -341,14 +341,14 @@ const PartnerDashboardPage = () => {
                             <React.Fragment key={seatNum}>
                               <div
                                 title={`Seat ${row.letter}${seatNum} — ${isBooked ? 'Online Sold' : isCounterQuota ? 'Box Office Held' : isLocked ? 'Locked (Checkout)' : 'Available'}`}
-                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center ${
+                                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center ${
                                   isBooked
-                                    ? 'bg-[#E50914] text-white shadow-sm'
+                                    ? 'bg-accent text-white shadow-sm'
                                     : isCounterQuota
-                                    ? 'bg-[#D4AF37]/25 border border-[#D4AF37] text-[#D4AF37]'
+                                    ? 'bg-amber-500/20 border border-amber-500 text-amber-500'
                                     : isLocked
-                                    ? 'bg-purple-600/40 border border-purple-400 text-purple-200 animate-pulse'
-                                    : 'glass-panel text-slate-300 border border-white/10'
+                                    ? 'bg-purple-500/30 border border-purple-400 text-purple-600 dark:text-purple-200 animate-pulse'
+                                    : 'bg-surface-elevated text-text-secondary border border-border'
                                 }`}
                               >
                                 {isBooked ? '✓' : isCounterQuota ? '🔒' : isLocked ? '⏳' : seatNum}
@@ -359,7 +359,7 @@ const PartnerDashboardPage = () => {
                         })}
                       </div>
 
-                      <span className="w-5 text-center text-xs font-black text-slate-400">{row.letter}</span>
+                      <span className="w-5 text-center text-xs font-bold text-text-muted">{row.letter}</span>
                     </div>
                   ))}
                 </div>
@@ -368,8 +368,8 @@ const PartnerDashboardPage = () => {
 
             {/* Screen Arc */}
             <div className="pt-6 text-center space-y-1.5">
-              <div className="h-1.5 w-3/4 mx-auto bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-cyan-400">
+              <div className="h-1.5 w-3/4 mx-auto bg-gradient-to-r from-transparent via-cyan-500 to-transparent rounded-full shadow-sm opacity-90" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
                 Cinema 4K Silver Screen
               </p>
             </div>
@@ -379,12 +379,12 @@ const PartnerDashboardPage = () => {
 
       {/* 4. TODAY'S SHOW SCHEDULES & LIVE BOOKING CONTROLS */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between pb-2 border-b border-border">
           <div>
-            <h3 className="text-lg font-black text-white">Today's Live Showtimes (4 Shows Scheduled)</h3>
-            <p className="text-xs text-slate-400">Manage online booking statuses, occupancy, and dynamic ticket pricing in real time</p>
+            <h3 className="text-lg font-bold text-text-primary">Today's Live Showtimes (4 Shows Scheduled)</h3>
+            <p className="text-xs text-text-muted">Manage online booking statuses, occupancy, and dynamic ticket pricing in real time</p>
           </div>
-          <Link to="/partner/shows" className="text-xs font-black text-[#D4AF37] hover:underline">
+          <Link to="/partner/shows" className="text-xs font-bold text-amber-500 hover:underline">
             Manage All Shows →
           </Link>
         </div>
@@ -397,24 +397,24 @@ const PartnerDashboardPage = () => {
             const occupancyPct = Math.round((totalSold / totalCapacity) * 100);
 
             return (
-              <div key={show.id} className="p-6 rounded-3xl glass-card space-y-4 border border-white/[0.08]">
+              <div key={show.id} className="p-6 rounded-3xl bg-surface space-y-4 border border-border shadow-sm">
                 {/* Header: Movie title & Slot */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 text-[10px] font-black uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase">
                       {show.show_slot || 'Showtime'} • {show.show_time}
                     </span>
-                    <h4 className="text-base font-black text-white mt-1">{show.movie_title}</h4>
-                    <p className="text-xs text-slate-400">{show.screen_name} • {show.format || '4K Dolby Atmos'}</p>
+                    <h4 className="text-base font-bold text-text-primary mt-1">{show.movie_title}</h4>
+                    <p className="text-xs text-text-muted">{show.screen_name} • {show.format || '4K Dolby Atmos'}</p>
                   </div>
 
                   {/* Booking Status Toggle Switch */}
                   <button
                     onClick={() => toggleShowStatus(show.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-black transition-all border ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-bold transition-all border ${
                       isBookingOpen
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                        : 'bg-rose-500/15 border-rose-500/40 text-rose-400'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-rose-500/10 border-rose-500/30 text-rose-500'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${isBookingOpen ? 'bg-emerald-500 animate-ping' : 'bg-rose-500'}`} />
@@ -425,12 +425,12 @@ const PartnerDashboardPage = () => {
                 {/* Occupancy Progress Bar */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-400">Hall Occupancy</span>
-                    <span className="text-white font-black">{occupancyPct}% ({totalSold}/{totalCapacity} Seats)</span>
+                    <span className="text-text-muted">Hall Occupancy</span>
+                    <span className="text-text-primary font-bold">{occupancyPct}% ({totalSold}/{totalCapacity} Seats)</span>
                   </div>
-                  <div className="h-2.5 w-full bg-white/[0.05] rounded-full overflow-hidden border border-white/[0.08]">
+                  <div className="h-2.5 w-full bg-surface-elevated rounded-full overflow-hidden border border-border">
                     <div
-                      className="h-full bg-gradient-to-r from-[#D4AF37] via-amber-500 to-[#E50914] rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-amber-500 to-accent rounded-full transition-all duration-500"
                       style={{ width: `${occupancyPct}%` }}
                     />
                   </div>
@@ -438,26 +438,26 @@ const PartnerDashboardPage = () => {
 
                 {/* Tier Pricing Breakdown */}
                 <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
-                  <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-slate-400 block font-bold">Balcony</span>
-                    <span className="font-black text-[#D4AF37]">₹{show.tier_price?.BALCONY || 280}</span>
+                  <div className="p-2 rounded-2xl bg-surface-elevated border border-border">
+                    <span className="text-[10px] text-text-muted block font-bold">Balcony</span>
+                    <span className="font-bold text-amber-500">₹{show.tier_price?.BALCONY || 280}</span>
                   </div>
-                  <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-slate-400 block font-bold">Premium</span>
-                    <span className="font-black text-slate-200">₹{show.tier_price?.PREMIUM || 200}</span>
+                  <div className="p-2 rounded-2xl bg-surface-elevated border border-border">
+                    <span className="text-[10px] text-text-muted block font-bold">Premium</span>
+                    <span className="font-bold text-text-primary">₹{show.tier_price?.PREMIUM || 200}</span>
                   </div>
-                  <div className="p-2 rounded-2xl glass-panel">
-                    <span className="text-[10px] text-slate-400 block font-bold">Classic</span>
-                    <span className="font-black text-slate-300">₹{show.tier_price?.EXECUTIVE || 130}</span>
+                  <div className="p-2 rounded-2xl bg-surface-elevated border border-border">
+                    <span className="text-[10px] text-text-muted block font-bold">Classic</span>
+                    <span className="font-bold text-text-secondary">₹{show.tier_price?.EXECUTIVE || 130}</span>
                   </div>
                 </div>
 
                 {/* Footer: Revenue & Counter quota */}
-                <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-xs">
-                  <span className="text-slate-400">
-                    Counter Quota Held: <strong className="text-white">16 seats</strong>
+                <div className="pt-3 border-t border-border flex items-center justify-between text-xs">
+                  <span className="text-text-muted">
+                    Counter Quota Held: <strong className="text-text-primary">16 seats</strong>
                   </span>
-                  <span className="font-black gradient-text-gold text-sm">
+                  <span className="font-extrabold text-amber-500 text-sm">
                     ₹{(show.gross_collected || 54200).toLocaleString()} Collected
                   </span>
                 </div>
@@ -470,36 +470,36 @@ const PartnerDashboardPage = () => {
       {/* 5. MODAL: 1-CLICK DAILY COLLECTION REPORT (DCR) */}
       {isDcrModalOpen && (
         <div
-          className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setIsDcrModalOpen(false)}
         >
           <div
-            className="glass-panel p-6 sm:p-8 rounded-3xl max-w-2xl w-full border border-[#D4AF37]/40 shadow-2xl space-y-6 animate-scale-up"
+            className="bg-surface p-6 sm:p-8 rounded-3xl max-w-2xl w-full border border-border shadow-2xl space-y-6 animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 no-print">
+            <div className="flex items-center justify-between pb-3 border-b border-border no-print">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-[#D4AF37]/20 text-[#D4AF37] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                   <FileSpreadsheet className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-base text-white">Daily Collection Report (DCR)</h3>
-                  <p className="text-[10px] text-slate-400">Official Single-Screen Exhibitor & Distributor Statement</p>
+                  <h3 className="font-bold text-base text-text-primary">Daily Collection Report (DCR)</h3>
+                  <p className="text-[10px] text-text-muted">Official Single-Screen Exhibitor & Distributor Statement</p>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsDcrModalOpen(false)}
-                className="w-8 h-8 rounded-full glass-card flex items-center justify-center text-slate-400 hover:text-white text-xs cursor-pointer"
+                className="w-8 h-8 rounded-full bg-surface-elevated flex items-center justify-center text-text-muted hover:text-text-primary text-xs cursor-pointer border border-border"
               >
                 ✕
               </button>
             </div>
 
             {/* Printable Statement Document */}
-            <div className="bg-white text-slate-950 p-6 rounded-2xl shadow-inner font-mono text-xs space-y-4">
+            <div className="bg-white text-slate-950 p-6 rounded-2xl shadow-inner font-mono text-xs space-y-4 border border-slate-200">
               <div className="text-center border-b border-dashed border-slate-400 pb-3">
                 <h2 className="font-black text-base uppercase">SIVA CINEMAS 4K LASER — GUNTUR</h2>
                 <p className="text-[10px] text-slate-600">DAILY COLLECTION REPORT (DCR) • DATE: 02-SEP-2026</p>
@@ -568,7 +568,7 @@ const PartnerDashboardPage = () => {
               <button
                 type="button"
                 onClick={handlePrintDcr}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-glow-gold flex items-center gap-2 cursor-pointer"
+                className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-2 cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Print Official DCR</span>
@@ -582,3 +582,4 @@ const PartnerDashboardPage = () => {
 };
 
 export default PartnerDashboardPage;
+

@@ -44,18 +44,18 @@ const MoviesPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#090A0E] text-slate-100 py-10 transition-colors">
+    <div className="min-h-screen bg-background text-text-primary py-10 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#1E2332]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border">
           <div>
-            <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-accent uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" /> Cinema Catalog
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight mt-1">
               Movies in {selectedCity.name}
             </h1>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-text-muted mt-1">
               Browse now showing blockbuster releases, 4K Laser showtimes, and upcoming films
             </p>
           </div>
@@ -63,14 +63,14 @@ const MoviesPage = () => {
           {/* View Toggle Tabs & Search */}
           <div className="flex flex-col sm:flex-row items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="flex items-center p-1 bg-[#11141D] rounded-xl border border-[#1E2332]">
+            <div className="flex items-center p-1 bg-surface rounded-xl border border-border">
               <button
                 type="button"
                 onClick={() => setViewMode('CARDS')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'CARDS'
-                    ? 'bg-[#E50914] text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-accent text-white shadow-sm'
+                    : 'text-text-muted hover:text-text-primary'
                 }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
@@ -81,24 +81,24 @@ const MoviesPage = () => {
                 onClick={() => setViewMode('LIVE_FEED')}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   viewMode === 'LIVE_FEED'
-                    ? 'bg-[#181C28] text-[#F59E0B] border border-[#1E2332] shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-surface-elevated text-amber-500 border border-border shadow-sm'
+                    : 'text-text-muted hover:text-text-primary'
                 }`}
               >
-                <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <Radio className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
                 <span>Live Feed</span>
               </button>
             </div>
 
             {/* Search Bar */}
             <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search movies, cast, genres..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#11141D] rounded-xl text-xs text-white border border-[#1E2332] placeholder:text-slate-400 focus:outline-none focus:border-[#E50914] shadow-sm"
+                className="w-full pl-10 pr-4 py-2 bg-surface rounded-xl text-xs text-text-primary border border-border placeholder:text-text-muted focus:outline-none focus:border-accent shadow-sm"
               />
             </div>
           </div>
@@ -111,16 +111,16 @@ const MoviesPage = () => {
           /* Filter & Content Layout */
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pt-2">
             {/* Left Filter Sidebar */}
-            <div className="space-y-5 bg-[#11141D] rounded-xl border border-[#1E2332] p-5 h-fit shadow-sm">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1E2332]">
+            <div className="space-y-5 bg-surface rounded-xl border border-border p-5 h-fit shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[#E50914]" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">Filters</span>
+                  <SlidersHorizontal className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-bold text-text-primary uppercase tracking-wider">Filters</span>
                 </div>
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="flex items-center gap-1 text-[11px] font-bold text-slate-400 hover:text-[#E50914] transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-[11px] font-bold text-text-muted hover:text-accent transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset</span>
@@ -129,10 +129,10 @@ const MoviesPage = () => {
 
               {/* Release Status */}
               <div>
-                <label className="text-xs font-bold text-white block mb-2 uppercase tracking-wider">
+                <label className="text-xs font-bold text-text-primary block mb-2 uppercase tracking-wider">
                   Show Status
                 </label>
-                <div className="grid grid-cols-3 gap-1 p-1 bg-[#181C28] rounded-lg border border-[#1E2332]">
+                <div className="grid grid-cols-3 gap-1 p-1 bg-surface-elevated rounded-lg border border-border">
                   {['ALL', 'NOW_SHOWING', 'UPCOMING'].map((status) => (
                     <button
                       key={status}
@@ -140,8 +140,8 @@ const MoviesPage = () => {
                       onClick={() => setStatusFilter(status)}
                       className={`py-1.5 rounded-md text-[10px] font-bold transition-all cursor-pointer ${
                         statusFilter === status
-                          ? 'bg-[#E50914] text-white shadow-sm'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-accent text-white shadow-sm'
+                          : 'text-text-muted hover:text-text-primary'
                       }`}
                     >
                       {status === 'ALL' ? 'All' : status === 'NOW_SHOWING' ? 'Now' : 'Upcoming'}
@@ -152,7 +152,7 @@ const MoviesPage = () => {
 
               {/* Language Filter */}
               <div>
-                <label className="text-xs font-bold text-white block mb-2 uppercase tracking-wider">
+                <label className="text-xs font-bold text-text-primary block mb-2 uppercase tracking-wider">
                   Languages
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -163,8 +163,8 @@ const MoviesPage = () => {
                       onClick={() => setSelectedLanguage(lang)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer ${
                         selectedLanguage === lang
-                          ? 'bg-[#E50914] border-[#E50914] text-white'
-                          : 'bg-[#181C28] border-[#1E2332] text-slate-300 hover:border-slate-500'
+                          ? 'bg-accent border-accent text-white'
+                          : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
                       }`}
                     >
                       {lang}
@@ -175,7 +175,7 @@ const MoviesPage = () => {
 
               {/* Genre Filter */}
               <div>
-                <label className="text-xs font-bold text-white block mb-2 uppercase tracking-wider">
+                <label className="text-xs font-bold text-text-primary block mb-2 uppercase tracking-wider">
                   Genres
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -186,8 +186,8 @@ const MoviesPage = () => {
                       onClick={() => setSelectedGenre(g)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer ${
                         selectedGenre === g
-                          ? 'bg-[#E50914] border-[#E50914] text-white'
-                          : 'bg-[#181C28] border-[#1E2332] text-slate-300 hover:border-slate-500'
+                          ? 'bg-accent border-accent text-white'
+                          : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
                       }`}
                     >
                       {g}
@@ -198,7 +198,7 @@ const MoviesPage = () => {
 
               {/* Cinema Format */}
               <div>
-                <label className="text-xs font-bold text-white block mb-2 uppercase tracking-wider">
+                <label className="text-xs font-bold text-text-primary block mb-2 uppercase tracking-wider">
                   Format
                 </label>
                 <div className="flex flex-wrap gap-1.5">
@@ -209,8 +209,8 @@ const MoviesPage = () => {
                       onClick={() => setSelectedFormat(fmt)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border cursor-pointer ${
                         selectedFormat === fmt
-                          ? 'bg-[#E50914] border-[#E50914] text-white'
-                          : 'bg-[#181C28] border-[#1E2332] text-slate-300 hover:border-slate-500'
+                          ? 'bg-accent border-accent text-white'
+                          : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
                       }`}
                     >
                       {fmt}
@@ -223,35 +223,35 @@ const MoviesPage = () => {
             {/* Right Movies Grid */}
             <div className="lg:col-span-3">
               {/* Top Sort Bar */}
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#1E2332] text-xs">
-                <span className="text-slate-400 font-medium">
-                  Showing <strong className="text-white font-bold">{filteredMovies.length}</strong> Movies in {selectedCity.name}
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-border text-xs">
+                <span className="text-text-muted font-medium">
+                  Showing <strong className="text-text-primary font-bold">{filteredMovies.length}</strong> Movies in {selectedCity.name}
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-medium">Sort:</span>
+                  <span className="text-text-muted font-medium">Sort:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="bg-[#11141D] border border-[#1E2332] rounded-lg px-3 py-1.5 text-white text-xs focus:outline-none focus:border-[#E50914] shadow-sm font-medium"
+                    className="bg-surface border border-border rounded-lg px-3 py-1.5 text-text-primary text-xs focus:outline-none focus:border-accent shadow-sm font-medium"
                   >
-                    <option value="rating" className="bg-[#11141D] text-white">Top Rated ★</option>
-                    <option value="newest" className="bg-[#11141D] text-white">Release Date (Newest)</option>
-                    <option value="title" className="bg-[#11141D] text-white">Alphabetical (A-Z)</option>
+                    <option value="rating" className="bg-surface text-text-primary">Top Rated ★</option>
+                    <option value="newest" className="bg-surface text-text-primary">Release Date (Newest)</option>
+                    <option value="title" className="bg-surface text-text-primary">Alphabetical (A-Z)</option>
                   </select>
                 </div>
               </div>
 
               {/* Grid */}
               {filteredMovies.length === 0 ? (
-                <div className="py-16 text-center bg-[#11141D] rounded-xl border border-[#1E2332]">
-                  <Film className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-                  <h3 className="text-base font-bold text-white">No movies found</h3>
-                  <p className="text-xs text-slate-400 mt-1">Try resetting your filter selection</p>
+                <div className="py-16 text-center bg-surface rounded-xl border border-border">
+                  <Film className="w-12 h-12 text-text-muted mx-auto mb-2 opacity-50" />
+                  <h3 className="text-base font-bold text-text-primary">No movies found</h3>
+                  <p className="text-xs text-text-muted mt-1">Try resetting your filter selection</p>
                   <button
                     type="button"
                     onClick={resetFilters}
-                    className="mt-4 px-5 py-2 rounded-lg bg-[#E50914] hover:bg-[#B80710] text-xs font-bold text-white shadow-sm cursor-pointer"
+                    className="mt-4 px-5 py-2 rounded-lg bg-accent hover:bg-accent-hover text-xs font-bold text-white shadow-sm cursor-pointer"
                   >
                     Reset Filters
                   </button>

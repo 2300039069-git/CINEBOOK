@@ -8,36 +8,46 @@ export const THEMES = {
     name: 'Midnight Obsidian',
     icon: '🌙',
     description: 'Executive Void Obsidian, Champagne Gold & Cinema Crimson',
-    bg: '#080B10',
-    surface: '#0F1523',
-    card: '#0F1523',
-    elevated: '#172033',
-    border: '#1E293B',
+    bg: '#07090E',
+    surface: '#0E121B',
+    card: '#111622',
+    elevated: '#161D2C',
+    hover: '#1D2638',
+    subtle: '#0A0D14',
+    border: '#1C2436',
+    borderSubtle: '#141A28',
     borderHover: '#D4AF37',
     accent: '#D4AF37',
     accentCrimson: '#E50914',
     accentGradient: 'from-[#D4AF37] via-amber-500 to-yellow-600',
     primary: '#E50914',
+    primaryHover: '#CC0812',
+    gold: '#D4AF37',
     text: '#F8FAFC',
-    textSecondary: '#CBD5E1',
-    textMuted: '#94A3B8'
+    textSecondary: '#94A3B8',
+    textMuted: '#64748B'
   },
   LUXE_WHITE: {
     id: 'luxe-white',
     name: 'Daylight Porcelain',
     icon: '☀️',
     description: 'Ultra-clean porcelain white, titanium cards & high-contrast clarity',
-    bg: '#F4F6FA',
+    bg: '#F6F8FB',
     surface: '#FFFFFF',
     card: '#FFFFFF',
-    elevated: '#F1F5F9',
+    elevated: '#F0F3F8',
+    hover: '#E7EDF5',
+    subtle: '#F8FAFD',
     border: '#E2E8F0',
+    borderSubtle: '#EDF2F7',
     borderHover: '#D4AF37',
-    accent: '#D97706',
+    accent: '#B45309',
     accentCrimson: '#E50914',
     accentGradient: 'from-amber-600 via-yellow-600 to-amber-700',
     primary: '#E50914',
-    text: '#0F172A',
+    primaryHover: '#CC0812',
+    gold: '#B45309',
+    text: '#090D16',
     textSecondary: '#334155',
     textMuted: '#64748B'
   }
@@ -71,11 +81,16 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--theme-surface', themeObj.surface);
     root.style.setProperty('--theme-card', themeObj.card);
     root.style.setProperty('--theme-elevated', themeObj.elevated || themeObj.surface);
+    root.style.setProperty('--theme-hover', themeObj.hover || themeObj.surface);
+    root.style.setProperty('--theme-subtle', themeObj.subtle || themeObj.bg);
     root.style.setProperty('--theme-border', themeObj.border);
+    root.style.setProperty('--theme-border-subtle', themeObj.borderSubtle || themeObj.border);
     root.style.setProperty('--theme-border-hover', themeObj.borderHover || '#D4AF37');
     root.style.setProperty('--theme-accent', themeObj.accent);
     root.style.setProperty('--theme-crimson', themeObj.accentCrimson || '#E50914');
     root.style.setProperty('--theme-primary', themeObj.primary);
+    root.style.setProperty('--theme-primary-hover', themeObj.primaryHover || '#CC0812');
+    root.style.setProperty('--theme-gold', themeObj.gold || themeObj.accent);
     root.style.setProperty('--theme-text', themeObj.text);
     root.style.setProperty('--theme-text-primary', themeObj.text);
     root.style.setProperty('--theme-text-secondary', themeObj.textSecondary);

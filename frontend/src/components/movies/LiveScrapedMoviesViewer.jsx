@@ -127,12 +127,12 @@ export default function LiveScrapedMoviesViewer({ city }) {
 
   if (loading) {
     return (
-      <div className="p-10 bg-[#0F1523]/80 rounded-3xl text-center space-y-3 animate-pulse border border-[#1E293B] text-[#F8FAFC]">
-        <Film className="w-10 h-10 text-[#D4AF37] mx-auto animate-bounce" />
-        <h3 className="text-base font-black text-white">
+      <div className="p-10 bg-surface rounded-3xl text-center space-y-3 animate-pulse border border-border text-text-primary shadow-card">
+        <Film className="w-10 h-10 text-gold mx-auto animate-bounce" />
+        <h3 className="text-base font-black text-text-primary">
           Loading Live Showtimes for {activeCity.toUpperCase()}...
         </h3>
-        <p className="text-xs text-[#94A3B8]">Connecting to cinema theatre schedule engines</p>
+        <p className="text-xs text-text-muted">Connecting to cinema theatre schedule engines</p>
       </div>
     );
   }
@@ -141,27 +141,27 @@ export default function LiveScrapedMoviesViewer({ city }) {
 
   if (moviesList.length === 0) {
     return (
-      <div className="p-8 bg-[#0F1523]/80 rounded-3xl text-center space-y-2 border border-[#1E293B] text-[#F8FAFC]">
-        <AlertCircle className="w-8 h-8 text-[#D4AF37] mx-auto" />
-        <h3 className="text-sm font-black text-white">No movies found for {activeCity.toUpperCase()}</h3>
-        <p className="text-xs text-[#94A3B8]">Run the scraper to extract fresh city showtimes</p>
+      <div className="p-8 bg-surface rounded-3xl text-center space-y-2 border border-border text-text-primary shadow-card">
+        <AlertCircle className="w-8 h-8 text-gold mx-auto" />
+        <h3 className="text-sm font-black text-text-primary">No movies found for {activeCity.toUpperCase()}</h3>
+        <p className="text-xs text-text-muted">Run the scraper to extract fresh city showtimes</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in text-[#F8FAFC]">
+    <div className="space-y-6 animate-fade-in text-text-primary">
       {/* Top Header Strip */}
-      <div className="flex items-center justify-between p-4.5 bg-[#0F1523]/90 rounded-2xl border border-[#1E293B] shadow-xl">
+      <div className="flex items-center justify-between p-4.5 bg-surface rounded-2xl border border-border shadow-card">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] flex items-center justify-center text-black shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-gold to-amber-500 flex items-center justify-center text-black shadow-md">
             <Sparkles className="w-4 h-4 text-black" />
           </div>
           <div>
-            <h3 className="text-sm font-black text-white">
+            <h3 className="text-sm font-black text-text-primary">
               Live Verified Showtimes in {data?.cityName || activeCity.toUpperCase()}
             </h3>
-            <p className="text-[11px] text-[#94A3B8]">
+            <p className="text-[11px] text-text-muted">
               {moviesList.length} Movies Screening Across {data?.totalTheatres || 7} Theatres
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function LiveScrapedMoviesViewer({ city }) {
 
         <button
           onClick={() => { setRefreshing(true); fetchCityMovies(activeCity); }}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#080B10] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-black text-[#D4AF37] transition-all cursor-pointer shadow-sm"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-elevated border border-border hover:border-gold text-xs font-black text-gold transition-all cursor-pointer shadow-sm"
         >
           <RotateCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           <span>Refresh Feed</span>
@@ -188,33 +188,33 @@ export default function LiveScrapedMoviesViewer({ city }) {
           return (
             <div
               key={movie?.slug || `${title}-${mIdx}`}
-              className="p-6 rounded-3xl bg-[#0F1523]/90 space-y-5 border border-[#1E293B] hover:border-[#D4AF37]/40 transition-all shadow-xl"
+              className="p-6 rounded-3xl bg-surface space-y-5 border border-border hover:border-gold/40 transition-all shadow-card"
             >
               {/* Movie Title & Format Strip */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#1E293B]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-border">
                 <div>
-                  <h4 className="text-xl font-black text-white font-display flex items-center gap-2">
+                  <h4 className="text-xl font-black text-text-primary font-display flex items-center gap-2">
                     {title}
-                    <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                       ★ {rating}
                     </span>
                   </h4>
-                  <p className="text-xs text-[#94A3B8] mt-1 flex items-center gap-2 font-medium">
-                    <span className="font-bold text-white">{language}</span>
+                  <p className="text-xs text-text-muted mt-1 flex items-center gap-2 font-medium">
+                    <span className="font-bold text-text-primary">{language}</span>
                     <span>•</span>
-                    <span className="text-[#D4AF37]">{formats}</span>
+                    <span className="text-gold">{formats}</span>
                   </p>
                 </div>
 
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#E50914] bg-[#E50914]/10 px-3 py-1 rounded-full border border-[#E50914]/20 self-start sm:self-auto">
+                <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20 self-start sm:self-auto">
                   Instant Seat Lock Active
                 </span>
               </div>
 
               {/* Theatres & Showtimes List */}
               <div className="space-y-4">
-                <h5 className="text-xs font-black uppercase tracking-wider text-[#94A3B8] flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-[#D4AF37]" /> Screening Theatres in {data?.cityName || activeCity}:
+                <h5 className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-gold" /> Screening Theatres in {data?.cityName || activeCity}:
                 </h5>
 
                 <div className="grid grid-cols-1 gap-3.5">
@@ -231,12 +231,12 @@ export default function LiveScrapedMoviesViewer({ city }) {
                     return (
                       <div
                         key={idx}
-                        className="p-4.5 rounded-2xl bg-[#080B10] space-y-3 hover:border-[#D4AF37]/40 transition-all border border-[#1E293B] shadow-sm"
+                        className="p-4.5 rounded-2xl bg-surface-elevated space-y-3 hover:border-gold/40 transition-all border border-border shadow-sm"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                          <strong className="text-xs font-black text-white">{thName}</strong>
-                          <span className="text-[11px] text-[#94A3B8] flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-[#D4AF37]" /> {thLoc}
+                          <strong className="text-xs font-black text-text-primary">{thName}</strong>
+                          <span className="text-[11px] text-text-muted flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-gold" /> {thLoc}
                           </span>
                         </div>
 
@@ -257,10 +257,10 @@ export default function LiveScrapedMoviesViewer({ city }) {
                                 onClick={() => handleSelectShowtime(movie, th, st)}
                                 className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border shadow-sm transform hover:scale-105 active:scale-95 ${
                                   isAlmostFull
-                                    ? 'bg-[#E50914]/20 hover:bg-[#E50914]/30 border-[#E50914] text-red-300'
+                                    ? 'bg-primary/15 hover:bg-primary/25 border-primary text-primary'
                                     : isFillingFast
-                                    ? 'bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 border-[#D4AF37] text-[#D4AF37]'
-                                    : 'bg-emerald-500/20 hover:bg-emerald-500/30 border-emerald-500 text-emerald-300'
+                                    ? 'bg-gold/15 hover:bg-gold/25 border-gold text-gold'
+                                    : 'bg-emerald-500/15 hover:bg-emerald-500/25 border-emerald-500 text-emerald-600 dark:text-emerald-400'
                                 }`}
                                 title="Click to select seats"
                               >

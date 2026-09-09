@@ -47,51 +47,51 @@ const PartnerLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#080B10] text-[#F8FAFC] flex flex-col md:flex-row transition-colors">
+    <div className="min-h-screen bg-background text-text-primary flex flex-col md:flex-row transition-colors">
       {/* 1. PARTNER SIDEBAR */}
-      <aside className="w-full md:w-72 bg-[#0F1523] border-r border-[#1E293B] flex flex-col justify-between p-5 space-y-6 flex-shrink-0">
+      <aside className="w-full md:w-72 bg-surface border-r border-border flex flex-col justify-between p-5 space-y-6 flex-shrink-0">
         <div className="space-y-6">
           {/* Exhibitor Brand Header */}
           <div className="flex items-center justify-between">
             <Link to="/partner" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] flex items-center justify-center text-black shadow-glow-gold group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 flex items-center justify-center text-black shadow-sm group-hover:scale-105 transition-transform">
                 <Store className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-xl font-black text-white font-display leading-none block">
-                  PARTNER<span className="text-[#D4AF37]">.</span>
+                <span className="text-xl font-extrabold text-text-primary tracking-tight leading-none block">
+                  PARTNER<span className="text-amber-500">.</span>
                 </span>
-                <span className="text-[10px] font-black tracking-widest text-[#94A3B8] uppercase">
+                <span className="text-[10px] font-bold tracking-widest text-text-muted uppercase">
                   Exhibitor Portal
                 </span>
               </div>
             </Link>
 
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase border border-emerald-500/30">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase border border-emerald-500/20">
               Verified
             </span>
           </div>
 
           {/* Active Cinema Switcher Dropdown */}
           <div className="relative">
-            <label className="text-[10px] font-black uppercase tracking-wider text-[#94A3B8] block mb-1">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted block mb-1">
               Active Multiplex / Cinema
             </label>
             <button
               onClick={() => setIsTheatreDropdownOpen(!isTheatreDropdownOpen)}
-              className="w-full p-3 rounded-2xl bg-[#080B10] border border-[#1E293B] flex items-center justify-between text-left hover:border-[#D4AF37] transition-all group cursor-pointer"
+              className="w-full p-3 rounded-2xl bg-surface-elevated border border-border flex items-center justify-between text-left hover:border-amber-500 transition-all group cursor-pointer"
             >
               <div className="min-w-0 flex-1">
-                <h4 className="text-xs font-black text-white truncate">{activeTheatre.name}</h4>
-                <p className="text-[10px] text-[#94A3B8] capitalize">{activeTheatre.city} • Single-Screen 4K Laser</p>
+                <h4 className="text-xs font-bold text-text-primary truncate">{activeTheatre.name}</h4>
+                <p className="text-[10px] text-text-muted capitalize">{activeTheatre.city} • Single-Screen 4K Laser</p>
               </div>
-              <ChevronDown className={`w-4 h-4 text-[#94A3B8] transition-transform ${isTheatreDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-text-muted transition-transform ${isTheatreDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Options */}
             {isTheatreDropdownOpen && (
-              <div className="absolute left-0 right-0 mt-2 p-2 bg-[#0F1523] border border-[#1E293B] rounded-2xl shadow-2xl space-y-1 z-50 animate-fade-in">
-                <p className="text-[10px] font-bold text-[#94A3B8] px-2 py-1 uppercase">Switch Managed Theatre</p>
+              <div className="absolute left-0 right-0 mt-2 p-2 bg-surface border border-border rounded-2xl shadow-xl space-y-1 z-50 animate-fade-in">
+                <p className="text-[10px] font-bold text-text-muted px-2 py-1 uppercase">Switch Managed Theatre</p>
                 {THEATRES.slice(0, 6).map((t) => (
                   <button
                     key={t.id}
@@ -101,8 +101,8 @@ const PartnerLayout = () => {
                     }}
                     className={`w-full text-left p-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
                       activeTheatreId === t.id
-                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black shadow-sm font-black'
-                        : 'text-slate-300 hover:bg-[#172033]'
+                        ? 'bg-amber-500 text-black shadow-sm font-extrabold'
+                        : 'text-text-secondary hover:bg-surface-elevated'
                     }`}
                   >
                     <span className="truncate">{t.name}</span>
@@ -123,10 +123,10 @@ const PartnerLayout = () => {
                   to={item.to}
                   end={item.exact}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-black transition-all ${
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black shadow-glow-gold'
-                        : 'text-[#94A3B8] hover:bg-[#172033] hover:text-white'
+                        ? 'bg-amber-500 text-black shadow-sm'
+                        : 'text-text-muted hover:bg-surface-elevated hover:text-text-primary'
                     }`
                   }
                 >
@@ -139,22 +139,22 @@ const PartnerLayout = () => {
         </div>
 
         {/* Bottom Status & Actions */}
-        <div className="space-y-3 pt-4 border-t border-[#1E293B]">
-          <div className="p-3.5 rounded-2xl bg-[#080B10] border border-[#1E293B] text-xs space-y-1">
+        <div className="space-y-3 pt-4 border-t border-border">
+          <div className="p-3.5 rounded-2xl bg-surface-elevated border border-border text-xs space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-[#94A3B8] uppercase">T+1 Payout Status</span>
-              <span className="text-[10px] font-black text-emerald-400 flex items-center gap-1">
+              <span className="text-[10px] font-bold text-text-muted uppercase">T+1 Payout Status</span>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" /> Auto-Settling
               </span>
             </div>
-            <p className="text-xs font-black text-[#D4AF37]">SBI (A/C: ****29481)</p>
-            <p className="text-[10px] text-[#94A3B8]">Next payout: Tomorrow, 09:00 AM</p>
+            <p className="text-xs font-bold text-amber-500">SBI (A/C: ****29481)</p>
+            <p className="text-[10px] text-text-muted">Next payout: Tomorrow, 09:00 AM</p>
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               to="/"
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#080B10] border border-[#1E293B] text-[#94A3B8] hover:text-white text-xs font-bold transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-surface-elevated border border-border text-text-muted hover:text-text-primary text-xs font-bold transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Customer App</span>
@@ -162,7 +162,7 @@ const PartnerLayout = () => {
 
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-black transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-500 text-xs font-bold transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Log Out</span>
@@ -174,19 +174,19 @@ const PartnerLayout = () => {
       {/* 2. MAIN PARTNER CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         {/* Top Navbar */}
-        <header className="h-18 bg-[#0F1523]/80 border-b border-[#1E293B] px-6 flex items-center justify-between gap-4 sticky top-0 z-30 backdrop-blur-xl">
+        <header className="h-18 bg-surface/90 border-b border-border px-6 flex items-center justify-between gap-4 sticky top-0 z-30 backdrop-blur-xl">
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
             <div>
-              <h2 className="text-sm font-black text-white">{activeTheatre.name} Partner Desk</h2>
-              <p className="text-[11px] text-[#94A3B8] capitalize">{activeTheatre.city}, AP • Live Online Ticketing Active</p>
+              <h2 className="text-sm font-bold text-text-primary">{activeTheatre.name} Partner Desk</h2>
+              <p className="text-[11px] text-text-muted capitalize">{activeTheatre.city}, AP • Live Online Ticketing Active</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/partner/counter-pos"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black font-black text-xs shadow-glow-gold transition-all transform hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shadow-sm transition-all transform hover:scale-105"
             >
               <Printer className="w-4 h-4 text-black" />
               <span>Counter POS</span>
@@ -194,7 +194,7 @@ const PartnerLayout = () => {
 
             <Link
               to="/partner/scanner"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#E50914] to-[#B80710] hover:from-[#B80710] hover:to-[#E50914] text-white text-xs font-black shadow-glow-crimson transition-all transform hover:scale-105"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm transition-all transform hover:scale-105"
             >
               <QrCode className="w-4 h-4" />
               <span>Gatekeeper Scanner</span>
@@ -202,9 +202,9 @@ const PartnerLayout = () => {
 
             <Link
               to="/partner/shows"
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#080B10] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-bold text-white transition-all"
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-elevated border border-border hover:border-amber-500 text-xs font-bold text-text-primary transition-all"
             >
-              <Plus className="w-4 h-4 text-[#D4AF37]" />
+              <Plus className="w-4 h-4 text-amber-500" />
               <span>Schedule Show</span>
             </Link>
           </div>
@@ -220,3 +220,4 @@ const PartnerLayout = () => {
 };
 
 export default PartnerLayout;
+

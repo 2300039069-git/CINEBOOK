@@ -217,35 +217,35 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 bg-[#090A0E] text-slate-100">
+    <div className="min-h-screen py-10 bg-background text-text-primary transition-colors">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 1. SEAT LOCK COUNTDOWN BANNER */}
-        <div className="p-4 sm:p-5 rounded-xl bg-[#11141D] border border-[#1E2332] flex items-center justify-between shadow-sm">
+        <div className="p-4 sm:p-5 rounded-xl bg-surface border border-border flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-[#E50914]/10 text-[#E50914]">
-              <Clock className="w-5 h-5 text-[#E50914]" />
+            <div className="p-2.5 rounded-lg bg-accent/10 text-accent">
+              <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
                 Atomic Seat Lock Active
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-text-muted mt-0.5">
                 Seats are securely locked for your session. Complete payment to generate instant digital pass with QR ticket.
               </p>
             </div>
           </div>
 
           <div className="text-right flex-shrink-0">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Time Remaining</span>
-            <span className="text-lg sm:text-xl font-mono font-extrabold text-[#E50914]">
+            <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Time Remaining</span>
+            <span className="text-lg sm:text-xl font-mono font-extrabold text-accent">
               {formatTimer(secondsLeft)}
             </span>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
@@ -255,40 +255,40 @@ const CheckoutPage = () => {
           {/* Left 2 Cols: Contact & Payment Gateway Selection */}
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Details */}
-            <div className="p-5 sm:p-6 bg-[#11141D] rounded-xl space-y-4 border border-[#1E2332]">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" /> Ticket Delivery Details
+            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 border border-border">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ticket Delivery Details
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-1">Email Address (E-Ticket & QR)</label>
+                  <label className="text-xs font-semibold text-text-muted block mb-1">Email Address (E-Ticket & QR)</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#181C28] border border-[#1E2332] rounded-lg text-xs text-white font-medium focus:outline-none focus:border-[#E50914]"
+                    className="w-full px-3.5 py-2.5 bg-surface-elevated border border-border rounded-lg text-xs text-text-primary font-medium focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-400 block mb-1">Mobile Number (SMS WhatsApp Pass)</label>
+                  <label className="text-xs font-semibold text-text-muted block mb-1">Mobile Number (SMS WhatsApp Pass)</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#181C28] border border-[#1E2332] rounded-lg text-xs text-white font-medium focus:outline-none focus:border-[#E50914]"
+                    className="w-full px-3.5 py-2.5 bg-surface-elevated border border-border rounded-lg text-xs text-text-primary font-medium focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
             </div>
 
             {/* Payment Gateway Options */}
-            <div className="p-5 sm:p-6 bg-[#11141D] rounded-xl space-y-4 border border-[#1E2332]">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1E2332]">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-[#E50914]" /> Payment Options
+            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 border border-border">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-accent" /> Payment Options
                 </h2>
-                <span className="text-xs text-emerald-400 font-medium flex items-center gap-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" /> 256-Bit SSL Encrypted
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" /> 256-Bit SSL Encrypted
                 </span>
               </div>
 
@@ -299,18 +299,18 @@ const CheckoutPage = () => {
                   onClick={() => setPaymentMethod('RAZORPAY')}
                   className={`p-4 rounded-xl border text-left transition-all cursor-pointer relative ${
                     paymentMethod === 'RAZORPAY'
-                      ? 'bg-[#181C28] border-[#E50914] shadow-sm'
-                      : 'bg-[#181C28] border-[#1E2332] hover:border-slate-500'
+                      ? 'bg-surface-elevated border-accent shadow-sm'
+                      : 'bg-surface-elevated border-border hover:border-accent/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <p className="text-xs font-bold text-text-primary flex items-center gap-1.5">
                       <span>Razorpay Fast Checkout</span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#E50914]/10 text-[#E50914] text-[9px] font-bold uppercase">Popular</span>
+                      <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent text-[9px] font-bold uppercase">Popular</span>
                     </p>
-                    {paymentMethod === 'RAZORPAY' && <Check className="w-4 h-4 text-[#E50914]" />}
+                    {paymentMethod === 'RAZORPAY' && <Check className="w-4 h-4 text-accent" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">UPI, Google Pay, PhonePe, Cards, NetBanking</p>
+                  <p className="text-[11px] text-text-muted mt-1">UPI, Google Pay, PhonePe, Cards, NetBanking</p>
                 </button>
 
                 {/* 2. Instant UPI Fast Track */}
@@ -319,18 +319,18 @@ const CheckoutPage = () => {
                   onClick={() => setPaymentMethod('UPI_INSTANT')}
                   className={`p-4 rounded-xl border text-left transition-all cursor-pointer relative ${
                     paymentMethod === 'UPI_INSTANT'
-                      ? 'bg-[#181C28] border-[#F59E0B] shadow-sm'
-                      : 'bg-[#181C28] border-[#1E2332] hover:border-slate-500'
+                      ? 'bg-surface-elevated border-amber-500 shadow-sm'
+                      : 'bg-surface-elevated border-border hover:border-accent/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-white flex items-center gap-1.5">
-                      <QrCode className="w-4 h-4 text-[#F59E0B]" />
+                    <p className="text-xs font-bold text-text-primary flex items-center gap-1.5">
+                      <QrCode className="w-4 h-4 text-amber-500" />
                       <span>Instant UPI QR</span>
                     </p>
-                    {paymentMethod === 'UPI_INSTANT' && <Check className="w-4 h-4 text-[#F59E0B]" />}
+                    {paymentMethod === 'UPI_INSTANT' && <Check className="w-4 h-4 text-amber-500" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Direct QR scan & fast UPI payment confirmation</p>
+                  <p className="text-[11px] text-text-muted mt-1">Direct QR scan & fast UPI payment confirmation</p>
                 </button>
 
                 {/* 3. Cards */}
@@ -339,15 +339,15 @@ const CheckoutPage = () => {
                   onClick={() => setPaymentMethod('CARD')}
                   className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                     paymentMethod === 'CARD'
-                      ? 'bg-[#181C28] border-[#E50914]'
-                      : 'bg-[#181C28] border-[#1E2332] hover:border-slate-500'
+                      ? 'bg-surface-elevated border-accent'
+                      : 'bg-surface-elevated border-border hover:border-accent/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-white">Credit / Debit Cards</p>
-                    {paymentMethod === 'CARD' && <Check className="w-4 h-4 text-[#E50914]" />}
+                    <p className="text-xs font-bold text-text-primary">Credit / Debit Cards</p>
+                    {paymentMethod === 'CARD' && <Check className="w-4 h-4 text-accent" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">Visa, MasterCard, RuPay, Corporate Amex</p>
+                  <p className="text-[11px] text-text-muted mt-1">Visa, MasterCard, RuPay, Corporate Amex</p>
                 </button>
 
                 {/* 4. NetBanking */}
@@ -356,70 +356,70 @@ const CheckoutPage = () => {
                   onClick={() => setPaymentMethod('NETBANKING')}
                   className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
                     paymentMethod === 'NETBANKING'
-                      ? 'bg-[#181C28] border-[#F59E0B]'
-                      : 'bg-[#181C28] border-[#1E2332] hover:border-slate-500'
+                      ? 'bg-surface-elevated border-amber-500'
+                      : 'bg-surface-elevated border-border hover:border-accent/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-white">Net Banking</p>
-                    {paymentMethod === 'NETBANKING' && <Check className="w-4 h-4 text-[#F59E0B]" />}
+                    <p className="text-xs font-bold text-text-primary">Net Banking</p>
+                    {paymentMethod === 'NETBANKING' && <Check className="w-4 h-4 text-amber-500" />}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">SBI, HDFC, ICICI, Axis, Kotak & 50+ Banks</p>
+                  <p className="text-[11px] text-text-muted mt-1">SBI, HDFC, ICICI, Axis, Kotak & 50+ Banks</p>
                 </button>
               </div>
 
               {/* Gateway Indicator */}
-              <div className="p-3 rounded-lg bg-[#181C28] border border-[#1E2332] flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-slate-400">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  <span>Razorpay Status: <strong className="text-emerald-400">{razorpayLoaded ? 'Online' : 'Initializing...'}</strong></span>
+              <div className="p-3 rounded-lg bg-surface-elevated border border-border flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-text-muted">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span>Razorpay Status: <strong className="text-emerald-500">{razorpayLoaded ? 'Online' : 'Initializing...'}</strong></span>
                 </div>
-                <span className="text-[11px] text-slate-400">T+1 Exhibitor Settlement</span>
+                <span className="text-[11px] text-text-muted">T+1 Exhibitor Settlement</span>
               </div>
             </div>
           </div>
 
           {/* Right: Booking Summary Card */}
           <div className="space-y-4">
-            <div className="p-5 sm:p-6 bg-[#11141D] rounded-xl space-y-4 h-fit border border-[#1E2332] shadow-sm">
+            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 h-fit border border-border shadow-sm">
               {/* Mini Movie Header */}
-              <div className="flex items-start gap-3 pb-3.5 border-b border-[#1E2332]">
+              <div className="flex items-start gap-3 pb-3.5 border-b border-border">
                 <img
                   src={movie.posterUrl}
                   alt={movie.title}
-                  className="w-14 h-20 rounded-lg object-cover border border-[#1E2332] flex-shrink-0"
+                  className="w-14 h-20 rounded-lg object-cover border border-border flex-shrink-0"
                 />
                 <div>
-                  <h3 className="text-sm font-bold text-white leading-tight">{movie.title}</h3>
-                  <p className="text-xs text-[#F59E0B] font-semibold mt-0.5">{theatre.name}</p>
-                  <span className="inline-block mt-1 px-2 py-0.5 rounded bg-[#181C28] border border-[#1E2332] text-[10px] font-medium text-slate-300">
+                  <h3 className="text-sm font-bold text-text-primary leading-tight">{movie.title}</h3>
+                  <p className="text-xs text-amber-500 font-semibold mt-0.5">{theatre.name}</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded bg-surface-elevated border border-border text-[10px] font-medium text-text-secondary">
                     {show.format || '2D Dolby Atmos'} • {show.time || '11:00 AM'}
                   </span>
                 </div>
               </div>
 
               {/* Itemized Bill */}
-              <div className="space-y-2 text-xs text-slate-300">
+              <div className="space-y-2 text-xs text-text-secondary">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Seats ({seats.length})</span>
-                  <span className="font-mono font-bold text-[#E50914]">{seats.map((s) => s.id).join(', ')}</span>
+                  <span className="text-text-muted">Seats ({seats.length})</span>
+                  <span className="font-mono font-bold text-accent">{seats.map((s) => s.id).join(', ')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Ticket Base Price</span>
-                  <span className="font-semibold text-white">₹{baseAmount || (finalTotal - 59)}</span>
+                  <span className="text-text-muted">Ticket Base Price</span>
+                  <span className="font-semibold text-text-primary">₹{baseAmount || (finalTotal - 59)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Convenience Fee</span>
-                  <span className="font-semibold text-white">₹{convenienceFee || 50}</span>
+                  <span className="text-text-muted">Convenience Fee</span>
+                  <span className="font-semibold text-text-primary">₹{convenienceFee || 50}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">GST (18%)</span>
-                  <span className="font-semibold text-white">₹{taxes || 9}</span>
+                  <span className="text-text-muted">GST (18%)</span>
+                  <span className="font-semibold text-text-primary">₹{taxes || 9}</span>
                 </div>
 
-                <div className="pt-3 border-t border-[#1E2332] flex justify-between items-center text-sm font-bold">
-                  <span className="text-white">Total Payable</span>
-                  <span className="text-xl text-[#F59E0B] font-extrabold">₹{finalTotal}</span>
+                <div className="pt-3 border-t border-border flex justify-between items-center text-sm font-bold">
+                  <span className="text-text-primary">Total Payable</span>
+                  <span className="text-xl text-amber-500 font-extrabold">₹{finalTotal}</span>
                 </div>
               </div>
 
@@ -428,7 +428,7 @@ const CheckoutPage = () => {
                 type="button"
                 onClick={handlePayNow}
                 disabled={processing || isSubmitting}
-                className="w-full py-3.5 rounded-lg bg-[#E50914] hover:bg-[#B80710] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-sm"
+                className="w-full py-3.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-sm"
               >
                 {isSubmitting ? (
                   <>
@@ -444,10 +444,10 @@ const CheckoutPage = () => {
               </button>
 
               <div className="pt-1 text-center space-y-1">
-                <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> 100% Instant Refund Guarantee
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-text-muted">
                   Cancel anytime before showtime for automated bank credit.
                 </p>
               </div>
@@ -458,45 +458,45 @@ const CheckoutPage = () => {
 
       {/* --- PAYMENT PROCESSING MODAL --- */}
       {processing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="max-w-md w-full bg-[#11141D] rounded-2xl p-7 text-center space-y-5 border border-[#1E2332] shadow-2xl text-slate-100">
-            <div className="w-14 h-14 rounded-2xl bg-[#E50914] flex items-center justify-center mx-auto text-white shadow-lg">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="max-w-md w-full bg-surface rounded-2xl p-7 text-center space-y-5 border border-border shadow-2xl text-text-primary">
+            <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mx-auto text-white shadow-lg">
               <CreditCard className="w-7 h-7 text-white" />
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-text-primary">
                 Processing Secure Payment
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-text-muted">
                 Confirming with Razorpay & Bank Payment Gateways...
               </p>
             </div>
 
             <div className="space-y-2.5 text-xs text-left">
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-[#181C28] border border-[#1E2332]">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 1 ? 'bg-emerald-500 text-white' : 'bg-[#1E2332] text-slate-400'
+                  processingStep >= 1 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
                 }`}>✓</span>
-                <span className={processingStep >= 1 ? 'text-white font-medium' : 'text-slate-400'}>
+                <span className={processingStep >= 1 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Verifying 256-Bit SSL Payment Token...
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-[#181C28] border border-[#1E2332]">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 2 ? 'bg-emerald-500 text-white' : 'bg-[#1E2332] text-slate-400'
+                  processingStep >= 2 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
                 }`}>✓</span>
-                <span className={processingStep >= 2 ? 'text-white font-medium' : 'text-slate-400'}>
+                <span className={processingStep >= 2 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Securing Confirmed Seats in Database...
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-[#181C28] border border-[#1E2332]">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 3 ? 'bg-emerald-500 text-white' : 'bg-[#1E2332] text-slate-400'
+                  processingStep >= 3 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
                 }`}>✓</span>
-                <span className={processingStep >= 3 ? 'text-white font-medium' : 'text-slate-400'}>
+                <span className={processingStep >= 3 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Generating Digital Pass with Signed QR Code...
                 </span>
               </div>

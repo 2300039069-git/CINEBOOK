@@ -14,23 +14,23 @@ const TheatreShowtimesCard = ({
   const [selectedSlot, setSelectedSlot] = useState(timeSlots[0]);
 
   return (
-    <div className="p-5 sm:p-6 rounded-xl bg-[#11141D] border border-[#1E2332] hover:border-slate-600 transition-all space-y-4 shadow-sm text-slate-200">
+    <div className="p-5 sm:p-6 rounded-xl bg-surface border border-border hover:border-text-muted transition-all space-y-4 shadow-sm text-text-primary">
       {/* Header: Venue name & Price Range */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#1E2332]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-border">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">{theatreName}</h3>
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <h3 className="text-base sm:text-lg font-bold text-text-primary tracking-tight">{theatreName}</h3>
           </div>
-          <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-1">
-            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+          <p className="text-xs text-text-muted flex items-center gap-1.5 mt-1">
+            <MapPin className="w-3.5 h-3.5 text-text-muted" />
             <span>{address}</span>
           </p>
         </div>
 
         <div className="sm:text-right">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Starting Price</span>
-          <span className="text-sm font-extrabold text-[#F59E0B]">{priceRange}</span>
+          <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Starting Price</span>
+          <span className="text-sm font-extrabold text-gold">{priceRange}</span>
         </div>
       </div>
 
@@ -38,7 +38,7 @@ const TheatreShowtimesCard = ({
       {amenities && amenities.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           {amenities.map((item, idx) => (
-            <span key={idx} className="px-2.5 py-0.5 rounded-md bg-[#181C28] text-slate-300 border border-[#1E2332] text-[11px] font-medium">
+            <span key={idx} className="px-2.5 py-0.5 rounded-md bg-surface-elevated text-text-secondary border border-border text-[11px] font-medium">
               {item}
             </span>
           ))}
@@ -47,8 +47,8 @@ const TheatreShowtimesCard = ({
 
       {/* Grid of Showtime Slots */}
       <div>
-        <label className="text-xs font-semibold text-slate-400 block mb-2.5 flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-[#E50914]" />
+        <label className="text-xs font-semibold text-text-muted block mb-2.5 flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-primary" />
           <span>Showtimes</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -61,8 +61,8 @@ const TheatreShowtimesCard = ({
                 onClick={() => setSelectedSlot(slot)}
                 className={`py-2.5 px-3 rounded-lg border text-xs font-bold transition-all text-center cursor-pointer ${
                   isSelected
-                    ? 'bg-[#E50914] border-[#E50914] text-white shadow-sm'
-                    : 'bg-[#181C28] border-[#1E2332] text-slate-300 hover:border-slate-500 hover:text-white'
+                    ? 'bg-primary border-primary text-white shadow-sm'
+                    : 'bg-surface-elevated border border-border text-text-secondary hover:border-text-muted hover:text-text-primary'
                 }`}
               >
                 {slot}
@@ -77,7 +77,7 @@ const TheatreShowtimesCard = ({
         <button
           type="button"
           onClick={() => onBookTickets?.({ theatreName, time: selectedSlot, priceRange })}
-          className="w-full py-3 rounded-lg bg-[#E50914] hover:bg-[#B80710] text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-98"
+          className="w-full py-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-98"
         >
           <Ticket className="w-4 h-4 text-white" />
           <span>Select Seats ({selectedSlot})</span>
@@ -89,4 +89,3 @@ const TheatreShowtimesCard = ({
 };
 
 export default TheatreShowtimesCard;
-

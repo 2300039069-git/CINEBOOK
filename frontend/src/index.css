@@ -5,37 +5,43 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #090A0E;
-    --theme-surface: #11141D;
-    --theme-elevated: #181C28;
-    --theme-card: #11141D;
-    --theme-hover: #1D2232;
-    --theme-subtle: #0D0F16;
-    --theme-border: #1E2332;
-    --theme-border-subtle: #161A26;
+    --theme-bg: #07090E;
+    --theme-surface: #0E121B;
+    --theme-card: #111622;
+    --theme-elevated: #161D2C;
+    --theme-hover: #1D2638;
+    --theme-subtle: #0A0D14;
+    --theme-border: #1C2436;
+    --theme-border-subtle: #141A28;
+    --theme-border-hover: #D4AF37;
     --theme-primary: #E50914;
+    --theme-primary-hover: #CC0812;
     --theme-accent: #D4AF37;
+    --theme-crimson: #E50914;
     --theme-gold: #D4AF37;
-    --theme-text: #FFFFFF;
-    --theme-text-primary: #FFFFFF;
+    --theme-text: #F8FAFC;
+    --theme-text-primary: #F8FAFC;
     --theme-text-secondary: #94A3B8;
     --theme-text-muted: #64748B;
   }
 
   .light {
-    --theme-bg: #F4F6FA;
+    --theme-bg: #F6F8FB;
     --theme-surface: #FFFFFF;
-    --theme-elevated: #FFFFFF;
     --theme-card: #FFFFFF;
-    --theme-hover: #F1F5F9;
-    --theme-subtle: #F8FAFC;
+    --theme-elevated: #F0F3F8;
+    --theme-hover: #E7EDF5;
+    --theme-subtle: #F8FAFD;
     --theme-border: #E2E8F0;
-    --theme-border-subtle: #E2E8F0;
+    --theme-border-subtle: #EDF2F7;
+    --theme-border-hover: #D4AF37;
     --theme-primary: #E50914;
-    --theme-accent: #D97706;
-    --theme-gold: #D97706;
-    --theme-text: #0F172A;
-    --theme-text-primary: #0F172A;
+    --theme-primary-hover: #CC0812;
+    --theme-accent: #B45309;
+    --theme-crimson: #E50914;
+    --theme-gold: #B45309;
+    --theme-text: #090D16;
+    --theme-text-primary: #090D16;
     --theme-text-secondary: #334155;
     --theme-text-muted: #64748B;
   }
@@ -46,27 +52,50 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease-out, color 0.2s ease-out;
   }
 }
 
 @layer utilities {
-  /* Commercial Clean Cards */
+  /* Luxury Cinema Cards & Elevation */
   .cine-card {
     background-color: var(--theme-card);
     border: 1px solid var(--theme-border);
-    border-radius: 0.75rem;
-  }
-  .cine-card-hover {
-    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  .cine-card-hover:hover {
-    background-color: var(--theme-hover);
-    border-color: var(--theme-border);
-    transform: translateY(-2px);
+    border-radius: 0.875rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15), 0 4px 12px 0 rgba(0, 0, 0, 0.08);
   }
 
-  /* Compact Badges */
+  .dark .cine-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.35), 0 6px 16px -2px rgba(0, 0, 0, 0.25);
+  }
+
+  .light .cine-card {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 6px 16px -2px rgba(0, 0, 0, 0.06);
+  }
+
+  .cine-card-hover {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.2s ease,
+                background-color 0.2s ease,
+                box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cine-card-hover:hover {
+    background-color: var(--theme-hover);
+    border-color: var(--theme-border-hover);
+    transform: translateY(-3px);
+  }
+
+  .dark .cine-card-hover:hover {
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 175, 55, 0.2);
+  }
+
+  .light .cine-card-hover:hover {
+    box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Compact Cinema Badges */
   .cine-badge {
     display: inline-flex;
     align-items: center;
@@ -75,159 +104,69 @@
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     border-radius: 0.375rem;
   }
 }
 
 /* ============================================================================
-   LIGHT THEME CRYSTAL-CLEAR HIGH-CONTRAST OVERRIDES
+   LIGHT THEME POLISHED CLARITY & CONTRAST
    ============================================================================ */
 .light {
   color-scheme: light;
 }
 
-/* Light Mode Backgrounds for Specific Surface Elements */
+/* Light Mode Header */
 .light header {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom-color: #E2E8F0 !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
-}
-
-.light header span.text-white,
-.light header p.text-white,
-.light header h1.text-white,
-.light header h2.text-white,
-.light header h3.text-white {
-  color: #0F172A !important;
-}
-
-.light header nav a:not(.bg-primary) {
-  color: #334155 !important;
-}
-
-.light header nav a:not(.bg-primary):hover {
-  color: #0F172A !important;
-  background-color: #F1F5F9 !important;
-}
-
-/* Light Mode Card Overrides */
-.light .cine-card,
-.light [class*="bg-[#0F1523]"],
-.light [class*="bg-[#11141D]"],
-.light [class*="bg-[#181C28]"] {
-  background-color: #FFFFFF !important;
-  border-color: #E2E8F0 !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-}
-
-.light [class*="bg-[#080B10]"],
-.light [class*="bg-[#090A0E]"] {
-  background-color: #F8FAFC !important;
-  border-color: #E2E8F0 !important;
-}
-
-.light [class*="bg-[#172033]"] {
-  background-color: #F1F5F9 !important;
-  border-color: #CBD5E1 !important;
-}
-
-/* Light Mode Headings & Text Clarity */
-.light h1:not([class*="text-[#E50914]"]):not([class*="text-primary"]),
-.light h2:not([class*="text-[#E50914]"]):not([class*="text-primary"]),
-.light h3:not([class*="text-[#E50914]"]):not([class*="text-primary"]),
-.light h4:not([class*="text-[#E50914]"]):not([class*="text-primary"]) {
-  color: #0F172A !important;
-}
-
-.light p.text-slate-300,
-.light p.text-slate-400,
-.light span.text-slate-300,
-.light span.text-slate-400,
-.light div.text-slate-300,
-.light div.text-slate-400 {
-  color: #475569 !important;
-}
-
-.light p.text-zinc-300,
-.light p.text-zinc-400,
-.light span.text-zinc-300,
-.light span.text-zinc-400 {
-  color: #475569 !important;
-}
-
-/* Specific text-white adjustments on light surfaces (excluding buttons and active pills) */
-.light div:not(.bg-primary):not([class*="bg-gradient-to-r"]):not([class*="bg-[#E50914]"]) > span.text-white,
-.light div:not(.bg-primary):not([class*="bg-gradient-to-r"]):not([class*="bg-[#E50914]"]) > p.text-white {
-  color: #0F172A !important;
+  background-color: rgba(255, 255, 255, 0.96);
+  border-bottom-color: #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
 }
 
 /* Form Inputs & Selects in Light Mode */
 .light input:not([type="checkbox"]):not([type="radio"]),
 .light select,
 .light textarea {
-  background-color: #FFFFFF !important;
-  color: #0F172A !important;
-  border-color: #CBD5E1 !important;
+  background-color: #FFFFFF;
+  color: #090D16;
+  border-color: #CBD5E1;
 }
 
 .light input::placeholder,
 .light textarea::placeholder {
-  color: #94A3B8 !important;
+  color: #94A3B8;
 }
 
 .light input:focus,
 .light select:focus,
 .light textarea:focus {
-  border-color: #E50914 !important;
-  box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.15) !important;
+  border-color: #E50914;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.12);
 }
 
 /* Tables in Light Mode */
 .light table {
-  color: #0F172A !important;
+  color: #090D16;
 }
 
 .light table thead {
-  background-color: #F8FAFC !important;
-  border-bottom-color: #E2E8F0 !important;
-  color: #475569 !important;
+  background-color: #F8FAFD;
+  border-bottom-color: #E2E8F0;
+  color: #475569;
 }
 
 .light table tbody tr {
-  border-bottom-color: #F1F5F9 !important;
+  border-bottom-color: #EDF2F7;
 }
 
 .light table tbody tr:hover {
-  background-color: #F8FAFC !important;
+  background-color: #F1F5F9;
 }
 
 /* Dropdown menus & Floating panels in Light Mode */
 .light .shadow-dropdown,
 .light [class*="shadow-2xl"] {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
-}
-
-/* Footers in Light Mode */
-.light footer {
-  background-color: #FFFFFF !important;
-  border-top-color: #E2E8F0 !important;
-  color: #334155 !important;
-}
-
-.light footer h4,
-.light footer h5 {
-  color: #0F172A !important;
-}
-
-.light footer p,
-.light footer span,
-.light footer a {
-  color: #475569 !important;
-}
-
-.light footer a:hover {
-  color: #E50914 !important;
+  box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
 /* Custom Refined Scrollbars */
@@ -237,11 +176,11 @@
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #090A0E;
+  background: #07090E;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #1E2332;
+  background: #1C2436;
   border-radius: 9999px;
 }
 

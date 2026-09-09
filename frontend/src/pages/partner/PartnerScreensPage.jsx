@@ -161,17 +161,17 @@ const PartnerScreensPage = () => {
   const totalOnlineApp = totalPhysicalSeats - totalCounterHeld;
 
   return (
-    <div className="space-y-8 animate-fade-in text-white">
+    <div className="space-y-8 animate-fade-in bg-background text-text-primary transition-colors">
       {/* 1. HEADER & CONTROLS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5">
-            <Grid3X3 className="w-4 h-4" /> Theatre Floor & Quota Architecture
+          <span className="text-xs font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1.5">
+            <Grid3X3 className="w-4 h-4 text-amber-500" /> Theatre Floor & Quota Architecture
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight mt-1">
             Interactive Seating Layout & Dual-Quota Allocator
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-text-muted mt-1">
             Click rows or individual seats to partition capacity between <strong>Online App</strong> and <strong>Box-Office Counter</strong>
           </p>
         </div>
@@ -180,7 +180,7 @@ const PartnerScreensPage = () => {
           <button
             type="button"
             onClick={apply8020Preset}
-            className="px-4 py-2.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-bold text-slate-200 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-2xl bg-surface border border-border hover:border-amber-500 text-xs font-bold text-text-primary transition-all cursor-pointer"
           >
             ⚡ Apply 80/20 Quota Preset
           </button>
@@ -188,7 +188,7 @@ const PartnerScreensPage = () => {
           <button
             type="button"
             onClick={handleSaveLayout}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-amber-500 hover:from-amber-400 hover:to-orange-500 text-slate-950 text-xs font-black uppercase tracking-wider shadow-glow-gold transition-all transform hover:scale-105 cursor-pointer"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider shadow-sm transition-all transform hover:scale-105 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>{isSaved ? 'Quota Saved ✓' : 'Save Quota Policy'}</span>
@@ -197,24 +197,24 @@ const PartnerScreensPage = () => {
       </div>
 
       {/* 2. PROMINENT 30-MINUTE AUTO-RELEASE SAFEGUARD BANNER */}
-      <div className="p-5 rounded-3xl glass-panel border border-[#D4AF37]/40 bg-gradient-to-r from-amber-500/[0.08] via-slate-900 to-amber-500/[0.05] shadow-2xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+      <div className="p-5 rounded-3xl bg-surface border border-amber-500/30 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] flex-shrink-0 animate-pulse">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-500 flex-shrink-0 animate-pulse">
             <Zap className="w-6 h-6" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[10px] font-black uppercase border border-[#D4AF37]/30">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase border border-amber-500/20">
                 Guaranteed Full House Safeguard
               </span>
-              <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Engine Active
               </span>
             </div>
-            <h3 className="text-base font-black text-white">
+            <h3 className="text-base font-bold text-text-primary">
               ⚡ Unsold Online Seats Auto-Release to Counter 30 Mins Before Showtime
             </h3>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs text-text-secondary max-w-2xl leading-relaxed">
               If online users have not purchased app quota seats 30 minutes before screening starts, the system automatically unblocks and converts them into offline Box-Office counter inventory.
             </p>
           </div>
@@ -222,19 +222,19 @@ const PartnerScreensPage = () => {
 
         {/* Live Simulation Trigger Button */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          <div className="px-4 py-2 rounded-2xl bg-black/40 border border-white/10 text-center sm:text-right w-full sm:w-auto">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Next Release Window</span>
-            <span className="text-sm font-black text-[#D4AF37] font-mono">T-30:00 (15m left)</span>
+          <div className="px-4 py-2 rounded-2xl bg-surface-elevated border border-border text-center sm:text-right w-full sm:w-auto">
+            <span className="text-[10px] uppercase font-bold text-text-muted block">Next Release Window</span>
+            <span className="text-sm font-extrabold text-amber-500 font-mono">T-30:00 (15m left)</span>
           </div>
 
           <button
             type="button"
             onClick={handleSimulateAutoRelease}
             disabled={isAutoReleaseTriggered}
-            className={`w-full sm:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            className={`w-full sm:w-auto px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isAutoReleaseTriggered
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                : 'bg-gradient-to-r from-[#E50914] to-rose-700 hover:from-rose-600 hover:to-rose-800 text-white shadow-glow-crimson transform hover:scale-102'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                : 'bg-accent hover:bg-accent-hover text-white shadow-sm transform hover:scale-102'
             }`}
           >
             <ArrowRightLeft className="w-4 h-4" />
@@ -246,60 +246,60 @@ const PartnerScreensPage = () => {
       {/* 3. QUOTA METRICS STRIP */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         {/* Total Seats */}
-        <div className="p-5 rounded-3xl glass-card space-y-1 border border-white/[0.08]">
-          <span className="text-xs font-black uppercase text-slate-400">Physical Capacity</span>
-          <h3 className="text-2xl font-black text-white">{totalPhysicalSeats} Total Seats</h3>
-          <p className="text-[11px] text-slate-400">Auditorium Screen 1</p>
+        <div className="p-5 rounded-3xl bg-surface space-y-1 border border-border shadow-sm">
+          <span className="text-xs font-bold uppercase text-text-muted">Physical Capacity</span>
+          <h3 className="text-2xl font-extrabold text-text-primary">{totalPhysicalSeats} Total Seats</h3>
+          <p className="text-[11px] text-text-muted">Auditorium Screen 1</p>
         </div>
 
         {/* Online App Quota */}
-        <div className="p-5 rounded-3xl glass-card space-y-1 border border-cyan-500/30">
+        <div className="p-5 rounded-3xl bg-surface space-y-1 border border-cyan-500/30 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-cyan-400 flex items-center gap-1">
+            <span className="text-xs font-bold uppercase text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
               <Smartphone className="w-3.5 h-3.5" /> Online App Quota
             </span>
-            <span className="text-xs font-bold text-cyan-400">{Math.round((totalOnlineApp / totalPhysicalSeats) * 100)}%</span>
+            <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400">{Math.round((totalOnlineApp / totalPhysicalSeats) * 100)}%</span>
           </div>
-          <h3 className="text-2xl font-black text-cyan-400">{totalOnlineApp} Seats Open</h3>
-          <p className="text-[11px] text-slate-400">Available on CineBook Consumer App</p>
+          <h3 className="text-2xl font-extrabold text-cyan-600 dark:text-cyan-400">{totalOnlineApp} Seats Open</h3>
+          <p className="text-[11px] text-text-muted">Available on CineBook Consumer App</p>
         </div>
 
         {/* Box-Office Counter Quota */}
-        <div className="p-5 rounded-3xl glass-card space-y-1 border border-[#D4AF37]/40">
+        <div className="p-5 rounded-3xl bg-surface space-y-1 border border-amber-500/40 shadow-sm">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-[#D4AF37] flex items-center gap-1">
+            <span className="text-xs font-bold uppercase text-amber-500 flex items-center gap-1">
               <Store className="w-3.5 h-3.5" /> Box-Office Counter Quota
             </span>
-            <span className="text-xs font-bold text-[#D4AF37]">{Math.round((totalCounterHeld / totalPhysicalSeats) * 100)}%</span>
+            <span className="text-xs font-bold text-amber-500">{Math.round((totalCounterHeld / totalPhysicalSeats) * 100)}%</span>
           </div>
-          <h3 className="text-2xl font-black gradient-text-gold">{totalCounterHeld} Seats Held</h3>
-          <p className="text-[11px] text-[#D4AF37]/80">Strictly reserved for physical window cash sales</p>
+          <h3 className="text-2xl font-extrabold text-amber-500">{totalCounterHeld} Seats Held</h3>
+          <p className="text-[11px] text-amber-600 dark:text-amber-400">Strictly reserved for physical window cash sales</p>
         </div>
       </div>
 
       {/* 4. INTERACTIVE VISUAL SEAT MATRIX ALLOCATOR */}
-      <div className="p-6 sm:p-10 rounded-3xl glass-panel border border-[#1E293B] shadow-2xl space-y-8">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-[#1E293B] text-xs">
+      <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border shadow-xl space-y-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-border text-xs">
           <div className="space-y-0.5">
-            <h3 className="text-base font-black text-white font-display">Screen 1 Floor Layout</h3>
-            <p className="text-slate-400 text-xs">
-              Click any <strong className="text-white">Row Letter</strong> on the left to toggle entire row, or click individual seats.
+            <h3 className="text-base font-bold text-text-primary">Screen 1 Floor Layout</h3>
+            <p className="text-text-muted text-xs">
+              Click any <strong className="text-text-primary">Row Letter</strong> on the left to toggle entire row, or click individual seats.
             </p>
           </div>
 
           {/* Interactive Legend */}
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-lg bg-[#0F1523] border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-[10px]">
+              <div className="w-5 h-5 rounded-lg bg-surface-elevated border border-cyan-500/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-[10px]">
                 📱
               </div>
-              <span className="text-slate-300 font-medium">Online App Quota</span>
+              <span className="text-text-secondary font-medium">Online App Quota</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] flex items-center justify-center text-[10px]">
+              <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-500 text-amber-500 flex items-center justify-center text-[10px]">
                 🔒
               </div>
-              <span className="text-[#D4AF37] font-bold">Box-Office Locked</span>
+              <span className="text-amber-500 font-bold">Box-Office Locked</span>
             </div>
           </div>
         </div>
@@ -310,11 +310,11 @@ const PartnerScreensPage = () => {
             {layout.tiers.map((tier) => (
               <div key={tier.id} className="space-y-3">
                 {/* Tier Title */}
-                <div className="flex items-center justify-between pb-1.5 border-b border-[#1E293B] text-xs">
-                  <span className="font-black uppercase tracking-wider text-white flex items-center gap-2">
+                <div className="flex items-center justify-between pb-1.5 border-b border-border text-xs">
+                  <span className="font-bold uppercase tracking-wider text-text-primary flex items-center gap-2">
                     {tier.name}
                   </span>
-                  <span className="gradient-text-gold font-black">
+                  <span className="text-amber-500 font-bold">
                     Default Base: ₹{tier.price} / ticket
                   </span>
                 </div>
@@ -332,16 +332,16 @@ const PartnerScreensPage = () => {
                           type="button"
                           onClick={() => toggleEntireRowQuota(tier.id, row.rowLetter)}
                           title={`Click to toggle all seats in Row ${row.rowLetter} (${isAllCounter ? 'Switch to Online App' : 'Switch to Box-Office Locked'})`}
-                          className={`w-9 h-7 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1 border cursor-pointer ${
+                          className={`w-9 h-7 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 border cursor-pointer ${
                             isAllCounter
-                              ? 'bg-[#D4AF37]/25 border-[#D4AF37] text-[#D4AF37] shadow-sm'
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-500 shadow-sm'
                               : isAllApp
-                              ? 'bg-[#0F1523] border-cyan-500/40 text-cyan-400'
-                              : 'bg-amber-500/10 border-amber-500/40 text-amber-300'
+                              ? 'bg-surface-elevated border-cyan-500/40 text-cyan-600 dark:text-cyan-400'
+                              : 'bg-amber-500/10 border-amber-500/40 text-amber-600 dark:text-amber-300'
                           }`}
                         >
                           <span>{row.rowLetter}</span>
-                          {isAllCounter && <Lock className="w-2.5 h-2.5 text-[#D4AF37]" />}
+                          {isAllCounter && <Lock className="w-2.5 h-2.5 text-amber-500" />}
                         </button>
 
                         {/* Seats in Row */}
@@ -354,13 +354,13 @@ const PartnerScreensPage = () => {
                                   type="button"
                                   onClick={() => toggleSeatQuota(tier.id, row.rowLetter, seatNum)}
                                   title={`Seat ${row.rowLetter}${seatNum} — ${isCounterHeld ? 'Held for Box-Office Counter' : 'Open for Online App'}`}
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
                                     isCounterHeld
-                                      ? 'bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] scale-105 shadow-glow-gold'
-                                      : 'bg-[#0F1523] border border-white/10 text-slate-300 hover:border-cyan-400 hover:scale-105'
+                                      ? 'bg-amber-500/20 border border-amber-500 text-amber-500 scale-105'
+                                      : 'bg-surface-elevated border border-border text-text-secondary hover:border-cyan-500 hover:scale-105'
                                   }`}
                                 >
-                                  {isCounterHeld ? <Lock className="w-3 h-3 text-[#D4AF37]" /> : seatNum}
+                                  {isCounterHeld ? <Lock className="w-3 h-3 text-amber-500" /> : seatNum}
                                 </button>
                                 {seatNum === 4 || seatNum === row.seatsCount - 4 ? (
                                   <div className="w-3 sm:w-5" />
@@ -371,7 +371,7 @@ const PartnerScreensPage = () => {
                         </div>
 
                         {/* Row letter right */}
-                        <span className="w-6 text-center text-xs font-black text-slate-400">
+                        <span className="w-6 text-center text-xs font-bold text-text-muted">
                           {row.rowLetter}
                         </span>
                       </div>
@@ -383,9 +383,9 @@ const PartnerScreensPage = () => {
 
             {/* Glowing Screen Arc */}
             <div className="pt-10 text-center space-y-2">
-              <div className="h-2 w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent rounded-full shadow-glow-screen opacity-90 animate-pulse" />
-              <p className="text-[11px] font-black uppercase tracking-widest text-[#D4AF37] flex items-center justify-center gap-1.5 font-display">
-                <Sparkles className="w-3.5 h-3.5 text-[#E50914]" />
+              <div className="h-2 w-3/4 mx-auto bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full opacity-90" />
+              <p className="text-[11px] font-bold uppercase tracking-widest text-amber-500 flex items-center justify-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-accent" />
                 Cinema 4K Laser Projection Screen
               </p>
             </div>
@@ -397,3 +397,4 @@ const PartnerScreensPage = () => {
 };
 
 export default PartnerScreensPage;
+

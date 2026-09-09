@@ -18,20 +18,20 @@ const TrailerModal = ({ isOpen, onClose, trailerUrl, movieTitle }) => {
   const embedUrl = getEmbedUrl(trailerUrl);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-      <div className="relative w-full max-w-4xl bg-[#11141D] border border-[#1E2332] rounded-2xl overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-4xl bg-surface border border-border rounded-2xl overflow-hidden shadow-2xl text-text-primary">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#1E2332] bg-[#090A0E]">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-surface-elevated">
           <div className="flex items-center gap-2">
-            <Film className="w-5 h-5 text-[#E50914]" />
-            <h3 className="text-sm sm:text-base font-bold text-white truncate">
+            <Film className="w-5 h-5 text-primary" />
+            <h3 className="text-sm sm:text-base font-bold text-text-primary truncate">
               {movieTitle} — Official Trailer
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#181C28] transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -48,7 +48,7 @@ const TrailerModal = ({ isOpen, onClose, trailerUrl, movieTitle }) => {
               className="w-full h-full border-0"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+            <div className="flex items-center justify-center h-full text-text-muted text-sm">
               Trailer video preview is currently unavailable.
             </div>
           )}

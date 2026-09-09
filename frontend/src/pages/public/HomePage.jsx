@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { MOVIES, EVENTS, THEATRES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
-import { useTheme } from '../../context/ThemeContext';
 import { useBooking } from '../../context/BookingContext';
 import HeroCarousel from '../../components/movies/HeroCarousel';
 import MovieCard from '../../components/movies/MovieCard';
@@ -36,7 +35,6 @@ const CATEGORY_CAPSULES = [
 
 const HomePage = () => {
   const { selectedCity, setIsCityModalOpen } = useLocation();
-  const { theme } = useTheme();
   const { setSelectedMovie, setSelectedTheatre, setSelectedShow } = useBooking();
   const navigate = useNavigate();
 
@@ -64,7 +62,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090A0E] text-slate-100 pb-16">
+    <div className="min-h-screen bg-background text-text-primary pb-16">
       {/* 1. HERO CAROUSEL BILLBOARD */}
       <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
 
@@ -77,12 +75,12 @@ const HomePage = () => {
               <Link
                 key={cap.label}
                 to={cap.link}
-                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#11141D] border border-[#1E2332] hover:border-slate-500 transition-all flex-shrink-0 group"
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-surface border border-border hover:border-text-muted transition-all flex-shrink-0 group shadow-sm"
               >
-                <div className="w-7 h-7 rounded-lg bg-[#181C28] flex items-center justify-center text-[#E50914] group-hover:bg-[#E50914] group-hover:text-white transition-colors">
+                <div className="w-7 h-7 rounded-lg bg-surface-elevated flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                   <Icon className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-semibold tracking-wide text-slate-200 group-hover:text-white">{cap.label}</span>
+                <span className="text-xs font-semibold tracking-wide text-text-primary group-hover:text-primary transition-colors">{cap.label}</span>
               </Link>
             );
           })}
@@ -92,13 +90,13 @@ const HomePage = () => {
       {/* 3. MAIN DISCOVERY: MOVIES + THEATRE SHOWTIMES */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2332]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wider mb-1">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 text-xs font-bold text-gold uppercase tracking-wider mb-1">
+              <Sparkles className="w-3.5 h-3.5 text-gold" />
               <span>Showing in {selectedCity.name} ({cityTheatres.length} Theatres)</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-primary">
               Recommended Blockbusters
             </h2>
           </div>
@@ -107,11 +105,11 @@ const HomePage = () => {
           <button
             type="button"
             onClick={() => setIsCityModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#11141D] border border-[#1E2332] hover:border-slate-500 text-xs font-bold text-white transition-all shadow-sm self-start sm:self-auto cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface border border-border hover:border-text-muted text-xs font-bold text-text-primary transition-all shadow-sm self-start sm:self-auto cursor-pointer"
           >
             <span>{selectedCity.icon}</span>
-            <span className="uppercase text-slate-200">{selectedCity.name}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <span className="uppercase text-text-primary">{selectedCity.name}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
           </button>
         </div>
 
@@ -132,7 +130,7 @@ const HomePage = () => {
             <div className="pt-2">
               <Link
                 to="/movies"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F59E0B] hover:text-amber-300 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-gold hover:text-amber-400 transition-colors"
               >
                 <span>Explore all movies in {selectedCity.name}</span>
                 <ChevronRight className="w-4 h-4" />
@@ -145,10 +143,10 @@ const HomePage = () => {
             {/* Theatres in Selected City Card */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-[#E50914]" /> Cinemas in {selectedCity.name}
+                <span className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-primary" /> Cinemas in {selectedCity.name}
                 </span>
-                <Link to="/theatres" className="text-xs font-semibold text-slate-400 hover:text-white">
+                <Link to="/theatres" className="text-xs font-semibold text-text-muted hover:text-text-primary">
                   View All
                 </Link>
               </div>
@@ -164,8 +162,8 @@ const HomePage = () => {
                       onClick={() => setSelectedTheatreIndex(idx)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                         isSelected
-                          ? 'bg-[#E50914] border-[#E50914] text-white shadow-sm'
-                          : 'bg-[#11141D] border-[#1E2332] text-slate-300 hover:border-slate-500'
+                          ? 'bg-primary border-primary text-white shadow-sm'
+                          : 'bg-surface border-border text-text-secondary hover:border-text-muted'
                       }`}
                     >
                       {theatre.name}
@@ -187,12 +185,12 @@ const HomePage = () => {
 
             {/* Live Events in selected city */}
             <div className="space-y-3 pt-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1E2332]">
-                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-white">
-                  <span className="w-2 h-2 rounded-full bg-[#E50914]" />
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-text-primary">
+                  <span className="w-2 h-2 rounded-full bg-primary" />
                   Live Events in {selectedCity.name}
                 </h3>
-                <Link to="/events" className="text-xs font-semibold text-slate-400 hover:text-white">
+                <Link to="/events" className="text-xs font-semibold text-text-muted hover:text-text-primary">
                   See All
                 </Link>
               </div>
@@ -201,7 +199,7 @@ const HomePage = () => {
                 {EVENTS.map((event) => (
                   <div
                     key={event.id}
-                    className="p-3 rounded-xl bg-[#11141D] border border-[#1E2332] hover:border-slate-600 flex items-center gap-3 transition-all group shadow-sm"
+                    className="p-3 rounded-xl bg-surface border border-border hover:border-text-muted flex items-center gap-3 transition-all group shadow-sm"
                   >
                     <img
                       src={event.bannerUrl}
@@ -209,12 +207,12 @@ const HomePage = () => {
                       className="w-14 h-14 rounded-lg object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
                     />
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-bold text-[#F59E0B] uppercase tracking-wider">
+                      <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
                         {event.category}
                       </span>
-                      <h4 className="text-xs font-bold truncate text-white">{event.title}</h4>
-                      <p className="text-[11px] text-slate-400 truncate">{event.venue}</p>
-                      <p className="text-xs font-extrabold text-white mt-0.5">₹{event.priceStarting}</p>
+                      <h4 className="text-xs font-bold truncate text-text-primary">{event.title}</h4>
+                      <p className="text-[11px] text-text-muted truncate">{event.venue}</p>
+                      <p className="text-xs font-extrabold text-text-primary mt-0.5">₹{event.priceStarting}</p>
                     </div>
                   </div>
                 ))}
@@ -224,43 +222,43 @@ const HomePage = () => {
         </div>
 
         {/* 4. WHY CINEBOOK TRUST SECTION */}
-        <div className="pt-8 border-t border-[#1E2332]">
+        <div className="pt-8 border-t border-border">
           <div className="text-center max-w-2xl mx-auto space-y-2 mb-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">The Modern Cinema Experience</h3>
-            <p className="text-xs sm:text-sm text-slate-400">Engineered for seamless bookings, atomic seat concurrency, and high-fidelity sound.</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">The Modern Cinema Experience</h3>
+            <p className="text-xs sm:text-sm text-text-muted">Engineered for seamless bookings, atomic seat concurrency, and high-fidelity sound.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
-              <div className="w-9 h-9 rounded-lg bg-[#E50914]/10 text-[#E50914] flex items-center justify-center">
+            <div className="p-5 rounded-xl bg-surface border border-border space-y-2.5 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                 <Ticket className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Instant E-Passes</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">Download contactless QR passes directly to your device with real-time seat validation.</p>
+              <h4 className="text-sm font-bold text-text-primary">Instant E-Passes</h4>
+              <p className="text-xs text-text-muted leading-relaxed">Download contactless QR passes directly to your device with real-time seat validation.</p>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
-              <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-[#F59E0B] flex items-center justify-center">
+            <div className="p-5 rounded-xl bg-surface border border-border space-y-2.5 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-gold/10 text-gold flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Atomic Seat Lock</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">Guarantees zero double bookings with high-speed Redis distributed locks and 8-minute timers.</p>
+              <h4 className="text-sm font-bold text-text-primary">Atomic Seat Lock</h4>
+              <p className="text-xs text-text-muted leading-relaxed">Guarantees zero double bookings with high-speed Redis distributed locks and 8-minute timers.</p>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <div className="p-5 rounded-xl bg-surface border border-border space-y-2.5 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Verified Audis</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">Direct synchronization with single-screen box office counters and Barco 4K Laser projection.</p>
+              <h4 className="text-sm font-bold text-text-primary">Verified Audis</h4>
+              <p className="text-xs text-text-muted leading-relaxed">Direct synchronization with single-screen box office counters and Barco 4K Laser projection.</p>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
-              <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <div className="p-5 rounded-xl bg-surface border border-border space-y-2.5 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
                 <Headphones className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">24/7 AI Concierge</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">Automated booking resolutions, schedule adjustments, and instant ticket retrievals.</p>
+              <h4 className="text-sm font-bold text-text-primary">24/7 AI Concierge</h4>
+              <p className="text-xs text-text-muted leading-relaxed">Automated booking resolutions, schedule adjustments, and instant ticket retrievals.</p>
             </div>
           </div>
         </div>
@@ -280,4 +278,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-

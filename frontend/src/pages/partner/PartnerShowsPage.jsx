@@ -139,24 +139,24 @@ const PartnerShowsPage = () => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in text-[#F8FAFC]">
+    <div className="space-y-8 animate-fade-in text-text-primary">
       {/* 1. HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#1E293B]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
-          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5">
-            <CalendarDays className="w-4 h-4 text-[#D4AF37]" /> Showtime Scheduling & Live Price Engine
+          <span className="text-xs font-black text-gold uppercase tracking-widest flex items-center gap-1.5">
+            <CalendarDays className="w-4 h-4 text-gold" /> Showtime Scheduling & Live Price Engine
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight mt-1 font-display">
             Show Schedules & Dynamic Pricing
           </h1>
-          <p className="text-xs text-[#94A3B8] mt-1">
+          <p className="text-xs text-text-muted mt-1">
             Assign blockbuster titles to screens, configure weekend price surges, and control advance online bookings
           </p>
         </div>
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black text-xs font-black uppercase tracking-wider shadow-glow-gold transition-all transform hover:scale-105 cursor-pointer"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-black text-xs font-black uppercase tracking-wider shadow-gold-glow transition-all transform hover:scale-105 cursor-pointer"
         >
           <Plus className="w-4 h-4 text-black" />
           <span>Schedule New Showtime</span>
@@ -164,23 +164,23 @@ const PartnerShowsPage = () => {
       </div>
 
       {/* 2. AUTO-RELEASE SAFEGUARD CALLOUT */}
-      <div className="p-4 rounded-2xl bg-[#0F1523]/90 border border-[#D4AF37]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
+      <div className="p-4 rounded-2xl bg-surface border border-gold/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0 text-[#D4AF37]">
+          <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center flex-shrink-0 text-gold">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-black text-[#D4AF37] uppercase tracking-wider">30-Minute Auto-Release Active</h4>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">Zero Empty Seats</span>
+              <h4 className="text-xs font-black text-gold uppercase tracking-wider">30-Minute Auto-Release Active</h4>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-500/30">Zero Empty Seats</span>
             </div>
-            <p className="text-[11px] text-[#94A3B8] mt-0.5">
+            <p className="text-[11px] text-text-muted mt-0.5">
               All unsold online quota seats are automatically unlocked to your Box Office Counter exactly 30 minutes before showtime.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-xs font-black text-[#F3E5AB]">
-          <Zap className="w-4 h-4 text-[#D4AF37]" />
+        <div className="flex items-center gap-2 text-xs font-black text-gold">
+          <Zap className="w-4 h-4 text-gold" />
           <span>Real-time Counter Sync</span>
         </div>
       </div>
@@ -192,21 +192,21 @@ const PartnerShowsPage = () => {
           return (
             <div
               key={show.id}
-              className="p-6 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] hover:border-[#D4AF37]/50 transition-all space-y-4 shadow-xl"
+              className="p-6 rounded-3xl bg-surface border border-border hover:border-gold/50 transition-all space-y-4 shadow-sm"
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-lg bg-[#D4AF37]/15 text-[#D4AF37] text-[11px] font-black uppercase border border-[#D4AF37]/30">
+                    <span className="px-3 py-1 rounded-lg bg-gold/15 text-gold text-[11px] font-black uppercase border border-gold/30">
                       {show.show_slot} • {show.show_time}
                     </span>
-                    <span className="text-xs font-bold text-slate-300 bg-[#172033] px-2.5 py-0.5 rounded-lg border border-[#1E293B]">
+                    <span className="text-xs font-bold text-text-secondary bg-surface-elevated px-2.5 py-0.5 rounded-lg border border-border">
                       {show.format}
                     </span>
-                    <span className="text-xs text-[#94A3B8]">• Date: {show.show_date}</span>
-                    <span className="text-xs text-[#94A3B8]">• {show.screen_name}</span>
+                    <span className="text-xs text-text-muted">• Date: {show.show_date}</span>
+                    <span className="text-xs text-text-muted">• {show.screen_name}</span>
                   </div>
-                  <h3 className="text-lg font-black text-white">{show.movie_title}</h3>
+                  <h3 className="text-lg font-black text-text-primary">{show.movie_title}</h3>
                 </div>
 
                 {/* 1-Click Toggle Switch to Open/Close Booking */}
@@ -215,11 +215,11 @@ const PartnerShowsPage = () => {
                     onClick={() => handleToggleStatus(show.id)}
                     className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-black transition-all border cursor-pointer ${
                       isBookingOpen
-                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 shadow-sm'
-                        : 'bg-rose-500/15 border-rose-500/40 text-rose-400'
+                        ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                        : 'bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-400'
                     }`}
                   >
-                    <span className={`w-2.5 h-2.5 rounded-full ${isBookingOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+                    <span className={`w-2.5 h-2.5 rounded-full ${isBookingOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                     <span>{isBookingOpen ? 'Online Ticketing OPEN' : 'Online Ticketing CLOSED'}</span>
                   </button>
                 </div>
@@ -227,42 +227,42 @@ const PartnerShowsPage = () => {
 
               {/* Dynamic Price Override Inputs */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                <div className="p-3.5 rounded-2xl bg-[#080B10] border border-[#1E293B] space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-[#D4AF37] block flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-surface-elevated border border-border space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-gold block flex items-center justify-between">
                     <span>Balcony Recliner (₹)</span>
-                    <span className="text-slate-500 font-normal">VIP Tier</span>
+                    <span className="text-text-muted font-normal">VIP Tier</span>
                   </label>
                   <input
                     type="number"
                     value={show.tier_price.BALCONY}
                     onChange={(e) => handlePriceChange(show.id, 'BALCONY', e.target.value)}
-                    className="w-full px-3 py-1.5 bg-[#0F1523] border border-[#1E293B] rounded-xl text-sm font-black text-[#D4AF37] focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full px-3 py-1.5 bg-background border border-border rounded-xl text-sm font-black text-gold focus:outline-none focus:border-gold"
                   />
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#080B10] border border-[#1E293B] space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-[#E50914] block flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-surface-elevated border border-border space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-accent block flex items-center justify-between">
                     <span>Premium Executive (₹)</span>
-                    <span className="text-slate-500 font-normal">Middle Rows</span>
+                    <span className="text-text-muted font-normal">Middle Rows</span>
                   </label>
                   <input
                     type="number"
                     value={show.tier_price.PREMIUM}
                     onChange={(e) => handlePriceChange(show.id, 'PREMIUM', e.target.value)}
-                    className="w-full px-3 py-1.5 bg-[#0F1523] border border-[#1E293B] rounded-xl text-sm font-black text-[#E50914] focus:outline-none focus:border-[#E50914]"
+                    className="w-full px-3 py-1.5 bg-background border border-border rounded-xl text-sm font-black text-accent focus:outline-none focus:border-accent"
                   />
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#080B10] border border-[#1E293B] space-y-1.5">
-                  <label className="text-[10px] font-black uppercase text-slate-300 block flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-surface-elevated border border-border space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-text-secondary block flex items-center justify-between">
                     <span>Executive Classic (₹)</span>
-                    <span className="text-slate-500 font-normal">Front Tiers</span>
+                    <span className="text-text-muted font-normal">Front Tiers</span>
                   </label>
                   <input
                     type="number"
                     value={show.tier_price.EXECUTIVE}
                     onChange={(e) => handlePriceChange(show.id, 'EXECUTIVE', e.target.value)}
-                    className="w-full px-3 py-1.5 bg-[#0F1523] border border-[#1E293B] rounded-xl text-sm font-black text-slate-200 focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full px-3 py-1.5 bg-background border border-border rounded-xl text-sm font-black text-text-primary focus:outline-none focus:border-gold"
                   />
                 </div>
               </div>
@@ -273,15 +273,15 @@ const PartnerShowsPage = () => {
 
       {/* 4. SCHEDULE SHOW MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="max-w-lg w-full bg-[#0F1523] rounded-3xl p-6 space-y-5 border border-[#D4AF37]/40 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1E293B]">
-              <h3 className="text-base font-black text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-[#D4AF37]" /> Schedule New Showtime
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
+          <div className="max-w-lg w-full bg-surface rounded-3xl p-6 space-y-5 border border-gold/40 shadow-2xl text-text-primary">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="text-base font-black text-text-primary flex items-center gap-2">
+                <Plus className="w-5 h-5 text-gold" /> Schedule New Showtime
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-[#94A3B8] hover:text-white text-xs font-bold px-2 py-1 rounded-lg hover:bg-[#1E293B] transition-colors cursor-pointer"
+                className="text-text-muted hover:text-text-primary text-xs font-bold px-2 py-1 rounded-lg hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 ✕ Cancel
               </button>
@@ -289,14 +289,14 @@ const PartnerShowsPage = () => {
 
             <form onSubmit={handleCreateShow} className="space-y-4 text-xs">
               <div>
-                <label className="text-[#94A3B8] font-bold block mb-1">Select Movie Title</label>
+                <label className="text-text-muted font-bold block mb-1">Select Movie Title</label>
                 <select
                   value={newShow.movie_id}
                   onChange={(e) => setNewShow({ ...newShow, movie_id: e.target.value })}
-                  className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full p-3 bg-background border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-gold"
                 >
                   {MOVIES.map((m) => (
-                    <option key={m.id} value={m.id} className="bg-[#080B10] text-white">
+                    <option key={m.id} value={m.id} className="bg-surface text-text-primary">
                       {m.title} ({m.language})
                     </option>
                   ))}
@@ -305,25 +305,25 @@ const PartnerShowsPage = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#94A3B8] font-bold block mb-1">Show Date</label>
+                  <label className="text-text-muted font-bold block mb-1">Show Date</label>
                   <input
                     type="date"
                     value={newShow.show_date}
                     onChange={(e) => setNewShow({ ...newShow, show_date: e.target.value })}
-                    className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full p-3 bg-background border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-gold"
                   />
                 </div>
                 <div>
-                  <label className="text-[#94A3B8] font-bold block mb-1">Showtime Slot</label>
+                  <label className="text-text-muted font-bold block mb-1">Showtime Slot</label>
                   <select
                     value={newShow.show_time}
                     onChange={(e) => setNewShow({ ...newShow, show_time: e.target.value })}
-                    className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full p-3 bg-background border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-gold"
                   >
-                    <option value="11:00 AM" className="bg-[#080B10] text-white">Morning (11:00 AM)</option>
-                    <option value="02:30 PM" className="bg-[#080B10] text-white">Matinee (02:30 PM)</option>
-                    <option value="06:15 PM" className="bg-[#080B10] text-white">First Show (06:15 PM)</option>
-                    <option value="09:45 PM" className="bg-[#080B10] text-white">Second Show (09:45 PM)</option>
+                    <option value="11:00 AM" className="bg-surface text-text-primary">Morning (11:00 AM)</option>
+                    <option value="02:30 PM" className="bg-surface text-text-primary">Matinee (02:30 PM)</option>
+                    <option value="06:15 PM" className="bg-surface text-text-primary">First Show (06:15 PM)</option>
+                    <option value="09:45 PM" className="bg-surface text-text-primary">Second Show (09:45 PM)</option>
                   </select>
                 </div>
               </div>
@@ -331,30 +331,30 @@ const PartnerShowsPage = () => {
               {/* Pricing Defaults */}
               <div className="grid grid-cols-3 gap-2 pt-2">
                 <div>
-                  <label className="text-[#D4AF37] font-bold block mb-1 text-[10px] uppercase">Balcony (₹)</label>
+                  <label className="text-gold font-bold block mb-1 text-[10px] uppercase">Balcony (₹)</label>
                   <input
                     type="number"
                     value={newShow.balconyPrice}
                     onChange={(e) => setNewShow({ ...newShow, balconyPrice: e.target.value })}
-                    className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-[#D4AF37] font-black focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full p-2.5 bg-background border border-border rounded-xl text-gold font-black focus:outline-none focus:border-gold"
                   />
                 </div>
                 <div>
-                  <label className="text-[#E50914] font-bold block mb-1 text-[10px] uppercase">Premium (₹)</label>
+                  <label className="text-accent font-bold block mb-1 text-[10px] uppercase">Premium (₹)</label>
                   <input
                     type="number"
                     value={newShow.premiumPrice}
                     onChange={(e) => setNewShow({ ...newShow, premiumPrice: e.target.value })}
-                    className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-[#E50914] font-black focus:outline-none focus:border-[#E50914]"
+                    className="w-full p-2.5 bg-background border border-border rounded-xl text-accent font-black focus:outline-none focus:border-accent"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-300 font-bold block mb-1 text-[10px] uppercase">Classic (₹)</label>
+                  <label className="text-text-secondary font-bold block mb-1 text-[10px] uppercase">Classic (₹)</label>
                   <input
                     type="number"
                     value={newShow.executivePrice}
                     onChange={(e) => setNewShow({ ...newShow, executivePrice: e.target.value })}
-                    className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-slate-200 font-black focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full p-2.5 bg-background border border-border rounded-xl text-text-primary font-black focus:outline-none focus:border-gold"
                   />
                 </div>
               </div>
@@ -362,7 +362,7 @@ const PartnerShowsPage = () => {
               <div className="pt-3">
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black font-black uppercase tracking-wider shadow-glow-gold cursor-pointer transition-all"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-black font-black uppercase tracking-wider shadow-gold-glow cursor-pointer transition-all"
                 >
                   Publish Show & Open Online Ticketing
                 </button>
