@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.models.payment import (
     CreateOrderRequest,
@@ -8,7 +9,7 @@ from app.models.payment import (
 )
 from app.models.user import UserResponse
 from app.models.booking import BookingStatus
-from app.api.deps import get_current_active_user
+from app.api.deps import get_optional_user
 from app.services.payment_service import PaymentService
 from app.services.seat_lock_service import SeatLockService
 from app.api.v1.endpoints.bookings import BOOKINGS_STORE
@@ -19,7 +20,7 @@ router = APIRouter()
 @router.post("/create-order", response_model=CreateOrderResponse)
 async def create_payment_order(
     req: CreateOrderRequest,
-    current_user: UserResponse = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """Create Razorpay order for an active booking session"""
     order_data = PaymentService.create_order(
@@ -31,7 +32,7 @@ async def create_payment_order(
 @router.post("/verify", response_model=VerifyPaymentResponse)
 async def verify_payment(
     req: VerifyPaymentRequest,
-    current_user: UserResponse = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """
     Verify Razorpay cryptographic signature.

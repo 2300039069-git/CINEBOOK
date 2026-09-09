@@ -102,6 +102,17 @@ async def get_current_user(
         is_active=True
     )
 
+async def get_optional_user(
+    token_auth: Optional[HTTPAuthorizationCredentials] = Depends(security_bearer)
+) -> Optional[UserResponse]:
+    """Return user if valid token present, otherwise None (allows guest operations)"""
+    if not token_auth:
+        return None
+    try:
+        return await get_current_user(token_auth)
+    except Exception:
+        return None
+
 async def get_current_active_user(
     current_user: UserResponse = Depends(get_current_user)
 ) -> UserResponse:

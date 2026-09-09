@@ -1,5 +1,7 @@
 import api from './api';
 
+export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4';
+
 export const loadRazorpayScript = () => {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -29,7 +31,7 @@ export const paymentApi = {
         order_id: `order_${Date.now()}`,
         amount: Math.round(amount * 100),
         currency: 'INR',
-        key_id: 'rzp_test_cinebook_dummy_key',
+        key_id: RAZORPAY_KEY_ID,
         booking_id: bookingId
       };
     }
@@ -51,4 +53,5 @@ export const paymentApi = {
     }
   }
 };
+
 

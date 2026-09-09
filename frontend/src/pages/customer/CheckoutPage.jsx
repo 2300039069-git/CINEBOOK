@@ -23,7 +23,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
-import { loadRazorpayScript, paymentApi } from '../../services/paymentApi';
+import { loadRazorpayScript, paymentApi, RAZORPAY_KEY_ID } from '../../services/paymentApi';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -117,7 +117,7 @@ const CheckoutPage = () => {
         const orderData = await paymentApi.createOrder(bookingTempId, finalTotal);
 
         const options = {
-          key: orderData.key_id || 'rzp_test_cinebook_dummy_key',
+          key: orderData.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
           amount: orderData.amount || Math.round(finalTotal * 100),
           currency: orderData.currency || 'INR',
           name: 'CINEBOOK',

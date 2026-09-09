@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
     # Razorpay Payment Gateway
-    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_cinebook_dummy_key")
-    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "rzp_test_cinebook_secret_key")
+    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_Ta1Px7K4yVtNZ4")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "tq5lsYt2iMAA06rPWQPklkBp")
     
     # Concurrency Seat Lock Duration (seconds)
     SEAT_LOCK_DURATION_SECONDS: int = 300 # 5 minutes
