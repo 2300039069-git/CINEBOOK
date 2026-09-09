@@ -23,14 +23,15 @@ const SearchModal = ({ isOpen, onClose }) => {
         m.title.toLowerCase().includes(query.toLowerCase()) ||
         m.genres.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
         m.languages.some(l => l.toLowerCase().includes(query.toLowerCase())) ||
-        m.director.toLowerCase().includes(query.toLowerCase())
+        (m.director && m.director.toLowerCase().includes(query.toLowerCase()))
       )
     : [];
 
   const filteredTheatres = query.trim()
     ? THEATRES.filter(t =>
         t.name.toLowerCase().includes(query.toLowerCase()) ||
-        t.address.toLowerCase().includes(query.toLowerCase())
+        t.address.toLowerCase().includes(query.toLowerCase()) ||
+        t.city.toLowerCase().includes(query.toLowerCase())
       )
     : [];
 
@@ -52,30 +53,30 @@ const SearchModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-cine-surface border border-cine-border rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/70 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-2xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden text-text-primary">
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-cine-border bg-cine-card/40">
-          <Search className="w-5 h-5 text-cine-primary" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface-elevated">
+          <Search className="w-5 h-5 text-primary" />
           <input
             ref={inputRef}
             type="text"
             placeholder="Search movies, theatres, events, genres, languages..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-white placeholder-cine-textMuted text-base focus:outline-none"
+            className="w-full bg-transparent text-text-primary placeholder:text-text-muted text-base focus:outline-none font-medium"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="p-1 rounded-lg text-cine-textMuted hover:text-white"
+              className="p-1 rounded-lg text-text-muted hover:text-text-primary cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <button
             onClick={onClose}
-            className="px-2.5 py-1 text-xs font-medium rounded-lg bg-cine-card text-cine-textMuted hover:text-white border border-cine-border"
+            className="px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-surface text-text-muted hover:text-text-primary border border-border cursor-pointer"
           >
             ESC
           </button>
@@ -85,15 +86,15 @@ const SearchModal = ({ isOpen, onClose }) => {
         <div className="max-h-[60vh] overflow-y-auto p-4 space-y-5">
           {!query.trim() ? (
             <div className="py-8 text-center">
-              <Film className="w-10 h-10 text-cine-textMuted/40 mx-auto mb-3" />
-              <p className="text-sm text-cine-textMuted">Type a movie title, cinema name, or genre to get started</p>
+              <Film className="w-10 h-10 text-text-muted/40 mx-auto mb-3" />
+              <p className="text-sm text-text-muted">Type a movie title, cinema name, or genre to get started</p>
               <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-                <span className="text-xs text-cine-textMuted">Quick Search:</span>
-                {['Dune: Part Two', 'Oppenheimer', 'IMAX 3D', 'Sci-Fi', 'Phoenix Mall'].map((tag) => (
+                <span className="text-xs text-text-muted">Popular Searches:</span>
+                {['Pushpa 2: The Rule', 'Devara: Part 1', 'Kalki 2898 AD', 'Siva Cinemas', 'Guntur'].map((tag) => (
                   <button
                     key={tag}
                     onClick={() => setQuery(tag)}
-                    className="px-2.5 py-1 rounded-full bg-cine-card text-xs text-zinc-300 hover:text-white hover:border-cine-primary border border-cine-border transition-colors"
+                    className="px-2.5 py-1 rounded-full bg-surface-elevated text-xs text-text-secondary hover:text-text-primary hover:border-primary border border-border transition-colors cursor-pointer"
                   >
                     {tag}
                   </button>
@@ -105,15 +106,15 @@ const SearchModal = ({ isOpen, onClose }) => {
               {/* Movies Result */}
               {filteredMovies.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-cine-textMuted mb-2.5 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-cine-primary" /> Movies ({filteredMovies.length})
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5 flex items-center gap-1.5">
+                    <Film className="w-3.5 h-3.5 text-primary" /> Movies ({filteredMovies.length})
                   </h4>
                   <div className="space-y-2">
                     {filteredMovies.map((movie) => (
                       <div
                         key={movie.id}
                         onClick={() => handleSelectMovie(movie.slug)}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-cine-card/50 hover:bg-cine-card border border-transparent hover:border-cine-border cursor-pointer transition-all group"
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-surface-elevated hover:bg-surface-hover border border-transparent hover:border-border cursor-pointer transition-all group"
                       >
                         <div className="flex items-center gap-3">
                           <img
@@ -122,24 +123,24 @@ const SearchModal = ({ isOpen, onClose }) => {
                             className="w-12 h-16 object-cover rounded-lg shadow-sm"
                           />
                           <div>
-                            <h5 className="text-sm font-semibold text-white group-hover:text-cine-primary transition-colors">
+                            <h5 className="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors">
                               {movie.title}
                             </h5>
-                            <p className="text-xs text-cine-textMuted mt-0.5">
-                              {movie.genres.join(' • ')} • {movie.languages.join(', ')}
+                            <p className="text-xs text-text-muted mt-0.5">
+                              {movie.genres?.join(' • ')} • {movie.languages?.join(', ')}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="flex items-center text-xs text-cine-gold font-medium">
-                                <Star className="w-3 h-3 fill-cine-gold text-cine-gold mr-1" /> {movie.rating}
+                              <span className="flex items-center text-xs text-gold font-bold">
+                                <Star className="w-3 h-3 fill-gold text-gold mr-1" /> {movie.rating}
                               </span>
-                              <span className="text-xs text-zinc-500">|</span>
-                              <span className="text-[11px] px-1.5 py-0.5 rounded bg-cine-border/50 text-zinc-300">
-                                {movie.formats.join(' / ')}
+                              <span className="text-xs text-text-muted">|</span>
+                              <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface border border-border text-text-secondary">
+                                {movie.formats?.join(' / ')}
                               </span>
                             </div>
                           </div>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-cine-textMuted group-hover:text-cine-primary group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
                       </div>
                     ))}
                   </div>
@@ -149,25 +150,25 @@ const SearchModal = ({ isOpen, onClose }) => {
               {/* Theatres Result */}
               {filteredTheatres.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-cine-textMuted mb-2.5 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-cine-accent" /> Cinemas & Theatres ({filteredTheatres.length})
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-gold" /> Cinemas & Theatres ({filteredTheatres.length})
                   </h4>
                   <div className="space-y-2">
                     {filteredTheatres.map((theatre) => (
                       <div
                         key={theatre.id}
                         onClick={() => handleSelectTheatre(theatre.id)}
-                        className="flex items-center justify-between p-3 rounded-xl bg-cine-card/50 hover:bg-cine-card border border-transparent hover:border-cine-border cursor-pointer transition-all group"
+                        className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-hover border border-transparent hover:border-border cursor-pointer transition-all group"
                       >
                         <div>
-                          <h5 className="text-sm font-medium text-white group-hover:text-cine-accent transition-colors">
+                          <h5 className="text-sm font-medium text-text-primary group-hover:text-gold transition-colors">
                             {theatre.name}
                           </h5>
-                          <p className="text-xs text-cine-textMuted mt-0.5">
-                            {theatre.address}
+                          <p className="text-xs text-text-muted mt-0.5">
+                            {theatre.address} • {theatre.city}
                           </p>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-cine-textMuted group-hover:text-cine-accent group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-gold group-hover:translate-x-1 transition-all" />
                       </div>
                     ))}
                   </div>
@@ -176,7 +177,7 @@ const SearchModal = ({ isOpen, onClose }) => {
 
               {/* No results */}
               {filteredMovies.length === 0 && filteredTheatres.length === 0 && filteredEvents.length === 0 && (
-                <div className="py-8 text-center text-sm text-cine-textMuted">
+                <div className="py-8 text-center text-sm text-text-muted">
                   No matching movies, theatres, or events found for "{query}".
                 </div>
               )}

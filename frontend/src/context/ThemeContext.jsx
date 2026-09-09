@@ -5,12 +5,13 @@ const ThemeContext = createContext();
 export const THEMES = {
   MIDNIGHT_OBSIDIAN: {
     id: 'midnight-obsidian',
-    name: 'Midnight Obsidian & Gold',
-    icon: '👑',
+    name: 'Midnight Obsidian',
+    icon: '🌙',
     description: 'Executive Void Obsidian, Champagne Gold & Cinema Crimson',
     bg: '#080B10',
-    surface: 'rgba(15, 21, 35, 0.75)',
+    surface: '#0F1523',
     card: '#0F1523',
+    elevated: '#172033',
     border: '#1E293B',
     borderHover: '#D4AF37',
     accent: '#D4AF37',
@@ -21,38 +22,21 @@ export const THEMES = {
     textSecondary: '#CBD5E1',
     textMuted: '#94A3B8'
   },
-  CYBER_NEON: {
-    id: 'cyber-neon',
-    name: 'Cyber Neon',
-    icon: '🌈',
-    description: 'Electric gradients, vibrant neon & purple glowing glass',
-    bg: '#0A0B14',
-    surface: 'rgba(22, 24, 44, 0.75)',
-    card: '#131527',
-    border: 'rgba(168, 85, 247, 0.3)',
-    borderHover: '#EC4899',
-    accent: '#EC4899',
-    accentCrimson: '#E50914',
-    accentGradient: 'from-pink-500 via-purple-500 to-cyan-400',
-    primary: '#8B5CF6',
-    text: '#FFFFFF',
-    textSecondary: '#CBD5E1',
-    textMuted: '#94A3B8'
-  },
   LUXE_WHITE: {
     id: 'luxe-white',
-    name: 'Luxe Platinum',
+    name: 'Daylight Porcelain',
     icon: '☀️',
-    description: 'Ultra-clean porcelain white, titanium cards & sleek contrast',
-    bg: '#F8FAFC',
-    surface: 'rgba(255, 255, 255, 0.9)',
+    description: 'Ultra-clean porcelain white, titanium cards & high-contrast clarity',
+    bg: '#F4F6FA',
+    surface: '#FFFFFF',
     card: '#FFFFFF',
-    border: 'rgba(226, 232, 240, 0.9)',
+    elevated: '#F1F5F9',
+    border: '#E2E8F0',
     borderHover: '#D4AF37',
-    accent: '#D4AF37',
+    accent: '#D97706',
     accentCrimson: '#E50914',
     accentGradient: 'from-amber-600 via-yellow-600 to-amber-700',
-    primary: '#D4AF37',
+    primary: '#E50914',
     text: '#0F172A',
     textSecondary: '#334155',
     textMuted: '#64748B'
@@ -62,23 +46,23 @@ export const THEMES = {
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState(() => {
     const saved = localStorage.getItem('cinebook_theme_mode');
-    return saved && THEMES[saved] ? saved : 'MIDNIGHT_OBSIDIAN'; // Executive-grade Default
+    return saved && THEMES[saved] ? saved : 'MIDNIGHT_OBSIDIAN';
   });
+
+  const isDark = currentTheme !== 'LUXE_WHITE';
 
   useEffect(() => {
     localStorage.setItem('cinebook_theme_mode', currentTheme);
     const themeObj = THEMES[currentTheme] || THEMES.MIDNIGHT_OBSIDIAN;
     const root = document.documentElement;
 
-    // Remove existing theme classes
-    root.classList.remove('theme-cyber-neon', 'theme-midnight-black', 'theme-midnight-obsidian', 'theme-luxe-white');
+    // Manage dark/light classes on <html>
+    root.classList.remove('theme-midnight-obsidian', 'theme-luxe-white', 'dark', 'light');
     root.classList.add(`theme-${themeObj.id}`);
 
     if (themeObj.id === 'luxe-white') {
-      root.classList.remove('dark');
       root.classList.add('light');
     } else {
-      root.classList.remove('light');
       root.classList.add('dark');
     }
 
@@ -86,12 +70,14 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--theme-bg', themeObj.bg);
     root.style.setProperty('--theme-surface', themeObj.surface);
     root.style.setProperty('--theme-card', themeObj.card);
+    root.style.setProperty('--theme-elevated', themeObj.elevated || themeObj.surface);
     root.style.setProperty('--theme-border', themeObj.border);
     root.style.setProperty('--theme-border-hover', themeObj.borderHover || '#D4AF37');
     root.style.setProperty('--theme-accent', themeObj.accent);
     root.style.setProperty('--theme-crimson', themeObj.accentCrimson || '#E50914');
     root.style.setProperty('--theme-primary', themeObj.primary);
     root.style.setProperty('--theme-text', themeObj.text);
+    root.style.setProperty('--theme-text-primary', themeObj.text);
     root.style.setProperty('--theme-text-secondary', themeObj.textSecondary);
     root.style.setProperty('--theme-text-muted', themeObj.textMuted);
   }, [currentTheme]);
@@ -102,11 +88,17 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
+  const toggleTheme = () => {
+    setCurrentTheme((prev) => (prev === 'LUXE_WHITE' ? 'MIDNIGHT_OBSIDIAN' : 'LUXE_WHITE'));
+  };
+
   return (
     <ThemeContext.Provider
       value={{
         currentTheme,
         theme: THEMES[currentTheme] || THEMES.MIDNIGHT_OBSIDIAN,
+        isDark,
+        toggleTheme,
         switchTheme,
         allThemes: THEMES
       }}
