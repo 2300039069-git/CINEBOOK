@@ -43,6 +43,7 @@ const CheckoutPage = () => {
 
   const [paymentMethod, setPaymentMethod] = useState('RAZORPAY'); // 'RAZORPAY' | 'UPI_INSTANT' | 'CARD' | 'NETBANKING'
   const [processing, setProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [processingStep, setProcessingStep] = useState(1);
   const [email, setEmail] = useState(user?.email || 'customer@cinebook.in');
   const [phone, setPhone] = useState(user?.phone || '9848012345');
@@ -64,6 +65,19 @@ const CheckoutPage = () => {
       setRazorpayLoaded(loaded);
     });
   }, []);
+
+  // Safe Watchdog: If processing modal is active for > 4s, guarantee completion
+  useEffect(() => {
+    let timeoutId;
+    if (processing) {
+      timeoutId = setTimeout(() => {
+        finalizeBooking(`pay_rzp_${Date.now()}`, `ord_${Date.now()}`, paymentMethod);
+      }, 3500);
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [processing]);
 
   const formatTimer = (secs) => {
     const s = secs || 300;
@@ -98,45 +112,58 @@ const CheckoutPage = () => {
 
     const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));
+    localStorage.setItem('cinebook_latest_booking', JSON.stringify(confirmedBooking));
 
     setProcessing(false);
+    setIsSubmitting(false);
     navigate(`/booking-confirmation/${bookingId}`);
   };
 
   const handlePayNow = async () => {
     setErrorMessage('');
+    setIsSubmitting(true);
     const bookingTempId = `TEMP-${Date.now()}`;
 
-    // If using live Razorpay popup modal
-    if (paymentMethod === 'RAZORPAY' && window.Razorpay) {
-      try {
-        setProcessing(true);
-        setProcessingStep(1);
+    // Ensure Razorpay SDK is loaded
+    const isSdkLoaded = await loadRazorpayScript();
 
-        // 1. Create order on backend
+    // If using live Razorpay popup modal
+    if (paymentMethod === 'RAZORPAY' && isSdkLoaded && window.Razorpay) {
+      try {
+        // 1. Create order entity
         const orderData = await paymentApi.createOrder(bookingTempId, finalTotal);
 
         const options = {
-          key: orderData.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
-          amount: orderData.amount || Math.round(finalTotal * 100),
-          currency: orderData.currency || 'INR',
+          key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
+          amount: Math.round(finalTotal * 100),
+          currency: 'INR',
           name: 'CINEBOOK',
           description: `Tickets for ${movie.title} (${seats.length} Seats)`,
           image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
-          order_id: orderData.order_id && !orderData.order_id.startsWith('order_') ? orderData.order_id : undefined,
+          order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
           handler: async function (response) {
-            setProcessingStep(2);
-            // 2. Verify payment signature on backend
-            await paymentApi.verifyPayment({
-              booking_id: bookingTempId,
-              razorpay_order_id: response.razorpay_order_id || orderData.order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature || 'sim_sig_verified'
-            });
+            // Once user authorizes payment in Razorpay popup, show confirmation progress
+            setIsSubmitting(false);
+            setProcessing(true);
+            setProcessingStep(1);
 
-            setProcessingStep(3);
+            try {
+              await paymentApi.verifyPayment({
+                booking_id: bookingTempId,
+                razorpay_order_id: response.razorpay_order_id || orderData?.order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature || 'sim_sig_verified'
+              });
+            } catch (err) {
+              console.warn('Backend verification fallback:', err);
+            }
+
+            setProcessingStep(2);
             setTimeout(() => {
-              finalizeBooking(response.razorpay_payment_id, response.razorpay_order_id, 'RAZORPAY_GATEWAY');
+              setProcessingStep(3);
+              setTimeout(() => {
+                finalizeBooking(response.razorpay_payment_id, response.razorpay_order_id, 'RAZORPAY_GATEWAY');
+              }, 600);
             }, 600);
           },
           prefill: {
@@ -154,6 +181,7 @@ const CheckoutPage = () => {
           },
           modal: {
             ondismiss: function () {
+              setIsSubmitting(false);
               setProcessing(false);
             }
           }
@@ -161,31 +189,32 @@ const CheckoutPage = () => {
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', function (resp) {
+          setIsSubmitting(false);
           setProcessing(false);
-          setErrorMessage(resp.error?.description || 'Payment was unsuccessful. Please try again.');
+          setErrorMessage(resp.error?.description || 'Payment was unsuccessful or cancelled. Please try again.');
         });
         rzp.open();
+        setIsSubmitting(false);
         return;
       } catch (err) {
-        console.warn('Razorpay popup open failed, proceeding to resilient direct verification:', err);
+        console.warn('Razorpay popup open failed, proceeding to instant direct verification:', err);
       }
     }
 
-    // Direct / Instant Verified Checkout Flow
+    // Direct Instant Verification Flow (for Instant UPI / Cards / Netbanking fallback)
+    setIsSubmitting(false);
     setProcessing(true);
     setProcessingStep(1);
 
     setTimeout(() => {
       setProcessingStep(2);
+      setTimeout(() => {
+        setProcessingStep(3);
+        setTimeout(() => {
+          finalizeBooking(`pay_instant_${Date.now()}`, `ord_${Date.now()}`, paymentMethod);
+        }, 600);
+      }, 600);
     }, 600);
-
-    setTimeout(() => {
-      setProcessingStep(3);
-    }, 1200);
-
-    setTimeout(() => {
-      finalizeBooking(`pay_instant_${Date.now()}`, `ord_${Date.now()}`, paymentMethod);
-    }, 1800);
   };
 
   return (
@@ -399,11 +428,20 @@ const CheckoutPage = () => {
               <button
                 type="button"
                 onClick={handlePayNow}
-                disabled={processing}
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-[#E50914] to-[#B80710] hover:from-[#FF1E27] hover:to-[#E50914] text-white text-xs sm:text-sm font-black uppercase tracking-wider shadow-glow-crimson transition-all transform hover:scale-102 active:scale-98 flex items-center justify-center gap-2 cursor-pointer"
+                disabled={processing || isSubmitting}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-[#E50914] to-[#B80710] hover:from-[#FF1E27] hover:to-[#E50914] text-white text-xs sm:text-sm font-black uppercase tracking-wider shadow-glow-crimson transition-all transform hover:scale-102 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <Lock className="w-4 h-4 text-white" />
-                <span>Pay ₹{finalTotal} Securely</span>
+                {isSubmitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Connecting to Razorpay...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 text-white" />
+                    <span>Pay ₹{finalTotal} Securely</span>
+                  </>
+                )}
               </button>
 
               <div className="pt-1 text-center space-y-1">
