@@ -160,119 +160,117 @@ const PartnerDashboardPage = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* 1. EXECUTIVE LIVE BOX-OFFICE TICKER STRIP */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Metric 1: Today's Gross Ticket Revenue */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-[#D4AF37]/30">
+      {/* 1. 30-MIN AUTO-RELEASE SAFEGUARD BANNER */}
+      <div className="p-4 px-6 rounded-2xl bg-amber-500/10 border border-gold/40 text-gold shadow-gold-glow flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm font-semibold">
+        <div className="flex items-center gap-3">
+          <span className="p-1.5 rounded-lg bg-gold/20 text-gold">⚡</span>
+          <span>
+            <strong>30-Min Auto-Release Active:</strong> Unsold app seats release to counter at 06:00 PM
+          </span>
+        </div>
+        <span className="px-3 py-1 rounded-full bg-gold/20 border border-gold/50 text-gold text-[10px] font-black uppercase tracking-wider flex-shrink-0">
+          Theatre Protection Active
+        </span>
+      </div>
+
+      {/* 2. TOP STATS ROW (3-COLUMN GRID) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Metric 1: Today's Gross Collection */}
+        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-gold/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              Today's Gross Revenue
+            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+              Today's Gross Collection
             </span>
-            <div className="p-2.5 rounded-2xl bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 shadow-glow-gold">
+            <div className="p-2.5 rounded-xl bg-gold/15 text-gold border border-gold/30 shadow-gold-glow">
               <TrendingUp className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black gradient-text-gold font-display">
-              ₹{summary.gross_revenue?.toLocaleString()}
+            <h3 className="text-gold text-3xl font-bold">
+              ₹1,84,500
             </h3>
-            <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold pt-1">
-              <span className="text-[#D4AF37]">Online: ₹{summary.online_revenue?.toLocaleString()}</span>
+            <div className="flex items-center justify-between text-[11px] text-text-secondary font-medium pt-1">
+              <span className="text-gold">Online: ₹1,56,250</span>
               <span>•</span>
-              <span className="text-emerald-400">Counter: ₹{summary.counter_revenue?.toLocaleString()}</span>
+              <span className="text-emerald-400">Counter: ₹28,250</span>
             </div>
           </div>
         </div>
 
-        {/* Metric 2: Total Tickets Sold & Occupancy */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
+        {/* Metric 2: Occupancy Rate */}
+        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-white/[0.08]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              Tickets & Occupancy
+            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+              Occupancy Rate
             </span>
-            <div className="p-2.5 rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
-              <Ticket className="w-5 h-5" />
+            <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <Activity className="w-5 h-5" />
             </div>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-white font-display">
-              {summary.total_tickets_sold} <span className="text-xs text-slate-400 font-normal">/ 1120 seats</span>
-            </h3>
-            <div className="flex items-center justify-between text-[11px] text-slate-300 font-bold pt-1">
-              <span className="text-cyan-400">{summary.occupancy_pct}% Occupancy</span>
-              <span>•</span>
-              <span className="text-slate-400">4 Shows Active</span>
+          <div className="space-y-2">
+            <div className="flex items-baseline justify-between">
+              <h3 className="text-3xl font-bold text-white">
+                88%
+              </h3>
+              <span className="text-xs text-text-muted font-medium">350 / 400 Seats Filled</span>
+            </div>
+            {/* Animated Green Progress Bar */}
+            <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden border border-white/[0.08]">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out animate-pulse"
+                style={{ width: '88%' }}
+              />
             </div>
           </div>
         </div>
 
-        {/* Metric 3: T+1 Payout Guarantee */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
+        {/* Metric 3: Quota Breakdown */}
+        <div className="glass-panel rounded-2xl p-6 space-y-3 relative overflow-hidden border border-white/[0.08]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              T+1 Net Settlement (₹0 Fee)
+            <span className="text-xs font-bold uppercase text-text-secondary tracking-wider">
+              Quota Breakdown
             </span>
-            <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              <CreditCard className="w-5 h-5" />
+            <div className="p-2.5 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
+              <Layers className="w-5 h-5" />
             </div>
           </div>
           <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-emerald-400 font-display">
-              ₹{summary.net_payout_amount?.toLocaleString()}
+            <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+              40 Online <span className="text-xs font-normal text-text-muted">(Cinebook)</span> vs 310 Counter Seats
             </h3>
-            <p className="text-[11px] text-emerald-400/90 font-bold flex items-center gap-1 pt-1">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Direct Bank Payout Scheduled
-            </p>
-          </div>
-        </div>
-
-        {/* Metric 4: Gate Admissions Verified */}
-        <div className="p-6 rounded-3xl glass-card space-y-3 relative overflow-hidden border border-white/[0.08]">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-slate-400 tracking-wider">
-              Gate Admissions Admitted
-            </span>
-            <div className="p-2.5 rounded-2xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
-              <QrCode className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-2xl sm:text-3xl font-black text-white font-display">
-              640 <span className="text-xs text-slate-400 font-normal">checked-in</span>
-            </h3>
-            <p className="text-[11px] text-slate-300 font-medium pt-1">
-              0 Duplicate entries detected
+            <p className="text-[11px] text-text-secondary font-medium pt-1 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-gold" /> Guaranteed offline walk-in seats
             </p>
           </div>
         </div>
       </div>
 
-      {/* 2. THEATRE QUICK ACTIONS HUB */}
-      <div className="p-4 sm:p-5 rounded-3xl glass-panel border border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
+      {/* 3. THEATRE QUICK ACTIONS HUB */}
+      <div className="p-4 sm:p-5 rounded-2xl glass-panel border border-white/[0.08] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" /> Exhibitor Command Hub:
+          <span className="text-xs font-black text-gold uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-gold" /> Exhibitor Command Hub:
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/partner/counter-pos"
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-glow-gold transition-all transform hover:scale-102 flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-gold via-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-bold text-xs shadow-gold-glow transition-all transform hover:scale-102 flex items-center gap-1.5"
           >
             <Printer className="w-4 h-4" />
             <span>Counter POS & Thermal Print</span>
           </Link>
           <Link
             to="/partner/canteen"
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface-card border border-border text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
           >
-            <UtensilsCrossed className="w-4 h-4" />
+            <UtensilsCrossed className="w-4 h-4 text-gold" />
             <span>Canteen Interval Pre-Orders</span>
           </Link>
           <Link
             to="/partner/scanner"
-            className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#E50914] to-rose-700 hover:from-red-600 hover:to-rose-800 text-white text-xs font-black shadow-glow-crimson transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-cinema-glow transition-all flex items-center gap-1.5"
           >
             <QrCode className="w-4 h-4" />
             <span>Gatekeeper QR Scanner</span>
@@ -280,10 +278,10 @@ const PartnerDashboardPage = () => {
           <button
             type="button"
             onClick={() => setIsDcrModalOpen(true)}
-            className="px-4 py-2.5 rounded-2xl glass-card hover:border-[#D4AF37] text-xs font-black text-[#D4AF37] transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2.5 rounded-xl border border-gold text-gold hover:bg-gold hover:text-black font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-gold-glow"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Daily Collection Report (DCR)</span>
+            <span>Export Daily Collection Sheet (DCR)</span>
           </button>
         </div>
       </div>
