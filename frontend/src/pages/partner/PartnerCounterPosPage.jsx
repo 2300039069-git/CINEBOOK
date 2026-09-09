@@ -283,28 +283,28 @@ const PartnerCounterPosPage = () => {
   return (
     <div className="space-y-8 animate-fade-in relative">
       {/* 1. HEADER & REALTIME POS DESK STATUS */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--theme-border)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#1E293B]">
         <div>
-          <span className="text-xs font-black text-pink-500 uppercase tracking-widest flex items-center gap-1.5">
-            <ReceiptText className="w-4 h-4" /> Theatre Box-Office POS Desk
+          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5">
+            <ReceiptText className="w-4 h-4 text-[#D4AF37]" /> Theatre Box-Office POS Desk
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-theme-primary tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 font-display">
             Physical Cash Counter Ticket Terminal
           </h1>
-          <p className="text-xs text-theme-muted mt-1">
+          <p className="text-xs text-[#94A3B8] mt-1">
             Fast walk-in ticket issuing with continuous 80mm / 58mm thermal paper roll printing
           </p>
         </div>
 
         {/* Counter Summary Badges */}
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 rounded-2xl glass-card text-right">
-            <span className="text-[10px] uppercase font-bold text-theme-muted block">Today's Counter Cash</span>
-            <span className="text-base font-black gradient-text-gold">₹{totalCounterSales.toLocaleString()}</span>
+          <div className="px-4 py-2.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] text-right">
+            <span className="text-[10px] uppercase font-bold text-[#94A3B8] block">Today's Counter Cash</span>
+            <span className="text-base font-black text-[#D4AF37]">₹{totalCounterSales.toLocaleString()}</span>
           </div>
-          <div className="px-4 py-2 rounded-2xl glass-card text-right">
-            <span className="text-[10px] uppercase font-bold text-theme-muted block">Slips Printed</span>
-            <span className="text-base font-black text-emerald-500">{totalCounterTickets} Tickets</span>
+          <div className="px-4 py-2.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] text-right">
+            <span className="text-[10px] uppercase font-bold text-[#94A3B8] block">Slips Printed</span>
+            <span className="text-base font-black text-emerald-400">{totalCounterTickets} Tickets</span>
           </div>
         </div>
       </div>
@@ -312,8 +312,8 @@ const PartnerCounterPosPage = () => {
       {/* 2. MOVIE & SHOW SELECTION STRIP */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Cinema Selector */}
-        <div className="p-4 rounded-3xl glass-panel space-y-1.5">
-          <label className="text-[10px] font-black uppercase text-theme-muted tracking-wider block">
+        <div className="p-4 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] space-y-1.5 shadow-xl">
+          <label className="text-[10px] font-black uppercase text-[#94A3B8] tracking-wider block">
             1. Multiplex / Standalone Audi
           </label>
           <select
@@ -322,10 +322,10 @@ const PartnerCounterPosPage = () => {
               const found = THEATRES.find((t) => t.id === e.target.value);
               if (found) setSelectedTheatre(found);
             }}
-            className="w-full p-2.5 rounded-2xl bg-black/10 dark:bg-white/5 border border-[var(--theme-border)] text-xs font-bold text-theme-primary focus:outline-none focus:border-pink-500"
+            className="w-full p-2.5 rounded-xl bg-[#080B10] border border-[#1E293B] text-xs font-bold text-white focus:outline-none focus:border-[#D4AF37]"
           >
             {THEATRES.map((t) => (
-              <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+              <option key={t.id} value={t.id} className="bg-[#080B10] text-white">
                 {t.name} ({t.city.toUpperCase()})
               </option>
             ))}
@@ -333,8 +333,8 @@ const PartnerCounterPosPage = () => {
         </div>
 
         {/* Movie Selector */}
-        <div className="p-4 rounded-3xl glass-panel space-y-1.5">
-          <label className="text-[10px] font-black uppercase text-pink-500 tracking-wider block">
+        <div className="p-4 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] space-y-1.5 shadow-xl">
+          <label className="text-[10px] font-black uppercase text-[#E50914] tracking-wider block">
             2. Screening Movie
           </label>
           <select
@@ -343,10 +343,10 @@ const PartnerCounterPosPage = () => {
               const found = MOVIES.find((m) => m.id === e.target.value);
               if (found) setSelectedMovie(found);
             }}
-            className="w-full p-2.5 rounded-2xl bg-black/10 dark:bg-white/5 border border-[var(--theme-border)] text-xs font-bold text-theme-primary focus:outline-none focus:border-pink-500"
+            className="w-full p-2.5 rounded-xl bg-[#080B10] border border-[#1E293B] text-xs font-bold text-white focus:outline-none focus:border-[#E50914]"
           >
             {MOVIES.map((m) => (
-              <option key={m.id} value={m.id} className="bg-slate-900 text-white">
+              <option key={m.id} value={m.id} className="bg-[#080B10] text-white">
                 {m.title}
               </option>
             ))}
@@ -354,8 +354,8 @@ const PartnerCounterPosPage = () => {
         </div>
 
         {/* Showtime Selector */}
-        <div className="p-4 rounded-3xl glass-panel space-y-1.5">
-          <label className="text-[10px] font-black uppercase text-cyan-500 tracking-wider block">
+        <div className="p-4 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] space-y-1.5 shadow-xl">
+          <label className="text-[10px] font-black uppercase text-[#D4AF37] tracking-wider block">
             3. Showtime & Format
           </label>
           <div className="grid grid-cols-2 gap-2">
@@ -364,10 +364,10 @@ const PartnerCounterPosPage = () => {
                 key={sh.id}
                 type="button"
                 onClick={() => setSelectedShow(sh)}
-                className={`p-2 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center border ${
+                className={`p-2 rounded-xl text-xs font-black transition-all flex flex-col items-center justify-center border cursor-pointer ${
                   selectedShow.id === sh.id
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-pink-500 shadow-sm'
-                    : 'glass-card text-theme-secondary hover:border-pink-500'
+                    ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black border-[#D4AF37] shadow-sm'
+                    : 'bg-[#080B10] border-[#1E293B] text-slate-300 hover:border-[#D4AF37]'
                 }`}
               >
                 <span>{sh.time}</span>
@@ -381,29 +381,29 @@ const PartnerCounterPosPage = () => {
       {/* 3. MAIN WORKSPACE: SEAT MATRIX + BILLING PANEL */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT 2 COLS: VISUAL HALL SEATING MATRIX */}
-        <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl glass-panel border border-[var(--theme-border)] shadow-2xl space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--theme-border)] text-xs">
+        <div className="lg:col-span-2 p-6 sm:p-8 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] shadow-2xl space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#1E293B] text-xs">
             <div>
-              <h3 className="font-black text-theme-primary text-base">
+              <h3 className="font-black text-white text-base">
                 {selectedMovie.title} • {selectedShow.time}
               </h3>
-              <p className="text-theme-muted text-xs">
-                Selected: <strong className="text-pink-500">{selectedSeats.length} seats</strong> • Blocked / Sold: <strong className="text-rose-400">{bookedSeatsSet.size} seats</strong>
+              <p className="text-[#94A3B8] text-xs">
+                Selected: <strong className="text-[#E50914]">{selectedSeats.length} seats</strong> • Blocked / Sold: <strong className="text-rose-400">{bookedSeatsSet.size} seats</strong>
               </p>
             </div>
 
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-3 text-[11px]">
-              <span className="flex items-center gap-1 text-theme-muted">
-                <span className="w-3.5 h-3.5 rounded glass-panel border border-[var(--theme-border)] block" /> Available
+              <span className="flex items-center gap-1 text-[#94A3B8]">
+                <span className="w-3.5 h-3.5 rounded bg-[#080B10] border border-[#1E293B] block" /> Available
               </span>
-              <span className="flex items-center gap-1 text-amber-500 font-bold">
-                <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-500 flex items-center justify-center text-[8px]">🔒</span> Counter Quota
+              <span className="flex items-center gap-1 text-[#D4AF37] font-bold">
+                <span className="w-3.5 h-3.5 rounded bg-[#D4AF37]/20 border border-[#D4AF37] flex items-center justify-center text-[8px]">🔒</span> Counter Quota
               </span>
-              <span className="flex items-center gap-1 text-pink-500 font-bold">
-                <span className="w-3.5 h-3.5 rounded bg-gradient-to-r from-pink-500 to-purple-600 block" /> Selected
+              <span className="flex items-center gap-1 text-[#E50914] font-bold">
+                <span className="w-3.5 h-3.5 rounded bg-[#E50914] block" /> Selected
               </span>
-              <span className="flex items-center gap-1 text-rose-500 font-bold">
+              <span className="flex items-center gap-1 text-rose-400 font-bold">
                 <span className="w-3.5 h-3.5 rounded bg-rose-950/60 border border-rose-500/50 flex items-center justify-center text-[9px] text-rose-400 font-black">✕</span> Blocked / Sold
               </span>
             </div>
@@ -414,15 +414,15 @@ const PartnerCounterPosPage = () => {
             <div className="min-w-[620px] mx-auto space-y-6">
               {BASE_SEAT_LAYOUT.tiers.map((tier) => (
                 <div key={tier.id} className="space-y-2">
-                  <div className="flex justify-between items-center text-xs pb-1 border-b border-[var(--theme-border)]">
-                    <span className="font-black uppercase tracking-wider text-theme-primary">{tier.name}</span>
-                    <span className="font-black text-amber-500">₹{tier.price}</span>
+                  <div className="flex justify-between items-center text-xs pb-1 border-b border-[#1E293B]">
+                    <span className="font-black uppercase tracking-wider text-slate-300">{tier.name}</span>
+                    <span className="font-black text-[#D4AF37]">₹{tier.price}</span>
                   </div>
 
                   <div className="space-y-1.5 pt-1">
                     {tier.rows.map((row) => (
                       <div key={row.rowLetter} className="flex items-center justify-center gap-2">
-                        <span className="w-5 text-center text-xs font-black text-theme-muted">{row.rowLetter}</span>
+                        <span className="w-5 text-center text-xs font-black text-[#94A3B8]">{row.rowLetter}</span>
 
                         <div className="flex items-center gap-1.5">
                           {row.seats.map((seatNum) => {
@@ -444,14 +444,14 @@ const PartnerCounterPosPage = () => {
                                       ? `Seat ${seatId} (Counter Quota) - ₹${tier.price}`
                                       : `Seat ${seatId} - ₹${tier.price}`
                                   }
-                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center relative ${
+                                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center relative cursor-pointer ${
                                     isBlocked
-                                      ? 'bg-rose-950/60 border border-rose-500/50 text-rose-400 cursor-not-allowed opacity-60 line-through'
+                                      ? 'bg-[#080B10]/90 border border-[#1E293B] text-slate-600 cursor-not-allowed opacity-50 line-through'
                                       : isSelected
-                                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-glow-pink scale-110 ring-2 ring-pink-400'
+                                      ? 'bg-[#E50914] text-white shadow-glow-crimson scale-110 ring-2 ring-[#FF4B55]'
                                       : isCounterHeld
-                                      ? 'bg-amber-500/20 border border-amber-500 text-amber-400 hover:scale-105'
-                                      : 'glass-panel text-theme-primary hover:border-pink-500 hover:scale-105'
+                                      ? 'bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] hover:scale-105'
+                                      : 'bg-[#080B10] border border-[#1E293B] text-slate-300 hover:border-[#D4AF37] hover:scale-105'
                                   }`}
                                 >
                                   {isBlocked ? '✕' : isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
@@ -462,7 +462,7 @@ const PartnerCounterPosPage = () => {
                           })}
                         </div>
 
-                        <span className="w-5 text-center text-xs font-black text-theme-muted">{row.rowLetter}</span>
+                        <span className="w-5 text-center text-xs font-black text-[#94A3B8]">{row.rowLetter}</span>
                       </div>
                     ))}
                   </div>
@@ -471,9 +471,9 @@ const PartnerCounterPosPage = () => {
 
               {/* Curved Screen Banner */}
               <div className="pt-6 text-center space-y-1.5">
-                <div className="h-1.5 w-3/4 mx-auto bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-cyan-500">
-                  Cinema 4K Silver Screen
+                <div className="h-1.5 w-3/4 mx-auto bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent rounded-full shadow-glow-gold opacity-80" />
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                  Cinema 4K RGB Silver Screen
                 </p>
               </div>
             </div>
@@ -481,23 +481,23 @@ const PartnerCounterPosPage = () => {
         </div>
 
         {/* RIGHT COL: INSTANT BILLING & 80MM PRINT CONTROLS */}
-        <div className="p-6 rounded-3xl glass-panel border border-[var(--theme-border)] shadow-2xl space-y-5 flex flex-col justify-between">
+        <div className="p-6 rounded-3xl bg-[#0F1523]/90 border border-[#1E293B] shadow-2xl space-y-5 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]">
-              <h3 className="font-black text-base text-theme-primary flex items-center gap-1.5">
-                <Ticket className="w-4 h-4 text-pink-500" />
+            <div className="flex items-center justify-between pb-2 border-b border-[#1E293B]">
+              <h3 className="font-black text-base text-white flex items-center gap-1.5">
+                <Ticket className="w-4 h-4 text-[#D4AF37]" />
                 <span>Counter Checkout</span>
               </h3>
-              <span className="text-xs font-bold text-emerald-500">Zero Fee (₹0)</span>
+              <span className="text-xs font-bold text-emerald-400">Zero Fee (₹0)</span>
             </div>
 
             {/* Selected Seats Pill Display */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black uppercase text-theme-muted tracking-wider block">
+              <label className="text-[10px] font-black uppercase text-[#94A3B8] tracking-wider block">
                 Selected Seats ({selectedSeats.length})
               </label>
               {selectedSeats.length === 0 ? (
-                <div className="p-3 rounded-2xl glass-card text-center text-xs text-theme-muted">
+                <div className="p-3 rounded-2xl bg-[#080B10] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
                   No seats selected yet. Click seats in the hall layout.
                 </div>
               ) : (
@@ -505,10 +505,10 @@ const PartnerCounterPosPage = () => {
                   {selectedSeats.map((s) => (
                     <span
                       key={s.id}
-                      className="px-3 py-1 rounded-xl bg-gradient-to-r from-pink-500/20 to-purple-600/20 border border-pink-500/40 text-pink-400 text-xs font-black flex items-center gap-1.5"
+                      className="px-3 py-1 rounded-xl bg-[#E50914]/20 border border-[#E50914]/40 text-red-400 text-xs font-black flex items-center gap-1.5"
                     >
                       <span>{s.id}</span>
-                      <span className="text-[10px] text-theme-muted">(₹{s.price})</span>
+                      <span className="text-[10px] text-[#94A3B8]">(₹{s.price})</span>
                     </span>
                   ))}
                 </div>
@@ -518,40 +518,40 @@ const PartnerCounterPosPage = () => {
             {/* Customer Contact Details (Optional) */}
             <div className="space-y-2 pt-2">
               <div className="relative">
-                <User className="w-3.5 h-3.5 absolute left-3 top-3 text-theme-muted" />
+                <User className="w-3.5 h-3.5 absolute left-3 top-3 text-[#94A3B8]" />
                 <input
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Guest Name (e.g. Walk-in Guest)"
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 border border-[var(--theme-border)] text-xs text-theme-primary focus:outline-none focus:border-pink-500"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#080B10] border border-[#1E293B] text-xs text-white focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
               <div className="relative">
-                <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-theme-muted" />
+                <Phone className="w-3.5 h-3.5 absolute left-3 top-3 text-[#94A3B8]" />
                 <input
                   type="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="Mobile for SMS (Optional)"
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-black/10 dark:bg-white/5 border border-[var(--theme-border)] text-xs text-theme-primary focus:outline-none focus:border-pink-500"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#080B10] border border-[#1E293B] text-xs text-white focus:outline-none focus:border-[#D4AF37]"
                 />
               </div>
             </div>
 
             {/* Payment Mode Selector */}
             <div className="space-y-1.5 pt-2">
-              <label className="text-[10px] font-black uppercase text-theme-muted tracking-wider block">
+              <label className="text-[10px] font-black uppercase text-[#94A3B8] tracking-wider block">
                 Counter Payment Mode
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => setPaymentMode('CASH_COUNTER')}
-                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border ${
+                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     paymentMode === 'CASH_COUNTER'
                       ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-500 shadow-sm'
-                      : 'glass-card text-theme-secondary hover:border-emerald-500'
+                      : 'bg-[#080B10] text-[#94A3B8] border-[#1E293B] hover:border-emerald-500'
                   }`}
                 >
                   <DollarSign className="w-4 h-4" />
@@ -560,10 +560,10 @@ const PartnerCounterPosPage = () => {
                 <button
                   type="button"
                   onClick={() => setPaymentMode('UPI_QR')}
-                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border ${
+                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     paymentMode === 'UPI_QR'
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white border-cyan-500 shadow-sm'
-                      : 'glass-card text-theme-secondary hover:border-cyan-500'
+                      ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black border-[#D4AF37] shadow-sm'
+                      : 'bg-[#080B10] text-[#94A3B8] border-[#1E293B] hover:border-[#D4AF37]'
                   }`}
                 >
                   <QrCode className="w-4 h-4" />
@@ -572,10 +572,10 @@ const PartnerCounterPosPage = () => {
                 <button
                   type="button"
                   onClick={() => setPaymentMode('CARD_POS')}
-                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border ${
+                  className={`p-2.5 rounded-xl text-xs font-black transition-all flex flex-col items-center gap-1 border cursor-pointer ${
                     paymentMode === 'CARD_POS'
-                      ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white border-pink-500 shadow-sm'
-                      : 'glass-card text-theme-secondary hover:border-pink-500'
+                      ? 'bg-gradient-to-r from-[#E50914] to-red-700 text-white border-[#E50914] shadow-sm'
+                      : 'bg-[#080B10] text-[#94A3B8] border-[#1E293B] hover:border-[#E50914]'
                   }`}
                 >
                   <CreditCard className="w-4 h-4" />
@@ -586,19 +586,19 @@ const PartnerCounterPosPage = () => {
 
             {/* Cash Calculator (if cash mode selected) */}
             {paymentMode === 'CASH_COUNTER' && (
-              <div className="p-3 rounded-2xl glass-card space-y-2 border border-[var(--theme-border)]">
+              <div className="p-3 rounded-2xl bg-[#080B10] space-y-2 border border-[#1E293B]">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-theme-muted font-bold">Cash Tendered:</span>
+                  <span className="text-[#94A3B8] font-bold">Cash Tendered:</span>
                   <input
                     type="number"
                     value={cashTendered}
                     onChange={(e) => setCashTendered(e.target.value)}
                     placeholder="₹ Received"
-                    className="w-24 px-2 py-1 rounded-lg bg-black/20 dark:bg-white/10 border border-[var(--theme-border)] text-right font-bold text-xs text-theme-primary focus:outline-none focus:border-emerald-500"
+                    className="w-24 px-2 py-1 rounded-lg bg-[#0F1523] border border-[#1E293B] text-right font-bold text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 {Number(cashTendered) > totalPayable && (
-                  <div className="flex justify-between text-xs font-black text-emerald-400 pt-1 border-t border-[var(--theme-border)]">
+                  <div className="flex justify-between text-xs font-black text-emerald-400 pt-1 border-t border-[#1E293B]">
                     <span>Return Change Due:</span>
                     <span>₹{changeDue}.00</span>
                   </div>
@@ -607,18 +607,18 @@ const PartnerCounterPosPage = () => {
             )}
 
             {/* Price Breakdown */}
-            <div className="p-4 rounded-2xl glass-card space-y-1.5 text-xs">
-              <div className="flex justify-between text-theme-secondary">
+            <div className="p-4 rounded-2xl bg-[#080B10] border border-[#1E293B] space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-300">
                 <span>Tickets Base Amount:</span>
-                <span className="font-bold">₹{baseTotal}.00</span>
+                <span className="font-bold text-white">₹{baseTotal}.00</span>
               </div>
-              <div className="flex justify-between text-theme-muted text-[11px]">
+              <div className="flex justify-between text-[#94A3B8] text-[11px]">
                 <span>GST (18% Included):</span>
                 <span>₹{Math.round(baseTotal - baseTotal / 1.18)}.00</span>
               </div>
-              <div className="flex justify-between text-base font-black text-theme-primary pt-2 border-t border-[var(--theme-border)]">
+              <div className="flex justify-between text-base font-black text-white pt-2 border-t border-[#1E293B]">
                 <span>Total Amount:</span>
-                <span className="gradient-text-gold">₹{totalPayable}.00</span>
+                <span className="text-[#D4AF37]">₹{totalPayable}.00</span>
               </div>
             </div>
           </div>
@@ -629,13 +629,13 @@ const PartnerCounterPosPage = () => {
               type="button"
               disabled={selectedSeats.length === 0}
               onClick={handleIssueTicket}
-              className={`w-full py-4 px-6 rounded-2xl text-white text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl transition-all cursor-pointer ${
+              className={`w-full py-4 px-6 rounded-2xl text-black text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl transition-all cursor-pointer ${
                 selectedSeats.length === 0
-                  ? 'bg-gray-600 opacity-50 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 shadow-glow-pink transform hover:scale-102'
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed opacity-50'
+                  : 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] shadow-glow-gold transform hover:scale-102'
               }`}
             >
-              <Printer className="w-5 h-5" />
+              <Printer className="w-5 h-5 text-black" />
               <span>Issue Ticket & Print 80mm Slip</span>
             </button>
           </div>
@@ -643,19 +643,19 @@ const PartnerCounterPosPage = () => {
       </div>
 
       {/* 4. RECENT COUNTER ISSUES AUDIT TABLE */}
-      <div className="p-6 rounded-3xl glass-panel space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]">
+      <div className="p-6 rounded-3xl bg-[#0F1523]/80 border border-[#1E293B] space-y-4 shadow-xl">
+        <div className="flex items-center justify-between pb-2 border-b border-[#1E293B]">
           <div>
-            <h3 className="text-base font-black text-theme-primary">Recent Box-Office Slips Issued Today</h3>
-            <p className="text-xs text-theme-muted">Audit log of tickets issued at this counter terminal with 1-click re-print</p>
+            <h3 className="text-base font-black text-white">Recent Box-Office Slips Issued Today</h3>
+            <p className="text-xs text-[#94A3B8]">Audit log of tickets issued at this counter terminal with 1-click re-print</p>
           </div>
-          <span className="text-xs font-bold text-pink-500">{counterHistory.length} Total Slips</span>
+          <span className="text-xs font-bold text-[#D4AF37]">{counterHistory.length} Total Slips</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[var(--theme-border)] text-theme-muted uppercase text-[10px] tracking-wider">
+              <tr className="border-b border-[#1E293B] text-[#94A3B8] uppercase text-[10px] tracking-wider">
                 <th className="py-2.5 px-3">Token Ref</th>
                 <th className="py-2.5 px-3">Movie & Show</th>
                 <th className="py-2.5 px-3">Seats</th>
@@ -665,33 +665,33 @@ const PartnerCounterPosPage = () => {
                 <th className="py-2.5 px-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--theme-border)]">
+            <tbody className="divide-y divide-[#1E293B]">
               {counterHistory.map((item) => (
-                <tr key={item.bookingId} className="hover:bg-white/5 transition-colors">
-                  <td className="py-3 px-3 font-mono font-black text-pink-500">{item.bookingId}</td>
+                <tr key={item.bookingId} className="hover:bg-[#172033] transition-colors">
+                  <td className="py-3 px-3 font-mono font-black text-[#D4AF37]">{item.bookingId}</td>
                   <td className="py-3 px-3">
-                    <span className="font-bold text-theme-primary block">{item.movie?.title}</span>
-                    <span className="text-[10px] text-theme-muted">{item.show?.time || item.showtime}</span>
+                    <span className="font-bold text-white block">{item.movie?.title}</span>
+                    <span className="text-[10px] text-[#94A3B8]">{item.show?.time || item.showtime}</span>
                   </td>
-                  <td className="py-3 px-3 font-mono font-bold text-theme-primary">
+                  <td className="py-3 px-3 font-mono font-bold text-white">
                     {Array.isArray(item.seats)
                       ? item.seats.map((s) => (typeof s === 'string' ? s : s.id)).join(', ')
                       : item.seats}
                   </td>
-                  <td className="py-3 px-3 font-black text-emerald-500">₹{item.totalAmount}.00</td>
+                  <td className="py-3 px-3 font-black text-emerald-400">₹{item.totalAmount}.00</td>
                   <td className="py-3 px-3">
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
                       {item.paymentMode || 'CASH'}
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-theme-muted">{item.bookedAt || 'Just now'}</td>
+                  <td className="py-3 px-3 text-[#94A3B8]">{item.bookedAt || 'Just now'}</td>
                   <td className="py-3 px-3 text-right">
                     <button
                       type="button"
                       onClick={() => handleReprint(item)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl glass-card hover:border-pink-500 text-xs font-bold text-theme-primary transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#080B10] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-bold text-white transition-all cursor-pointer"
                     >
-                      <Printer className="w-3.5 h-3.5 text-pink-500" />
+                      <Printer className="w-3.5 h-3.5 text-[#D4AF37]" />
                       <span>Re-Print 80mm</span>
                     </button>
                   </td>
@@ -708,20 +708,20 @@ const PartnerCounterPosPage = () => {
           className="fixed inset-0 z-[99999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-start overflow-y-auto p-3 sm:p-6"
           onClick={handleCloseModal}
         >
-          {/* MODAL WRAPPER (Stops Propagation so clicking receipt won't close) */}
+          {/* MODAL WRAPPER */}
           <div
-            className="glass-panel p-4 sm:p-6 rounded-3xl max-w-lg w-full border border-pink-500/30 shadow-2xl space-y-4 my-auto animate-scale-up"
+            className="bg-[#0F1523] p-4 sm:p-6 rounded-3xl max-w-lg w-full border border-[#D4AF37]/40 shadow-2xl space-y-4 my-auto animate-scale-up"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Fixed Control Bar */}
-            <div className="flex items-center justify-between gap-3 pb-3 border-b border-[var(--theme-border)] no-print">
+            <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#1E293B] no-print">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm text-theme-primary">Ticket Issued & Blocked!</h3>
-                  <p className="text-[10px] text-theme-muted font-mono">{activeReceipt.bookingId}</p>
+                  <h3 className="font-black text-sm text-white">Ticket Issued & Blocked!</h3>
+                  <p className="text-[10px] text-[#D4AF37] font-mono">{activeReceipt.bookingId}</p>
                 </div>
               </div>
 
@@ -729,7 +729,7 @@ const PartnerCounterPosPage = () => {
               <button
                 type="button"
                 onClick={handleCloseModal}
-                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 flex items-center gap-1 text-xs font-black transition-all cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1 text-xs font-black transition-all cursor-pointer"
               >
                 <X className="w-4 h-4" />
                 <span>Close (Esc)</span>
@@ -741,15 +741,15 @@ const PartnerCounterPosPage = () => {
               <button
                 type="button"
                 onClick={handleTriggerPrint}
-                className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-xs font-black uppercase tracking-wider shadow-glow-pink transition-all transform hover:scale-102 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black text-xs font-black uppercase tracking-wider shadow-glow-gold transition-all transform hover:scale-102 cursor-pointer"
               >
-                <Printer className="w-4 h-4" />
+                <Printer className="w-4 h-4 text-black" />
                 <span>🖨️ Print 80mm Slip Now</span>
               </button>
             </div>
 
             {/* Receipt Preview Component Container */}
-            <div className="flex justify-center bg-slate-900/50 p-2 sm:p-4 rounded-2xl border border-[var(--theme-border)]">
+            <div className="flex justify-center bg-[#080B10] p-2 sm:p-4 rounded-2xl border border-[#1E293B]">
               <ThermalTicketReceipt
                 booking={activeReceipt}
                 onPrint={handleTriggerPrint}
@@ -758,13 +758,13 @@ const PartnerCounterPosPage = () => {
             </div>
 
             {/* Bottom Footer Actions */}
-            <div className="pt-2 flex items-center justify-between gap-3 border-t border-[var(--theme-border)] no-print">
+            <div className="pt-2 flex items-center justify-between gap-3 border-t border-[#1E293B] no-print">
               <button
                 type="button"
                 onClick={handleTriggerPrint}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card hover:border-pink-500 text-xs font-bold text-theme-primary transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#080B10] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-bold text-white transition-all cursor-pointer"
               >
-                <Printer className="w-4 h-4 text-pink-500" />
+                <Printer className="w-4 h-4 text-[#D4AF37]" />
                 <span>Print Copy</span>
               </button>
 
@@ -784,3 +784,4 @@ const PartnerCounterPosPage = () => {
 };
 
 export default PartnerCounterPosPage;
+

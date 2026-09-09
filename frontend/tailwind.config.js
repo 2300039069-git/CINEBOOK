@@ -8,19 +8,34 @@ export default {
   theme: {
     extend: {
       colors: {
+        background: '#080B10',
+        surface: '#0F1523',
+        'surface-hover': '#172033',
+        border: '#1E293B',
+        primary: {
+          DEFAULT: '#E50914',
+          hover: '#CC0812',
+          light: '#FF3B47'
+        },
+        gold: {
+          DEFAULT: '#D4AF37',
+          light: '#F3E5AB',
+          dark: '#AA7C11'
+        },
+        'text-main': '#F8FAFC',
+        'text-muted': '#94A3B8',
         cine: {
-          bg: 'var(--theme-bg)',
-          surface: 'var(--theme-surface)',
-          card: 'var(--theme-card)',
-          border: 'var(--theme-border)',
-          primary: 'var(--theme-accent)',
-          accent: 'var(--theme-accent)',
-          text: 'var(--theme-text-primary)',
-          textMuted: 'var(--theme-text-muted)',
-          gold: '#F59E0B',
-          pink: '#EC4899',
-          cyan: '#06B6D4',
-          purple: '#8B5CF6'
+          bg: '#080B10',
+          surface: '#0F1523',
+          card: '#0F1523',
+          border: '#1E293B',
+          primary: '#E50914',
+          accent: '#D4AF37',
+          text: '#F8FAFC',
+          textMuted: '#94A3B8',
+          gold: '#D4AF37',
+          crimson: '#E50914',
+          obsidian: '#080B10'
         }
       },
       fontFamily: {
@@ -28,9 +43,10 @@ export default {
         display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow-pink': '0 0 25px -5px rgba(236, 72, 153, 0.5)',
-        'glow-cyan': '0 0 25px -5px rgba(6, 182, 212, 0.5)',
-        'glow-screen': '0 0 35px 2px rgba(6, 182, 212, 0.45)',
+        'glow-crimson': '0 0 30px -5px rgba(229, 9, 20, 0.55)',
+        'glow-gold': '0 0 30px -5px rgba(212, 175, 55, 0.45)',
+        'glow-screen': '0 0 40px 4px rgba(212, 175, 55, 0.35)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
       },
       borderRadius: {
         '2xl': '1rem',

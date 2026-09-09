@@ -24,29 +24,29 @@ const SeatGrid = ({
       {/* 2. SEAT STATE LEGEND */}
       <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 py-3 px-6 rounded-2xl glass-card text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg border border-slate-500 bg-white/[0.04]"></div>
+          <div className="w-5 h-5 rounded-lg border border-[#1E293B] bg-[#0F1523]"></div>
           <span className="text-slate-300 font-medium text-[11px]">Available (App)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white flex items-center justify-center shadow-glow-pink">
+          <div className="w-5 h-5 rounded-lg bg-gradient-to-r from-[#E50914] to-rose-700 text-white flex items-center justify-center shadow-glow-crimson ring-2 ring-[#FF4B55]">
             <Check className="w-3.5 h-3.5 stroke-[3]" />
           </div>
           <span className="text-white font-black text-[11px]">Selected</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/50 text-[#D4AF37] flex items-center justify-center text-[10px]">
+          <div className="w-5 h-5 rounded-lg bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] flex items-center justify-center text-[10px]">
             <Lock className="w-3 h-3" />
           </div>
           <span className="text-[#D4AF37] font-bold text-[11px]">🔒 Box Office Quota</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-500 text-amber-400 flex items-center justify-center text-[10px]">
+          <div className="w-5 h-5 rounded-lg bg-amber-500/20 border border-amber-500 text-amber-400 flex items-center justify-center text-[10px] animate-pulse">
             <Clock className="w-3 h-3" />
           </div>
           <span className="text-amber-400 font-bold text-[11px]">Locked (8m)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-lg bg-white/[0.02] border border-slate-800 opacity-40"></div>
+          <div className="w-5 h-5 rounded-lg bg-[#080B10] border border-[#1E293B]/60 opacity-30"></div>
           <span className="text-slate-500 line-through text-[11px]">Booked</span>
         </div>
       </div>
@@ -57,7 +57,7 @@ const SeatGrid = ({
           {seatLayout.map((tier) => (
             <div key={tier.name} className="space-y-3">
               {/* Tier Header with Price */}
-              <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.08] text-xs">
+              <div className="flex items-center justify-between pb-1.5 border-b border-[#1E293B] text-xs">
                 <span className="font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <span>{tier.label}</span>
                   {tier.name === 'RECLINER' && (
@@ -100,19 +100,19 @@ const SeatGrid = ({
                                   : isBooked
                                   ? `${seat.id} (Booked / Sold Out)`
                                   : isLocked
-                                  ? `${seat.id} (Temporarily Reserved)`
+                                  ? `${seat.id} (Temporarily Reserved 8m)`
                                   : `${seat.id} — ₹${seat.price}`
                               }
                               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-black transition-all flex items-center justify-center cursor-pointer ${
                                 isSelected
-                                  ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white scale-110 shadow-glow-pink ring-2 ring-pink-400'
+                                  ? 'bg-gradient-to-r from-[#E50914] to-rose-700 text-white scale-110 shadow-glow-crimson ring-2 ring-[#FF4B55]'
                                   : isCounterQuota
-                                  ? 'bg-[#D4AF37]/10 border border-[#D4AF37]/50 text-[#D4AF37] cursor-not-allowed opacity-90'
+                                  ? 'bg-[#D4AF37]/15 border border-[#D4AF37]/50 text-[#D4AF37] cursor-not-allowed opacity-90'
                                   : isBooked
-                                  ? 'bg-white/[0.02] border border-slate-800 text-slate-600 cursor-not-allowed opacity-30 line-through'
+                                  ? 'bg-[#080B10] border border-[#1E293B]/60 text-slate-600 cursor-not-allowed opacity-30 line-through'
                                   : isLocked
-                                  ? 'bg-amber-500/20 border border-amber-500/60 text-amber-400 cursor-not-allowed'
-                                  : 'glass-panel text-white hover:border-pink-500 hover:scale-105'
+                                  ? 'bg-amber-500/20 border border-amber-500 text-amber-400 cursor-not-allowed animate-pulse'
+                                  : 'bg-[#0F1523] border border-[#1E293B] text-slate-200 hover:border-[#D4AF37] hover:scale-105'
                               }`}
                             >
                               {isSelected ? (
@@ -120,7 +120,7 @@ const SeatGrid = ({
                               ) : isCounterQuota ? (
                                 <Lock className="w-3 h-3 text-[#D4AF37]" />
                               ) : isLocked ? (
-                                <Clock className="w-3 h-3" />
+                                <Clock className="w-3 h-3 text-amber-400" />
                               ) : (
                                 seat.number
                               )}
@@ -143,9 +143,9 @@ const SeatGrid = ({
 
           {/* 4. CURVED CINEMA SCREEN WITH HOLOGRAPHIC GLOW */}
           <div className="pt-12 text-center space-y-3">
-            <div className="relative mx-auto w-3/4 sm:w-2/3 h-2.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full shadow-glow-screen opacity-90 animate-pulse" />
-            <p className="text-[11px] font-black uppercase tracking-widest text-cyan-400 flex items-center justify-center gap-1.5 font-display">
-              <Sparkles className="w-3.5 h-3.5 text-pink-500" />
+            <div className="relative mx-auto w-3/4 sm:w-2/3 h-2.5 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent rounded-full shadow-glow-screen opacity-90 animate-pulse" />
+            <p className="text-[11px] font-black uppercase tracking-widest text-[#D4AF37] flex items-center justify-center gap-1.5 font-display">
+              <Sparkles className="w-3.5 h-3.5 text-[#E50914]" />
               All Eyes This Way • 4K Laser Projection Screen
             </p>
           </div>

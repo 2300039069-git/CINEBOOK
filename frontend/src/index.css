@@ -3,136 +3,99 @@
 @tailwind utilities;
 
 /* ============================================================================
-   EXECUTIVE CINEMA THEME VARIABLES (Midnight Obsidian & Champagne Gold)
+   EXECUTIVE CINEMA THEME VARIABLES (Midnight Obsidian, Champagne Gold & Crimson)
    ============================================================================ */
-:root,
-html.theme-midnight-obsidian {
-  /* Default: Midnight Obsidian & Champagne Warm Gold */
-  --theme-bg: #0B0E14;
-  --theme-surface: rgba(18, 24, 36, 0.88);
-  --theme-card: #121824;
-  --theme-border: rgba(212, 175, 55, 0.22);
+:root {
+  --theme-bg: #080B10;
+  --theme-surface: rgba(15, 21, 35, 0.75);
+  --theme-surface-hover: #172033;
+  --theme-card: #0F1523;
+  --theme-border: #1E293B;
   --theme-border-hover: #D4AF37;
-  --theme-text-primary: #FFFFFF;
+  --theme-text-primary: #F8FAFC;
   --theme-text-secondary: #CBD5E1;
   --theme-text-muted: #94A3B8;
   --theme-accent: #D4AF37;
-  --theme-crimson: #E50914;
-  --theme-card-shadow: 0 10px 35px -10px rgba(0, 0, 0, 0.85);
-}
-
-/* Cyber Neon Alternative Theme */
-html.theme-cyber-neon {
-  --theme-bg: #0A0B14;
-  --theme-surface: rgba(19, 21, 39, 0.85);
-  --theme-card: #131527;
-  --theme-border: rgba(168, 85, 247, 0.25);
-  --theme-border-hover: #EC4899;
-  --theme-text-primary: #FFFFFF;
-  --theme-text-secondary: #CBD5E1;
-  --theme-text-muted: #94A3B8;
-  --theme-accent: #EC4899;
-  --theme-crimson: #E50914;
-  --theme-card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
-}
-
-/* Light Theme: Luxe Platinum (High Contrast Black on White) */
-html.theme-luxe-white {
-  --theme-bg: #F8FAFC;
-  --theme-surface: rgba(255, 255, 255, 0.95);
-  --theme-card: #FFFFFF;
-  --theme-border: #E2E8F0;
-  --theme-border-hover: #D4AF37;
-  --theme-text-primary: #0F172A;
-  --theme-text-secondary: #334155;
-  --theme-text-muted: #64748B;
-  --theme-accent: #D4AF37;
-  --theme-crimson: #E50914;
-  --theme-card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --theme-primary: #E50914;
+  --theme-gold: #D4AF37;
+  --theme-gold-light: #F3E5AB;
+  --theme-card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 @layer base {
   body {
-    background-color: var(--theme-bg);
-    color: var(--theme-text-primary);
+    background-color: #080B10;
+    color: #F8FAFC;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
   }
 }
 
-/* High-Contrast Dynamic Typography Helpers */
-.text-theme-primary {
-  color: var(--theme-text-primary) !important;
-}
-
-.text-theme-secondary {
-  color: var(--theme-text-secondary) !important;
-}
-
-.text-theme-muted {
-  color: var(--theme-text-muted) !important;
-}
-
-/* Frosted Glassmorphism Panels */
+/* Glassmorphism & Surface Cards */
 .glass-panel {
-  background: var(--theme-surface);
+  background: rgba(15, 21, 35, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--theme-border);
-  box-shadow: var(--theme-card-shadow);
-  color: var(--theme-text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  color: #F8FAFC;
 }
 
 .glass-card {
-  background: var(--theme-card);
+  background: rgba(15, 21, 35, 0.75);
   backdrop-filter: blur(12px);
-  border: 1px solid var(--theme-border);
-  box-shadow: var(--theme-card-shadow);
-  color: var(--theme-text-primary);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  color: #F8FAFC;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-card:hover {
-  transform: translateY(-4px);
-  border-color: var(--theme-border-hover);
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px var(--theme-border-hover);
+  transform: translateY(-3px);
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.5), 0 0 20px -5px rgba(212, 175, 55, 0.2);
 }
 
-/* Radiant Luxury Text Gradients */
+/* Gradients */
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%);
+}
+
+.crimson-gradient {
+  background: linear-gradient(135deg, #E50914 0%, #990000 100%);
+}
+
 .gradient-text-gold {
-  background: linear-gradient(135deg, #FDE047 0%, #D4AF37 50%, #B48B1E 100%);
+  background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #AA7C11 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-crimson {
-  background: linear-gradient(135deg, #FF4B55 0%, #E50914 50%, #B20710 100%);
+  background: linear-gradient(135deg, #FF4B55 0%, #E50914 50%, #990000 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-neon {
-  background: linear-gradient(135deg, #EC4899 0%, #A855F7 50%, #06B6D4 100%);
+  background: linear-gradient(135deg, #D4AF37 0%, #E50914 50%, #FF6B81 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 /* Glow Shadows */
 .shadow-glow-gold {
-  box-shadow: 0 0 25px -5px rgba(212, 175, 55, 0.45);
+  box-shadow: 0 0 30px -5px rgba(212, 175, 55, 0.45);
 }
 
 .shadow-glow-crimson {
-  box-shadow: 0 0 25px -5px rgba(229, 9, 20, 0.55);
-}
-
-.shadow-glow-pink {
-  box-shadow: 0 0 25px -5px rgba(236, 72, 153, 0.45);
+  box-shadow: 0 0 30px -5px rgba(229, 9, 20, 0.55);
 }
 
 .shadow-glow-screen {
-  box-shadow: 0 0 35px 5px rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 40px 4px rgba(212, 175, 55, 0.35);
 }
 
 /* Laser Scanner Sweep Animation */
@@ -155,8 +118,8 @@ html.theme-luxe-white {
   animation: laserSweep 2.2s ease-in-out infinite;
 }
 
-/* Pulse Glow Animation */
-@keyframes pulseGlow {
+/* Pulse Urgency Animation */
+@keyframes pulseUrgency {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
@@ -167,31 +130,31 @@ html.theme-luxe-white {
   }
 }
 
-.animate-pulse-glow {
-  animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-pulse-urgency {
+  animation: pulseUrgency 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Custom Scrollbars */
+/* Custom Obsidian Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--theme-bg);
+  background: #080B10;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: #1E293B;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-accent);
+  background: #D4AF37;
 }
 
 /* ============================================================================
-   STRICT THEME-PRESERVED & 80MM THERMAL RECEIPT PRINT STYLES
+   80MM THERMAL RECEIPT & PRINT STYLES
    ============================================================================ */
 @media print {
   * {
@@ -200,7 +163,6 @@ html.theme-luxe-white {
     color-adjust: exact !important;
   }
 
-  /* Global Print Resets */
   header,
   footer,
   nav,
@@ -212,10 +174,9 @@ html.theme-luxe-white {
     display: none !important;
   }
 
-  /* 1. STANDARD THEMED TICKET PRINTING */
   body:not(.printing-thermal) {
-    background-color: var(--theme-bg) !important;
-    color: var(--theme-text-primary) !important;
+    background-color: #080B10 !important;
+    color: #F8FAFC !important;
     padding: 0 !important;
     margin: 0 !important;
   }
@@ -224,13 +185,12 @@ html.theme-luxe-white {
     display: block !important;
     max-width: 650px !important;
     margin: 20px auto !important;
-    border: 2px solid var(--theme-border) !important;
-    background: var(--theme-card) !important;
+    border: 2px solid #1E293B !important;
+    background: #0F1523 !important;
     box-shadow: none !important;
     page-break-inside: avoid !important;
   }
 
-  /* 2. 80MM CONTINUOUS THERMAL ROLL PRINTER STYLING */
   @page {
     size: 80mm auto;
     margin: 0;
@@ -274,7 +234,6 @@ html.theme-luxe-white {
     z-index: 999999 !important;
   }
 
-  /* High contrast colors for print */
   .gradient-text-gold {
     -webkit-text-fill-color: #D4AF37 !important;
     color: #D4AF37 !important;
@@ -285,3 +244,4 @@ html.theme-luxe-white {
     color: #E50914 !important;
   }
 }
+

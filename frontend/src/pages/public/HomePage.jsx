@@ -24,11 +24,11 @@ import TrailerModal from '../../components/movies/TrailerModal';
 import Footer from '../../components/layout/Footer';
 
 const CATEGORY_CAPSULES = [
-  { label: 'All Movies', icon: Film, color: 'from-pink-500 to-rose-600', link: '/movies' },
-  { label: 'IMAX 3D Laser', icon: Sparkles, color: 'from-purple-500 to-indigo-600', link: '/movies?format=IMAX' },
-  { label: 'Dolby Atmos 7.1', icon: Sparkles, color: 'from-cyan-400 to-blue-600', link: '/movies?format=Dolby' },
-  { label: 'Live Events', icon: Calendar, color: 'from-amber-400 to-orange-500', link: '/events' },
-  { label: 'Local Theatres', icon: Building, color: 'from-emerald-400 to-teal-600', link: '/theatres' }
+  { label: 'All Movies', icon: Film, color: 'from-[#E50914] to-[#B80710]', link: '/movies' },
+  { label: 'IMAX 3D Laser', icon: Sparkles, color: 'from-[#D4AF37] to-[#E2B714]', link: '/movies?format=IMAX' },
+  { label: 'Dolby Atmos 7.1', icon: Sparkles, color: 'from-[#D4AF37] to-[#B38728]', link: '/movies?format=Dolby' },
+  { label: 'Live Events', icon: Calendar, color: 'from-[#E50914] to-[#990000]', link: '/events' },
+  { label: 'Local Theatres', icon: Building, color: 'from-[#D4AF37] to-[#AA771C]', link: '/theatres' }
 ];
 
 const HomePage = () => {
@@ -61,7 +61,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-400 flex flex-col justify-between overflow-x-hidden">
+    <div className="min-h-screen bg-[#080B10] text-[#F8FAFC] transition-colors duration-400 flex flex-col justify-between overflow-x-hidden">
       <div>
         {/* 1. HERO CAROUSEL BILLBOARD */}
         <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
@@ -75,12 +75,12 @@ const HomePage = () => {
                 <Link
                   key={cap.label}
                   to={cap.link}
-                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl glass-panel hover:border-pink-500 transition-all group flex-shrink-0"
+                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] transition-all group flex-shrink-0"
                 >
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${cap.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-4 h-4" />
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${cap.color} flex items-center justify-center text-black shadow-md group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-xs font-black tracking-wide text-theme-primary">{cap.label}</span>
+                  <span className="text-xs font-black tracking-wide text-white">{cap.label}</span>
                 </Link>
               );
             })}
@@ -90,13 +90,13 @@ const HomePage = () => {
         {/* 3. MIDDLE DISCOVERY SECTION: MOVIES + THEATRE SHOWTIMES */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
           {/* Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--theme-border)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
             <div>
-              <div className="flex items-center gap-2 text-xs font-black text-pink-500 uppercase tracking-widest mb-1">
-                <Sparkles className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2 text-xs font-black text-[#D4AF37] uppercase tracking-widest mb-1">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>Showing in {selectedCity.name} ({cityTheatres.length} Theatres)</span>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight font-display text-theme-primary">
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight font-display text-white">
                 RECOMMENDED BLOCKBUSTERS
               </h2>
             </div>
@@ -104,11 +104,11 @@ const HomePage = () => {
             {/* City Selector Pill */}
             <button
               onClick={() => setIsCityModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full glass-panel hover:border-pink-500 text-xs font-black transition-all shadow-md self-start sm:self-auto cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-black transition-all shadow-md self-start sm:self-auto cursor-pointer"
             >
               <span className="text-base">{selectedCity.icon}</span>
-              <span className="uppercase text-theme-primary">LOCATION: {selectedCity.name}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-theme-muted" />
+              <span className="uppercase text-white">LOCATION: {selectedCity.name}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8]" />
             </button>
           </div>
 
@@ -129,7 +129,7 @@ const HomePage = () => {
               <div className="pt-2 text-center sm:text-left">
                 <Link
                   to="/movies"
-                  className="inline-flex items-center gap-2 text-xs font-black text-pink-500 hover:text-cyan-500 transition-colors"
+                  className="inline-flex items-center gap-2 text-xs font-black text-[#D4AF37] hover:text-[#F3E5AB] transition-colors"
                 >
                   <span>Explore all cinema schedules in {selectedCity.name}</span>
                   <ChevronRight className="w-4 h-4" />
@@ -142,10 +142,10 @@ const HomePage = () => {
               {/* Theatres in Selected City Card */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building className="w-3.5 h-3.5" /> Cinemas in {selectedCity.name} ({cityTheatres.length})
+                  <span className="text-xs font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5">
+                    <Building className="w-3.5 h-3.5 text-[#D4AF37]" /> Cinemas in {selectedCity.name} ({cityTheatres.length})
                   </span>
-                  <Link to="/theatres" className="text-[11px] font-bold text-cyan-500 hover:underline">
+                  <Link to="/theatres" className="text-[11px] font-bold text-[#F3E5AB] hover:underline">
                     View All
                   </Link>
                 </div>
@@ -160,8 +160,8 @@ const HomePage = () => {
                         onClick={() => setSelectedTheatreIndex(idx)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                           isSelected
-                            ? 'bg-gradient-to-r from-pink-500 to-purple-600 border-transparent text-white shadow-md scale-102'
-                            : 'glass-panel text-theme-secondary hover:border-pink-500'
+                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] border-[#D4AF37] text-black font-black shadow-md scale-102'
+                            : 'bg-[#0F1523] border-[#1E293B] text-slate-300 hover:border-[#D4AF37]'
                         }`}
                       >
                         {theatre.name}
@@ -182,12 +182,12 @@ const HomePage = () => {
 
               {/* Live Events & Shows for Selected City */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-[var(--theme-border)]">
-                  <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-theme-primary">
-                    <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse" />
+                <div className="flex items-center justify-between pb-2 border-b border-[#1E293B]">
+                  <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#E50914] animate-pulse" />
                     LIVE ENTERTAINMENT IN {selectedCity.name.toUpperCase()}
                   </h3>
-                  <Link to="/events" className="text-xs font-black text-pink-500 hover:text-cyan-500">
+                  <Link to="/events" className="text-xs font-black text-[#D4AF37] hover:text-[#F3E5AB]">
                     See All
                   </Link>
                 </div>
@@ -196,7 +196,7 @@ const HomePage = () => {
                   {EVENTS.map((event) => (
                     <div
                       key={event.id}
-                      className="p-3.5 rounded-2xl glass-panel hover:border-pink-500 flex items-center gap-3.5 transition-all group"
+                      className="p-3.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37]/40 flex items-center gap-3.5 transition-all group shadow-md"
                     >
                       <img
                         src={event.bannerUrl}
@@ -204,12 +204,12 @@ const HomePage = () => {
                         className="w-16 h-16 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
                       />
                       <div className="min-w-0 flex-1">
-                        <span className="text-[9px] font-black text-pink-500 uppercase tracking-wider">
+                        <span className="text-[9px] font-black text-[#E50914] uppercase tracking-wider">
                           {event.category}
                         </span>
-                        <h4 className="text-xs font-black truncate mt-0.5 text-theme-primary">{event.title}</h4>
-                        <p className="text-[10px] text-theme-muted mt-0.5">{event.venue}</p>
-                        <p className="text-xs font-black gradient-text-gold mt-1">From ₹{event.priceStarting}</p>
+                        <h4 className="text-xs font-black truncate mt-0.5 text-white">{event.title}</h4>
+                        <p className="text-[10px] text-[#94A3B8] mt-0.5">{event.venue}</p>
+                        <p className="text-xs font-black text-[#D4AF37] mt-1">From ₹{event.priceStarting}</p>
                       </div>
                     </div>
                   ))}
@@ -237,3 +237,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+

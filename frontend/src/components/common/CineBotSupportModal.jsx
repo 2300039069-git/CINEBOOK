@@ -169,56 +169,56 @@ const CineBotSupportModal = () => {
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative group p-4 rounded-full bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-400 text-white shadow-glow-pink hover:scale-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+          className="relative group p-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#E2B714] to-[#F3E5AB] text-black shadow-glow-gold hover:scale-110 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
           title="Open CineBot Automated Assistant"
         >
-          <Bot className="w-6 h-6 animate-pulse" />
-          <span className="hidden sm:inline-block text-xs font-black uppercase tracking-wider pr-1">
+          <Bot className="w-6 h-6 text-black animate-pulse" />
+          <span className="hidden sm:inline-block text-xs font-black uppercase tracking-wider pr-1 text-black">
             {isOpen ? 'Close CineBot' : 'CineBot 24/7 AI'}
           </span>
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#070709] animate-ping" />
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#080B10] animate-ping" />
         </button>
       </div>
 
       {/* CineBot Interactive Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-22 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[550px] glass-panel rounded-3xl border border-[var(--theme-border)] shadow-2xl flex flex-col overflow-hidden animate-scale-up backdrop-blur-2xl">
+        <div className="fixed bottom-22 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[550px] bg-[#0F1523] rounded-3xl border border-[#D4AF37]/40 shadow-2xl flex flex-col overflow-hidden animate-scale-up backdrop-blur-2xl text-[#F8FAFC]">
           {/* Bot Header */}
-          <div className="p-4 bg-gradient-to-r from-pink-500/15 via-purple-500/15 to-cyan-500/15 border-b border-[var(--theme-border)] flex items-center justify-between">
+          <div className="p-4 bg-[#080B10] border-b border-[#1E293B] flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-cyan-400 p-[2px]">
-                <div className="w-full h-full bg-[#0B0B14] rounded-[14px] flex items-center justify-center text-pink-400">
-                  <Bot className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] p-[2px]">
+                <div className="w-full h-full bg-[#080B10] rounded-[14px] flex items-center justify-center text-[#D4AF37]">
+                  <Bot className="w-5 h-5 text-[#D4AF37]" />
                 </div>
               </div>
               <div>
-                <h3 className="text-xs font-black text-theme-primary flex items-center gap-1.5">
+                <h3 className="text-xs font-black text-white flex items-center gap-1.5">
                   CineBot AI Assistant
-                  <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-black uppercase">
+                  <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-black uppercase border border-emerald-500/30">
                     Online
                   </span>
                 </h3>
-                <p className="text-[10px] text-theme-muted">Instant Clarifications & Auto-Refund Engine</p>
+                <p className="text-[10px] text-[#94A3B8]">Instant Clarifications & Auto-Refund Engine</p>
               </div>
             </div>
 
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-white/10 text-theme-muted hover:text-theme-primary transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl hover:bg-[#1E293B] text-[#94A3B8] hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Messages Stream */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 text-xs scrollbar-none">
+          <div className="flex-1 p-4 overflow-y-auto space-y-4 text-xs scrollbar-none bg-[#080B10]">
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={`flex gap-2.5 ${m.sender === 'USER' ? 'justify-end' : 'justify-start'}`}
               >
                 {m.sender === 'BOT' && (
-                  <div className="w-6 h-6 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
+                  <div className="w-6 h-6 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
                     🤖
                   </div>
                 )}
@@ -227,8 +227,8 @@ const CineBotSupportModal = () => {
                   <div
                     className={`p-3.5 rounded-2xl ${
                       m.sender === 'USER'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-tr-none shadow-md'
-                        : 'glass-card border border-[var(--theme-border)] text-theme-secondary rounded-tl-none'
+                        ? 'bg-gradient-to-r from-[#E50914] to-[#B80710] text-white font-bold rounded-tr-none shadow-md'
+                        : 'bg-[#0F1523] border border-[#1E293B] text-slate-200 rounded-tl-none'
                     }`}
                   >
                     <p className="whitespace-pre-line leading-relaxed">{m.text}</p>
@@ -267,20 +267,20 @@ const CineBotSupportModal = () => {
                         <button
                           key={aIdx}
                           onClick={() => handleActionClick(act)}
-                          className="px-3 py-1.5 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 text-[11px] font-black transition-all flex items-center gap-1 cursor-pointer"
+                          className="px-3 py-1.5 rounded-xl bg-[#D4AF37]/15 hover:bg-[#D4AF37]/25 border border-[#D4AF37]/30 text-[#D4AF37] text-[11px] font-black transition-all flex items-center gap-1 cursor-pointer"
                         >
-                          <Zap className="w-3 h-3" />
+                          <Zap className="w-3 h-3 text-[#D4AF37]" />
                           <span>{act.label}</span>
                         </button>
                       ))}
                     </div>
                   )}
 
-                  <span className="text-[9px] text-theme-muted block px-1">{m.time}</span>
+                  <span className="text-[9px] text-[#94A3B8] block px-1">{m.time}</span>
                 </div>
 
                 {m.sender === 'USER' && (
-                  <div className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
+                  <div className="w-6 h-6 rounded-full bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/30 flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black">
                     👤
                   </div>
                 )}
@@ -288,8 +288,8 @@ const CineBotSupportModal = () => {
             ))}
 
             {isTyping && (
-              <div className="flex items-center gap-2 text-theme-muted text-xs p-2">
-                <span className="w-2 h-2 rounded-full bg-pink-500 animate-ping" />
+              <div className="flex items-center gap-2 text-[#94A3B8] text-xs p-2">
+                <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping" />
                 <span>CineBot is resolving query...</span>
               </div>
             )}
@@ -297,22 +297,22 @@ const CineBotSupportModal = () => {
           </div>
 
           {/* Quick Prompt Pill Strip */}
-          <div className="px-3 py-2 border-t border-[var(--theme-border)] flex items-center gap-1.5 overflow-x-auto scrollbar-none bg-black/5 dark:bg-white/5">
+          <div className="px-3 py-2 border-t border-[#1E293B] flex items-center gap-1.5 overflow-x-auto scrollbar-none bg-[#0F1523]">
             <button
               onClick={() => handleSendMessage('How to cancel ticket and get instant refund?')}
-              className="px-2.5 py-1 rounded-lg glass-card text-[10px] font-bold text-pink-400 whitespace-nowrap hover:border-pink-500 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[#080B10] border border-[#1E293B] text-[10px] font-bold text-[#E50914] whitespace-nowrap hover:border-[#E50914] transition-colors cursor-pointer"
             >
               💸 Cancel & Refund
             </button>
             <button
               onClick={() => handleSendMessage('Which theatres are in Guntur?')}
-              className="px-2.5 py-1 rounded-lg glass-card text-[10px] font-bold text-cyan-400 whitespace-nowrap hover:border-cyan-500 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[#080B10] border border-[#1E293B] text-[10px] font-bold text-[#D4AF37] whitespace-nowrap hover:border-[#D4AF37] transition-colors cursor-pointer"
             >
               📍 Theatres
             </button>
             <button
               onClick={() => handleSendMessage('Show movies playing now')}
-              className="px-2.5 py-1 rounded-lg glass-card text-[10px] font-bold text-amber-400 whitespace-nowrap hover:border-amber-500 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-[#080B10] border border-[#1E293B] text-[10px] font-bold text-slate-300 whitespace-nowrap hover:border-slate-300 transition-colors cursor-pointer"
             >
               🎬 Movies
             </button>
@@ -324,21 +324,21 @@ const CineBotSupportModal = () => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-3 border-t border-[var(--theme-border)] flex items-center gap-2"
+            className="p-3 border-t border-[#1E293B] flex items-center gap-2 bg-[#0F1523]"
           >
             <input
               type="text"
               placeholder="Ask CineBot anything or cancel ticket..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              className="flex-1 px-4 py-2.5 glass-card rounded-2xl text-xs text-theme-primary placeholder:text-theme-muted focus:outline-none focus:border-pink-500 font-medium"
+              className="flex-1 px-4 py-2.5 bg-[#080B10] border border-[#1E293B] rounded-2xl text-xs text-white placeholder:text-[#94A3B8] focus:outline-none focus:border-[#D4AF37] font-medium"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white disabled:opacity-40 transition-all cursor-pointer shadow-md"
+              className="p-2.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black disabled:opacity-40 transition-all cursor-pointer shadow-md"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 text-black" />
             </button>
           </form>
         </div>
