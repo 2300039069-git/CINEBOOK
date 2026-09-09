@@ -34,139 +34,139 @@ const PartnerProfilePage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in text-[#F8FAFC]">
       {/* 1. HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--theme-border)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
         <div>
-          <span className="text-xs font-black text-pink-500 uppercase tracking-widest flex items-center gap-1.5">
-            <Building2 className="w-4 h-4" /> Exhibitor Profile & Verification
+          <span className="text-xs font-black text-[#D4AF37] uppercase tracking-widest flex items-center gap-1.5">
+            <Building2 className="w-4 h-4 text-[#D4AF37]" /> Exhibitor Profile & Legal Verification
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-theme-primary tracking-tight mt-1 font-display">
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 font-display">
             Theatre & Bank Settlement Details
           </h1>
-          <p className="text-xs text-theme-muted mt-1">
+          <p className="text-xs text-[#94A3B8] mt-1">
             Maintain your legal trade certifications and bank account for automated T+1 morning settlements
           </p>
         </div>
 
         <button
           onClick={handleSubmit}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-xs font-black uppercase tracking-wider shadow-glow-pink transition-all transform hover:scale-105"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black text-xs font-black uppercase tracking-wider shadow-glow-gold transition-all transform hover:scale-105 cursor-pointer"
         >
-          <Save className="w-4 h-4" />
+          <Save className="w-4 h-4 text-black" />
           <span>{isSaved ? 'Details Saved ✓' : 'Save Changes'}</span>
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 2. THEATRE DETAILS */}
-        <div className="p-6 rounded-3xl glass-panel space-y-4 border border-[var(--theme-border)]">
-          <h3 className="text-xs font-black uppercase text-pink-500 tracking-wider flex items-center gap-1.5">
+        <div className="p-6 sm:p-8 rounded-3xl bg-[#0F1523]/80 space-y-4 border border-[#1E293B] shadow-xl">
+          <h3 className="text-xs font-black uppercase text-[#D4AF37] tracking-wider flex items-center gap-1.5">
             <Building2 className="w-4 h-4" /> Theatre & Legal Trade Info
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Theatre Name</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Theatre Name</label>
               <input
                 type="text"
                 value={profile.theatre_name}
                 onChange={(e) => setProfile({ ...profile, theatre_name: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Owner / Manager Name</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Owner / Manager Name</label>
               <input
                 type="text"
                 value={profile.owner_name}
                 onChange={(e) => setProfile({ ...profile, owner_name: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">GSTIN Number</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">GSTIN Number</label>
               <input
                 type="text"
                 value={profile.gst_number}
                 onChange={(e) => setProfile({ ...profile, gst_number: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500 font-mono"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37] font-mono"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Municipal Trade License</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Municipal Trade License</label>
               <input
                 type="text"
                 value={profile.trade_license}
                 onChange={(e) => setProfile({ ...profile, trade_license: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500 font-mono"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37] font-mono"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="text-theme-muted font-bold block mb-1">Physical Address</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Physical Address</label>
               <input
                 type="text"
                 value={profile.address}
                 onChange={(e) => setProfile({ ...profile, address: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
           </div>
         </div>
 
         {/* 3. BANK SETTLEMENT ACCOUNT */}
-        <div className="p-6 rounded-3xl glass-panel space-y-4 border border-[var(--theme-border)]">
+        <div className="p-6 sm:p-8 rounded-3xl bg-[#0F1523]/80 space-y-4 border border-[#1E293B] shadow-xl">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase text-amber-500 tracking-wider flex items-center gap-1.5">
-              <Landmark className="w-4 h-4" /> Bank Account for Daily T+1 Payouts
+            <h3 className="text-xs font-black uppercase text-[#D4AF37] tracking-wider flex items-center gap-1.5">
+              <Landmark className="w-4 h-4 text-[#D4AF37]" /> Bank Account for Daily T+1 Payouts
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-500 text-[10px] font-black uppercase flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase flex items-center gap-1 border border-emerald-500/30">
               <ShieldCheck className="w-3 h-3" /> Penny Drop Verified
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Bank Name</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Bank Name</label>
               <input
                 type="text"
                 value={profile.bank_name}
                 onChange={(e) => setProfile({ ...profile, bank_name: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-amber-500"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Account Holder Name (as per Bank)</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Account Holder Name (as per Bank)</label>
               <input
                 type="text"
                 value={profile.account_holder}
                 onChange={(e) => setProfile({ ...profile, account_holder: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-amber-500"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">Bank Account Number</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">Bank Account Number</label>
               <input
                 type="text"
                 value={profile.account_number}
                 onChange={(e) => setProfile({ ...profile, account_number: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-black focus:outline-none focus:border-amber-500 font-mono"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-[#D4AF37] font-black focus:outline-none focus:border-[#D4AF37] font-mono"
               />
             </div>
 
             <div>
-              <label className="text-theme-muted font-bold block mb-1">IFSC Code</label>
+              <label className="text-[#94A3B8] font-bold block mb-1">IFSC Code</label>
               <input
                 type="text"
                 value={profile.ifsc_code}
                 onChange={(e) => setProfile({ ...profile, ifsc_code: e.target.value })}
-                className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-black focus:outline-none focus:border-amber-500 font-mono uppercase"
+                className="w-full p-3 bg-[#080B10] border border-[#1E293B] rounded-xl text-[#D4AF37] font-black focus:outline-none focus:border-[#D4AF37] font-mono uppercase"
               />
             </div>
           </div>

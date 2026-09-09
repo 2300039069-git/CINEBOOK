@@ -73,11 +73,11 @@ const CinematicIntro3D = ({ onComplete }) => {
       radius: Math.random() * 2 + 0.5,
       speedX: (Math.random() - 0.5) * 0.8,
       speedY: (Math.random() - 0.5) * 0.8,
-      color: Math.random() > 0.5 ? '#ec4899' : '#06b6d4'
+      color: Math.random() > 0.5 ? '#D4AF37' : '#E50914'
     }));
 
     const render = () => {
-      ctx.fillStyle = 'rgba(7, 7, 9, 0.25)';
+      ctx.fillStyle = 'rgba(8, 11, 16, 0.25)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((p) => {
@@ -138,30 +138,30 @@ const CinematicIntro3D = ({ onComplete }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#070709] text-white flex flex-col items-center justify-center overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 z-50 bg-[#080B10] text-[#F8FAFC] flex flex-col items-center justify-center overflow-hidden font-sans select-none">
       {/* Dynamic Background Particle Canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
       {/* 3D Ambient Projector Beam */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-cyan-500/20 via-pink-500/10 to-transparent blur-[140px] pointer-events-none transform -rotate-12" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-purple-600/20 blur-[130px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-[#D4AF37]/15 via-[#E50914]/10 to-transparent blur-[140px] pointer-events-none transform -rotate-12" />
+      <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-[#E50914]/10 blur-[130px] pointer-events-none" />
 
       {/* Top Floating Controls */}
       <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 text-white text-xs transition-all"
+          className="p-2.5 rounded-full bg-[#0F1523] hover:bg-[#172033] border border-[#1E293B] text-white text-xs transition-all cursor-pointer"
           title="Toggle Sound"
         >
-          {soundEnabled ? <Volume2 className="w-4 h-4 text-pink-400" /> : <VolumeX className="w-4 h-4 text-zinc-500" />}
+          {soundEnabled ? <Volume2 className="w-4 h-4 text-[#D4AF37]" /> : <VolumeX className="w-4 h-4 text-[#94A3B8]" />}
         </button>
 
         {stage === 'INTRO' && (
           <button
             onClick={handleSkipToChoice}
-            className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 text-xs font-bold transition-all flex items-center gap-1.5"
+            className="px-4 py-2 rounded-full bg-[#0F1523] hover:bg-[#172033] border border-[#1E293B] text-xs font-bold text-white transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <span>Skip 3D Intro</span>
+            <span>Skip Intro</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}
@@ -172,49 +172,48 @@ const CinematicIntro3D = ({ onComplete }) => {
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 space-y-8 animate-fade-in">
           {/* 3D Rotating Holographic Cinema Stage */}
           <div className="relative w-44 h-44 sm:w-56 sm:h-56 flex items-center justify-center perspective-[1200px]">
-            {/* Outer 3D Neon Ring */}
-            <div className="absolute inset-0 rounded-full border-2 border-dashed border-pink-500/50 animate-[spin_10s_linear_infinite] shadow-glow-pink" />
-            <div className="absolute inset-2 rounded-full border border-cyan-400/40 animate-[spin_6s_linear_infinite_reverse]" />
+            {/* Outer 3D Gold Ring */}
+            <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#D4AF37]/50 animate-[spin_10s_linear_infinite] shadow-glow-gold" />
+            <div className="absolute inset-2 rounded-full border border-[#E50914]/40 animate-[spin_6s_linear_infinite_reverse]" />
 
             {/* Floating 3D Cube / Cinema Reel Container */}
-            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 p-[2.5px] shadow-2xl transform transition-transform duration-700 animate-pulse hover:scale-110">
-              <div className="w-full h-full bg-[#0B0B14] rounded-[22px] flex flex-col items-center justify-center relative overflow-hidden">
-                {/* 3D Glowing Film Icon */}
-                <Film className="w-14 h-14 sm:w-18 sm:h-18 text-pink-500 drop-shadow-[0_0_25px_rgba(236,72,153,0.8)] animate-bounce" />
-                <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/20 via-transparent to-pink-500/20" />
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] p-[2.5px] shadow-2xl transform transition-transform duration-700 animate-pulse hover:scale-110">
+              <div className="w-full h-full bg-[#080B10] rounded-[22px] flex flex-col items-center justify-center relative overflow-hidden">
+                <Film className="w-14 h-14 sm:w-18 sm:h-18 text-[#D4AF37] drop-shadow-[0_0_25px_rgba(212,175,55,0.8)] animate-bounce" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#E50914]/20 via-transparent to-[#D4AF37]/20" />
               </div>
             </div>
 
             {/* Satellite 3D Badges */}
-            <span className="absolute -top-2 px-3 py-0.5 rounded-full bg-cyan-400/20 border border-cyan-400 text-cyan-300 text-[10px] font-black uppercase tracking-widest shadow-md animate-pulse">
+            <span className="absolute -top-2 px-3 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37] text-[#D4AF37] text-[10px] font-black uppercase tracking-widest shadow-md animate-pulse">
               4K Laser • Dolby Atmos
             </span>
-            <span className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-pink-500/20 border border-pink-500 text-pink-300 text-[10px] font-black uppercase tracking-widest shadow-md">
+            <span className="absolute -bottom-2 px-3 py-0.5 rounded-full bg-[#E50914]/20 border border-[#E50914] text-[#E50914] text-[10px] font-black uppercase tracking-widest shadow-md">
               Guntur • Vijayawada • Tenali
             </span>
           </div>
 
           {/* 3D Animated Title */}
           <div className="space-y-2">
-            <h1 className="text-4xl sm:text-6xl font-black font-display tracking-tight gradient-text-neon drop-shadow-2xl">
-              CINEBOOK
+            <h1 className="text-4xl sm:text-6xl font-black font-display tracking-tight text-white drop-shadow-2xl">
+              CINE<span className="text-[#E50914]">BOOK</span>
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-400 font-medium tracking-widest uppercase flex items-center justify-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-pink-400 animate-spin" />
-              Next-Generation Cinema Experience
+            <p className="text-xs sm:text-sm text-[#94A3B8] font-medium tracking-widest uppercase flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-[#D4AF37] animate-spin" />
+              Next-Generation Cinema-Tech Platform
             </p>
           </div>
 
           {/* Progress Bar Strip */}
           <div className="w-64 sm:w-80 space-y-2">
-            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden border border-white/10">
+            <div className="h-1.5 w-full bg-[#1E293B] rounded-full overflow-hidden border border-[#1E293B]">
               <div
-                className="h-full bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-400 rounded-full transition-all duration-75"
+                className="h-full bg-gradient-to-r from-[#D4AF37] to-[#E50914] rounded-full transition-all duration-75"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <p className="text-[10px] text-zinc-500 font-mono font-bold uppercase">
-              Initializing 3D Cinema Engines • {progress}%
+            <p className="text-[10px] text-[#94A3B8] font-mono font-bold uppercase">
+              Initializing Cinema-Tech Engines • {progress}%
             </p>
           </div>
         </div>
@@ -223,15 +222,15 @@ const CinematicIntro3D = ({ onComplete }) => {
         <div className="relative z-10 w-full max-w-xl mx-auto px-4 py-8 animate-scale-up space-y-6 text-center">
           {/* Brand Header */}
           <div className="space-y-2">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-400 p-[2px] mx-auto shadow-glow-pink">
-              <div className="w-full h-full bg-[#0B0B14] rounded-[22px] flex items-center justify-center">
-                <Film className="w-8 h-8 text-pink-500" />
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] p-[2px] mx-auto shadow-glow-gold">
+              <div className="w-full h-full bg-[#080B10] rounded-[22px] flex items-center justify-center">
+                <Film className="w-8 h-8 text-[#D4AF37]" />
               </div>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black font-display text-white tracking-tight">
-              Welcome to CINE<span className="text-pink-500">BOOK</span>
+              Welcome to CINE<span className="text-[#E50914]">BOOK</span>
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-400">
+            <p className="text-xs sm:text-sm text-[#94A3B8]">
               Choose an option below to enter your cinema ticketing portal
             </p>
           </div>
@@ -242,16 +241,16 @@ const CinematicIntro3D = ({ onComplete }) => {
             <Link
               to="/login"
               onClick={onComplete}
-              className="p-5 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 hover:border-pink-500 hover:scale-103 transition-all group relative overflow-hidden"
+              className="p-5 rounded-3xl bg-[#0F1523]/90 border border-[#1E293B] hover:border-[#E50914] hover:scale-103 transition-all group relative overflow-hidden"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="p-3 rounded-2xl bg-pink-500/20 text-pink-400 border border-pink-500/30 group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-2xl bg-[#E50914]/20 text-[#E50914] border border-[#E50914]/30 group-hover:scale-110 transition-transform">
                   <LogIn className="w-6 h-6" />
                 </div>
-                <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-pink-400 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#E50914] group-hover:translate-x-1 transition-all" />
               </div>
               <h3 className="text-base font-black text-white">Moviegoer Sign In</h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-[#94A3B8] mt-1">
                 Access your digital QR passes, seat reservations & exclusive offers.
               </p>
             </Link>
@@ -260,44 +259,44 @@ const CinematicIntro3D = ({ onComplete }) => {
             <Link
               to="/register"
               onClick={onComplete}
-              className="p-5 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 hover:border-cyan-400 hover:scale-103 transition-all group relative overflow-hidden"
+              className="p-5 rounded-3xl bg-[#0F1523]/90 border border-[#1E293B] hover:border-[#D4AF37] hover:scale-103 transition-all group relative overflow-hidden"
             >
               <div className="flex items-center justify-between mb-3">
-                <div className="p-3 rounded-2xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 group-hover:scale-110 transition-transform">
+                <div className="p-3 rounded-2xl bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 group-hover:scale-110 transition-transform">
                   <UserPlus className="w-6 h-6" />
                 </div>
-                <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all" />
               </div>
               <h3 className="text-base font-black text-white">Create Customer Account</h3>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-[#94A3B8] mt-1">
                 New to CineBook? Sign up in 30 seconds with 1-click email OTP.
               </p>
             </Link>
 
             {/* 3. Theatre Exhibitor Admin Portal */}
             <Link
-              to="/register"
+              to="/partner"
               onClick={onComplete}
-              className="p-5 rounded-3xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 hover:border-amber-400 hover:scale-103 transition-all group relative overflow-hidden sm:col-span-2"
+              className="p-5 rounded-3xl bg-[#0F1523]/90 border border-[#1E293B] hover:border-[#D4AF37] hover:scale-103 transition-all group relative overflow-hidden sm:col-span-2"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 group-hover:scale-110 transition-transform">
+                  <div className="p-3 rounded-2xl bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30 group-hover:scale-110 transition-transform">
                     <Store className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="text-base font-black text-white flex items-center gap-2">
                       Theatre Partner & Exhibitor Portal
-                      <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <span className="text-[9px] uppercase font-black px-2 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/30">
                         Code Protected
                       </span>
                     </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5">
-                      Single-screen & Multiplex owners: Sign in or register with your secret authorization code.
+                    <p className="text-xs text-[#94A3B8] mt-0.5">
+                      Single-screen & Multiplex owners: Box-Office POS, Counter Quota & Gate Scanner.
                     </p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 text-zinc-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
+                <ArrowRight className="w-5 h-5 text-[#94A3B8] group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all" />
               </div>
             </Link>
           </div>
@@ -306,9 +305,9 @@ const CinematicIntro3D = ({ onComplete }) => {
           <div className="pt-2">
             <button
               onClick={onComplete}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass-panel hover:border-pink-500 text-xs font-black text-white uppercase tracking-wider transition-all transform hover:scale-105"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-black text-white uppercase tracking-wider transition-all transform hover:scale-105 cursor-pointer"
             >
-              <Compass className="w-4 h-4 text-pink-400" />
+              <Compass className="w-4 h-4 text-[#D4AF37]" />
               <span>Explore Movies Directly as Guest →</span>
             </button>
           </div>

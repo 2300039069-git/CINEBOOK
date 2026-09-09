@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Play, Ticket, Sparkles, Star, Flame, Film } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Ticket, Sparkles, Star, Flame, Film, Volume2, Clock, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MOVIES } from '../../data/mockData';
@@ -12,7 +12,7 @@ const HeroCarousel = ({ onWatchTrailer }) => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % MOVIES.length);
       setImageError(false);
-    }, 6000);
+    }, 7000);
     return () => clearInterval(timer);
   }, []);
 
@@ -30,64 +30,86 @@ const HeroCarousel = ({ onWatchTrailer }) => {
 
   return (
     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-      {/* Dynamic Ambient Gold & Crimson Glow */}
-      <div className="absolute -inset-x-4 top-0 h-96 bg-gradient-to-r from-gold/15 via-accent/15 to-gold/10 filter blur-3xl opacity-70 pointer-events-none" />
+      {/* Subtle Ambient Red/Gold Atmosphere Glow */}
+      <div className="absolute -inset-x-4 top-0 h-80 bg-gradient-to-r from-[#E50914]/10 via-[#F59E0B]/5 to-transparent filter blur-3xl opacity-50 pointer-events-none" />
 
-      {/* Main Glassmorphic Hero Billboard */}
-      <div className="relative w-full h-[520px] sm:h-[580px] lg:h-[600px] rounded-3xl overflow-hidden shadow-glass-card border border-white/[0.08] group glass-panel bg-[#05070B]">
-        {/* Cinematic Backdrop Image or Procedural Background */}
-        {!imageError ? (
-          <img
+      {/* Main Hero Billboard Container */}
+      <div className="relative w-full h-[480px] sm:h-[540px] lg:h-[580px] rounded-2xl overflow-hidden border border-[#1E2332] group bg-[#11141D] shadow-2xl">
+        <AnimatePresence mode="wait">
+          <motion.div
             key={currentMovie.id}
-            src={currentMovie.backdropUrl || currentMovie.posterUrl}
-            alt={currentMovie.title}
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center filter brightness-60 group-hover:scale-105 transition-transform duration-1000 ease-out"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-[#0B101B] via-[#080B10] to-[#05070B] flex items-center justify-end pr-16">
-            <Film className="w-72 h-72 text-white/[0.03]" />
-          </div>
-        )}
+            initial={{ opacity: 0.4, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0.2 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="absolute inset-0 w-full h-full"
+          >
+            {!imageError ? (
+              <img
+                src={currentMovie.backdropUrl || currentMovie.posterUrl}
+                alt={currentMovie.title}
+                onError={() => setImageError(true)}
+                className="w-full h-full object-cover object-center filter brightness-[0.75]"
+              />
+            ) : (
+              <div className="w-full h-full bg-[#11141D] flex items-center justify-end pr-16">
+                <Film className="w-72 h-72 text-white/[0.04]" />
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Multi-layered futuristic gradient overlays & Bottom Gradient Mask */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#05070B] via-[#05070B]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05070B] via-[#05070B]/60 to-transparent" />
+        {/* Sophisticated Multi-Angle Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#090A0E] via-[#090A0E]/80 to-transparent w-full md:w-3/4" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#090A0E] via-[#090A0E]/60 to-transparent" />
 
-        {/* Content Billboard Details */}
-        <div className="absolute inset-0 p-6 sm:p-12 lg:p-16 flex flex-col justify-end max-w-3xl space-y-4 z-10">
-          {/* Release & Format Glowing Badges */}
+        {/* Content Details */}
+        <div className="absolute inset-0 p-6 sm:p-10 lg:p-14 flex flex-col justify-end max-w-2xl space-y-4 z-10">
+          {/* Release & Format Chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-accent to-red-700 text-white text-xs font-black uppercase shadow-cinema-glow tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#E50914] text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
               <Flame className="w-3.5 h-3.5 fill-white" />
-              BLOCKBUSTER SHOWCASE
+              NOW SHOWING
             </span>
 
-            <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-black/70 border border-gold/40 text-gold text-xs font-extrabold backdrop-blur-md shadow-md">
-              <Star className="w-3.5 h-3.5 fill-[#D4AF37] text-gold" />
-              {currentMovie.rating}/10 ({currentMovie.votes})
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#181C28]/90 border border-[#1E2332] text-[#F59E0B] text-xs font-bold backdrop-blur-md">
+              <Star className="w-3.5 h-3.5 fill-[#F59E0B]" />
+              {currentMovie.rating}/10 ({currentMovie.votes || '24.5k'})
             </span>
 
-            <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200 text-xs font-bold backdrop-blur-md">
-              {currentMovie.censorRating || 'UA'} • {currentMovie.formats?.join(' • ')}
+            <span className="px-2.5 py-1 rounded-md bg-[#181C28]/80 border border-[#1E2332] text-slate-300 text-xs font-medium backdrop-blur-md">
+              {currentMovie.censorRating || 'UA 16+'}
+            </span>
+
+            <span className="px-2.5 py-1 rounded-md bg-[#181C28]/80 border border-[#1E2332] text-slate-300 text-xs font-medium backdrop-blur-md">
+              {currentMovie.language || 'Telugu'}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-2xl leading-none">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
             {currentMovie.title}
           </h1>
 
-          {/* Tagline / Subtitle */}
-          <p className="text-xs sm:text-sm text-text-secondary line-clamp-2 max-w-xl font-medium leading-relaxed">
+          {/* Formats & Genre Info */}
+          <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-300 font-medium">
+            <span>{currentMovie.genre}</span>
+            <span>•</span>
+            <span className="text-[#F59E0B] font-semibold">{currentMovie.formats?.join(', ') || '2D, 3D, 4K Laser'}</span>
+            <span>•</span>
+            <span>{currentMovie.duration || '2h 45m'}</span>
+          </div>
+
+          {/* Description */}
+          <p className="text-xs sm:text-sm text-slate-400 line-clamp-2 font-normal leading-relaxed max-w-lg">
             {currentMovie.description}
           </p>
 
           {/* Action CTAs */}
-          <div className="flex flex-wrap items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-3.5 pt-2">
             <Link
               to={`/movie/${currentMovie.slug || currentMovie.id}`}
-              className="bg-accent hover:bg-accent-hover text-white font-semibold px-8 py-3.5 rounded-xl shadow-cinema-glow transition-all duration-300 flex items-center gap-2 transform hover:scale-105 cursor-pointer text-xs sm:text-sm tracking-wider uppercase"
+              className="bg-[#E50914] hover:bg-[#B80710] text-white font-bold px-7 py-3 rounded-xl shadow-lg shadow-[#E50914]/20 transition-all duration-200 flex items-center gap-2 cursor-pointer text-xs sm:text-sm tracking-wide"
             >
               <Ticket className="w-4 h-4" />
               <span>Book Tickets</span>
@@ -97,7 +119,7 @@ const HeroCarousel = ({ onWatchTrailer }) => {
               <button
                 type="button"
                 onClick={() => onWatchTrailer(currentMovie)}
-                className="px-6 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/20 text-white text-xs sm:text-sm font-bold backdrop-blur-md transition-all flex items-center gap-2 hover:border-gold cursor-pointer"
+                className="px-5 py-3 rounded-xl bg-[#181C28]/80 hover:bg-[#1D2232] border border-[#1E2332] text-white text-xs sm:text-sm font-semibold backdrop-blur-md transition-all flex items-center gap-2 cursor-pointer hover:border-slate-500"
               >
                 <Play className="w-4 h-4 fill-white" />
                 <span>Watch Trailer</span>
@@ -106,26 +128,26 @@ const HeroCarousel = ({ onWatchTrailer }) => {
           </div>
         </div>
 
-        {/* Circular Prev/Next Controls */}
+        {/* Prev/Next Navigation Controls */}
         <button
           type="button"
           onClick={handlePrev}
           aria-label="Previous Film"
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-black/60 hover:bg-gold hover:text-black text-white flex items-center justify-center backdrop-blur-md border border-white/15 transition-all z-20 hover:scale-110 shadow-lg cursor-pointer"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#090A0E]/80 hover:bg-[#181C28] text-white flex items-center justify-center backdrop-blur-md border border-[#1E2332] transition-all z-20 hover:scale-105 cursor-pointer"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           type="button"
           onClick={handleNext}
           aria-label="Next Film"
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-black/60 hover:bg-gold hover:text-black text-white flex items-center justify-center backdrop-blur-md border border-white/15 transition-all z-20 hover:scale-110 shadow-lg cursor-pointer"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#090A0E]/80 hover:bg-[#181C28] text-white flex items-center justify-center backdrop-blur-md border border-[#1E2332] transition-all z-20 hover:scale-105 cursor-pointer"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Active Animated Capsule Dots */}
-        <div className="absolute bottom-6 right-8 flex items-center gap-2.5 z-20">
+        {/* Active Pill Indicators */}
+        <div className="absolute bottom-5 right-6 flex items-center gap-2 z-20">
           {MOVIES.map((_, idx) => (
             <button
               key={idx}
@@ -135,10 +157,10 @@ const HeroCarousel = ({ onWatchTrailer }) => {
                 setCurrentIndex(idx);
               }}
               aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                 currentIndex === idx
-                  ? 'w-10 bg-gradient-to-r from-gold to-amber-500 shadow-gold-glow'
-                  : 'w-2.5 bg-white/30 hover:bg-white/60'
+                  ? 'w-8 bg-[#E50914]'
+                  : 'w-2 bg-white/20 hover:bg-white/50'
               }`}
             />
           ))}

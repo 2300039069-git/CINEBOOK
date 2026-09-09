@@ -11,7 +11,11 @@ import {
   Clock,
   ChevronDown,
   Building,
-  Star
+  Star,
+  ShieldCheck,
+  Zap,
+  Lock,
+  Headphones
 } from 'lucide-react';
 import { MOVIES, EVENTS, THEATRES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
@@ -21,14 +25,13 @@ import HeroCarousel from '../../components/movies/HeroCarousel';
 import MovieCard from '../../components/movies/MovieCard';
 import TheatreShowtimesCard from '../../components/theatres/TheatreShowtimesCard';
 import TrailerModal from '../../components/movies/TrailerModal';
-import Footer from '../../components/layout/Footer';
 
 const CATEGORY_CAPSULES = [
-  { label: 'All Movies', icon: Film, color: 'from-[#E50914] to-[#B80710]', link: '/movies' },
-  { label: 'IMAX 3D Laser', icon: Sparkles, color: 'from-[#D4AF37] to-[#E2B714]', link: '/movies?format=IMAX' },
-  { label: 'Dolby Atmos 7.1', icon: Sparkles, color: 'from-[#D4AF37] to-[#B38728]', link: '/movies?format=Dolby' },
-  { label: 'Live Events', icon: Calendar, color: 'from-[#E50914] to-[#990000]', link: '/events' },
-  { label: 'Local Theatres', icon: Building, color: 'from-[#D4AF37] to-[#AA771C]', link: '/theatres' }
+  { label: 'All Movies', icon: Film, link: '/movies' },
+  { label: '4K RGB Laser', icon: Sparkles, link: '/movies?format=4K' },
+  { label: 'Dolby Atmos 7.1', icon: Sparkles, link: '/movies?format=Dolby' },
+  { label: 'Live Events', icon: Calendar, link: '/events' },
+  { label: 'Cinemas & Venues', icon: Building, link: '/theatres' }
 ];
 
 const HomePage = () => {
@@ -61,166 +64,209 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080B10] text-[#F8FAFC] transition-colors duration-400 flex flex-col justify-between overflow-x-hidden">
-      <div>
-        {/* 1. HERO CAROUSEL BILLBOARD */}
-        <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
+    <div className="min-h-screen bg-[#090A0E] text-slate-100 pb-16">
+      {/* 1. HERO CAROUSEL BILLBOARD */}
+      <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
 
-        {/* 2. VIBRANT CATEGORY CAPSULES STRIP */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
-            {CATEGORY_CAPSULES.map((cap) => {
-              const Icon = cap.icon;
-              return (
-                <Link
-                  key={cap.label}
-                  to={cap.link}
-                  className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] transition-all group flex-shrink-0"
-                >
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${cap.color} flex items-center justify-center text-black shadow-md group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-xs font-black tracking-wide text-white">{cap.label}</span>
+      {/* 2. CATEGORY CAPSULES STRIP */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+          {CATEGORY_CAPSULES.map((cap) => {
+            const Icon = cap.icon;
+            return (
+              <Link
+                key={cap.label}
+                to={cap.link}
+                className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#11141D] border border-[#1E2332] hover:border-slate-500 transition-all flex-shrink-0 group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-[#181C28] flex items-center justify-center text-[#E50914] group-hover:bg-[#E50914] group-hover:text-white transition-colors">
+                  <Icon className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-xs font-semibold tracking-wide text-slate-200 group-hover:text-white">{cap.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. MAIN DISCOVERY: MOVIES + THEATRE SHOWTIMES */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E2332]">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#F59E0B] uppercase tracking-wider mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Showing in {selectedCity.name} ({cityTheatres.length} Theatres)</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Recommended Blockbusters
+            </h2>
+          </div>
+
+          {/* City Selector Pill */}
+          <button
+            type="button"
+            onClick={() => setIsCityModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[#11141D] border border-[#1E2332] hover:border-slate-500 text-xs font-bold text-white transition-all shadow-sm self-start sm:self-auto cursor-pointer"
+          >
+            <span>{selectedCity.icon}</span>
+            <span className="uppercase text-slate-200">{selectedCity.name}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          </button>
+        </div>
+
+        {/* Grid: 4 Blockbuster Movies (Left 2/3) & Theatre Showtimes + Live Events (Right 1/3) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left 2 Cols: 4 Movies Grid */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 sm:gap-6">
+              {MOVIES.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                />
+              ))}
+            </div>
+
+            {/* View All Movies Link */}
+            <div className="pt-2">
+              <Link
+                to="/movies"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F59E0B] hover:text-amber-300 transition-colors"
+              >
+                <span>Explore all movies in {selectedCity.name}</span>
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Right 1 Col: Location-Specific Theatres Selector & Showtimes */}
+          <div className="space-y-6">
+            {/* Theatres in Selected City Card */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-[#E50914]" /> Cinemas in {selectedCity.name}
+                </span>
+                <Link to="/theatres" className="text-xs font-semibold text-slate-400 hover:text-white">
+                  View All
                 </Link>
-              );
-            })}
+              </div>
+
+              {/* Horizontal Quick Theatre Pill Selector */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {cityTheatres.map((theatre, idx) => {
+                  const isSelected = activeTheatre.id === theatre.id;
+                  return (
+                    <button
+                      key={theatre.id}
+                      type="button"
+                      onClick={() => setSelectedTheatreIndex(idx)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#E50914] border-[#E50914] text-white shadow-sm'
+                          : 'bg-[#11141D] border-[#1E2332] text-slate-300 hover:border-slate-500'
+                      }`}
+                    >
+                      {theatre.name}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Showtimes for the Active City Theatre */}
+              <TheatreShowtimesCard
+                theatreName={activeTheatre.name}
+                address={activeTheatre.address}
+                priceRange="₹120 - ₹280"
+                amenities={activeTheatre.amenities || ['4K RGB Laser', 'Dolby Atmos', 'Recliners']}
+                timeSlots={['11:00 AM', '02:30 PM', '06:15 PM', '09:45 PM']}
+                onBookTickets={handleVenueBook}
+              />
+            </div>
+
+            {/* Live Events in selected city */}
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#1E2332]">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-white">
+                  <span className="w-2 h-2 rounded-full bg-[#E50914]" />
+                  Live Events in {selectedCity.name}
+                </h3>
+                <Link to="/events" className="text-xs font-semibold text-slate-400 hover:text-white">
+                  See All
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                {EVENTS.map((event) => (
+                  <div
+                    key={event.id}
+                    className="p-3 rounded-xl bg-[#11141D] border border-[#1E2332] hover:border-slate-600 flex items-center gap-3 transition-all group shadow-sm"
+                  >
+                    <img
+                      src={event.bannerUrl}
+                      alt={event.title}
+                      className="w-14 h-14 rounded-lg object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-bold text-[#F59E0B] uppercase tracking-wider">
+                        {event.category}
+                      </span>
+                      <h4 className="text-xs font-bold truncate text-white">{event.title}</h4>
+                      <p className="text-[11px] text-slate-400 truncate">{event.venue}</p>
+                      <p className="text-xs font-extrabold text-white mt-0.5">₹{event.priceStarting}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 3. MIDDLE DISCOVERY SECTION: MOVIES + THEATRE SHOWTIMES */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-          {/* Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#1E293B]">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-black text-[#D4AF37] uppercase tracking-widest mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Showing in {selectedCity.name} ({cityTheatres.length} Theatres)</span>
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-black tracking-tight font-display text-white">
-                RECOMMENDED BLOCKBUSTERS
-              </h2>
-            </div>
-
-            {/* City Selector Pill */}
-            <button
-              onClick={() => setIsCityModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] text-xs font-black transition-all shadow-md self-start sm:self-auto cursor-pointer"
-            >
-              <span className="text-base">{selectedCity.icon}</span>
-              <span className="uppercase text-white">LOCATION: {selectedCity.name}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8]" />
-            </button>
+        {/* 4. WHY CINEBOOK TRUST SECTION */}
+        <div className="pt-8 border-t border-[#1E2332]">
+          <div className="text-center max-w-2xl mx-auto space-y-2 mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">The Modern Cinema Experience</h3>
+            <p className="text-xs sm:text-sm text-slate-400">Engineered for seamless bookings, atomic seat concurrency, and high-fidelity sound.</p>
           </div>
 
-          {/* Grid: 4 Blockbuster Movies (Left 2/3) & Theatre Showtimes + Live Events (Right 1/3) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left 2 Cols: 4 Movies Grid */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 sm:gap-6">
-                {MOVIES.map((movie) => (
-                  <MovieCard
-                    key={movie.id}
-                    movie={movie}
-                  />
-                ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
+              <div className="w-9 h-9 rounded-lg bg-[#E50914]/10 text-[#E50914] flex items-center justify-center">
+                <Ticket className="w-5 h-5" />
               </div>
-
-              {/* View All Movies */}
-              <div className="pt-2 text-center sm:text-left">
-                <Link
-                  to="/movies"
-                  className="inline-flex items-center gap-2 text-xs font-black text-[#D4AF37] hover:text-[#F3E5AB] transition-colors"
-                >
-                  <span>Explore all cinema schedules in {selectedCity.name}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
+              <h4 className="text-sm font-bold text-white">Instant E-Passes</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">Download contactless QR passes directly to your device with real-time seat validation.</p>
             </div>
 
-            {/* Right 1 Col: Location-Specific Theatres Selector & Showtimes */}
-            <div className="space-y-8">
-              {/* Theatres in Selected City Card */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-1.5">
-                    <Building className="w-3.5 h-3.5 text-[#D4AF37]" /> Cinemas in {selectedCity.name} ({cityTheatres.length})
-                  </span>
-                  <Link to="/theatres" className="text-[11px] font-bold text-[#F3E5AB] hover:underline">
-                    View All
-                  </Link>
-                </div>
-
-                {/* Horizontal Quick Theatre Pill Selector for this City */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                  {cityTheatres.map((theatre, idx) => {
-                    const isSelected = activeTheatre.id === theatre.id;
-                    return (
-                      <button
-                        key={theatre.id}
-                        onClick={() => setSelectedTheatreIndex(idx)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] border-[#D4AF37] text-black font-black shadow-md scale-102'
-                            : 'bg-[#0F1523] border-[#1E293B] text-slate-300 hover:border-[#D4AF37]'
-                        }`}
-                      >
-                        {theatre.name}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Showtimes for the Active City Theatre */}
-                <TheatreShowtimesCard
-                  theatreName={activeTheatre.name}
-                  address={activeTheatre.address}
-                  priceRange="₹120 - ₹280"
-                  timeSlots={['11:00 AM', '02:30 PM', '06:15 PM', '09:45 PM']}
-                  onBookTickets={handleVenueBook}
-                />
+            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
+              <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-[#F59E0B] flex items-center justify-center">
+                <Lock className="w-5 h-5" />
               </div>
+              <h4 className="text-sm font-bold text-white">Atomic Seat Lock</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">Guarantees zero double bookings with high-speed Redis distributed locks and 8-minute timers.</p>
+            </div>
 
-              {/* Live Events & Shows for Selected City */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-[#1E293B]">
-                  <h3 className="text-sm font-black uppercase tracking-wider flex items-center gap-2 text-white">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E50914] animate-pulse" />
-                    LIVE ENTERTAINMENT IN {selectedCity.name.toUpperCase()}
-                  </h3>
-                  <Link to="/events" className="text-xs font-black text-[#D4AF37] hover:text-[#F3E5AB]">
-                    See All
-                  </Link>
-                </div>
-
-                <div className="space-y-3.5">
-                  {EVENTS.map((event) => (
-                    <div
-                      key={event.id}
-                      className="p-3.5 rounded-2xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37]/40 flex items-center gap-3.5 transition-all group shadow-md"
-                    >
-                      <img
-                        src={event.bannerUrl}
-                        alt={event.title}
-                        className="w-16 h-16 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[9px] font-black text-[#E50914] uppercase tracking-wider">
-                          {event.category}
-                        </span>
-                        <h4 className="text-xs font-black truncate mt-0.5 text-white">{event.title}</h4>
-                        <p className="text-[10px] text-[#94A3B8] mt-0.5">{event.venue}</p>
-                        <p className="text-xs font-black text-[#D4AF37] mt-1">From ₹{event.priceStarting}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
               </div>
+              <h4 className="text-sm font-bold text-white">Verified Audis</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">Direct synchronization with single-screen box office counters and Barco 4K Laser projection.</p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-[#11141D] border border-[#1E2332] space-y-2.5">
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                <Headphones className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-bold text-white">24/7 AI Concierge</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">Automated booking resolutions, schedule adjustments, and instant ticket retrievals.</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. TRAILER PREVIEW MODAL */}
+      {/* 5. TRAILER PREVIEW MODAL */}
       {selectedTrailerMovie && (
         <TrailerModal
           isOpen={!!selectedTrailerMovie}
@@ -229,9 +275,6 @@ const HomePage = () => {
           movieTitle={selectedTrailerMovie.title}
         />
       )}
-
-      {/* 5. MINIMAL 3-COLUMN FOOTER */}
-      <Footer />
     </div>
   );
 };

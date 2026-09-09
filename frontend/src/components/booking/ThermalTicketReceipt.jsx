@@ -41,22 +41,22 @@ const ThermalTicketReceipt = ({ booking, onClose, onPrint, autoPrint = false }) 
   const gst = totalPaid - baseFare;
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col items-center justify-center p-2 sm:p-4">
       {/* Non-printable Control Actions */}
       <div className="no-print mb-4 flex items-center gap-3">
         <button
           type="button"
           onClick={handlePrint}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white text-xs font-black uppercase tracking-wider shadow-glow-pink transition-all transform hover:scale-105 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#E50914] hover:bg-[#B80710] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer active:scale-95"
         >
           <Printer className="w-4 h-4" />
-          <span>Print 80mm Thermal Slip</span>
+          <span>Print 80mm Slip</span>
         </button>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl glass-panel hover:border-pink-500 text-theme-muted hover:text-theme-primary text-xs font-bold transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-slate-300 hover:text-white text-xs font-semibold transition-all cursor-pointer"
           >
             <X className="w-4 h-4" />
             <span>Close</span>

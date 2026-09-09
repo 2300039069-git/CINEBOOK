@@ -5,11 +5,12 @@ import {
   Play,
   Share2,
   Clock,
-  Heart,
   ChevronRight,
   ShieldCheck,
   Building,
-  Sparkles
+  Sparkles,
+  Film,
+  Calendar
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
@@ -42,7 +43,7 @@ const MovieDetailPage = () => {
         movieId: movie.id,
         theatreId: theatre.id,
         theatreName: theatre.name,
-        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K',
+        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K Laser',
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: '11:00 AM',
@@ -54,7 +55,7 @@ const MovieDetailPage = () => {
         movieId: movie.id,
         theatreId: theatre.id,
         theatreName: theatre.name,
-        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K',
+        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K Laser',
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: '02:30 PM',
@@ -66,7 +67,7 @@ const MovieDetailPage = () => {
         movieId: movie.id,
         theatreId: theatre.id,
         theatreName: theatre.name,
-        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K',
+        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K Laser',
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: '06:15 PM',
@@ -78,7 +79,7 @@ const MovieDetailPage = () => {
         movieId: movie.id,
         theatreId: theatre.id,
         theatreName: theatre.name,
-        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K',
+        screenName: theatre.screens?.[0]?.name || 'Audi 1 4K Laser',
         format: '2D',
         language: 'Telugu',
         time: '09:45 PM',
@@ -115,24 +116,24 @@ const MovieDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen pb-24 transition-colors">
+    <div className="min-h-screen bg-[#090A0E] text-slate-100 pb-24 transition-colors">
       {/* 1. CINEMA HERO BACKDROP WITH POSTER */}
-      <section className="relative w-full min-h-[440px] lg:min-h-[480px] bg-black overflow-hidden">
+      <section className="relative w-full min-h-[420px] lg:min-h-[460px] bg-[#090A0E] overflow-hidden border-b border-[#1E2332]">
         {/* Backdrop Image */}
         <div className="absolute inset-0">
           <img
             src={movie.backdropUrl || movie.posterUrl}
             alt={movie.title}
-            className="w-full h-full object-cover object-center filter brightness-40"
+            className="w-full h-full object-cover object-center filter brightness-[0.4]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0B14] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#090A0E] via-[#090A0E]/85 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090A0E] via-[#090A0E]/40 to-transparent" />
         </div>
 
         {/* Content Container */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center md:items-end gap-6 sm:gap-8">
           {/* Poster Card */}
-          <div className="relative w-44 sm:w-56 aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl border border-white/20 flex-shrink-0 group bg-black">
+          <div className="relative w-44 sm:w-52 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-[#1E2332] flex-shrink-0 group bg-[#11141D]">
             <img
               src={movie.posterUrl}
               alt={movie.title}
@@ -140,13 +141,14 @@ const MovieDetailPage = () => {
             />
             {/* Play Trailer Overlay */}
             <button
+              type="button"
               onClick={() => setIsTrailerOpen(true)}
-              className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute inset-0 bg-[#090A0E]/70 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+              <div className="w-11 h-11 rounded-xl bg-[#E50914] flex items-center justify-center text-white shadow-md">
                 <Play className="w-5 h-5 fill-white ml-0.5" />
               </div>
-              <span className="text-xs font-black text-white uppercase tracking-wider">Watch Trailer</span>
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Watch Trailer</span>
             </button>
           </div>
 
@@ -154,67 +156,70 @@ const MovieDetailPage = () => {
           <div className="flex-1 space-y-3.5 text-center md:text-left text-white">
             {/* Badges */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <span className="px-3 py-1 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[11px] font-black uppercase shadow-md">
+              <span className="px-2.5 py-0.5 rounded-md bg-[#E50914] text-white text-[11px] font-bold uppercase tracking-wider">
                 {movie.status === 'NOW_SHOWING' ? 'Now Showing' : 'Releasing Soon'}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white text-xs font-bold backdrop-blur-md">
-                {movie.censorRating || 'UA'}
+              <span className="px-2 py-0.5 rounded-md bg-[#181C28] border border-[#1E2332] text-slate-300 text-xs font-semibold backdrop-blur-md">
+                {movie.censorRating || 'UA 16+'}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 text-xs font-semibold backdrop-blur-md">
-                {movie.formats?.join(' • ')}
+              <span className="px-2 py-0.5 rounded-md bg-[#181C28] border border-[#1E2332] text-slate-300 text-xs font-medium backdrop-blur-md">
+                {movie.formats?.join(' • ') || '4K Laser, Dolby Atmos'}
               </span>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-5xl font-display font-black tracking-tight">
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
               {movie.title}
             </h1>
 
             {/* Rating Bar */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/80 border border-white/15 backdrop-blur-md">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span className="text-base font-black text-white">{movie.rating}/10</span>
-                <span className="text-slate-400">({movie.votes} Votes)</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#11141D] border border-[#1E2332]">
+                <Star className="w-4 h-4 fill-[#F59E0B] text-[#F59E0B]" />
+                <span className="text-sm font-extrabold text-white">{movie.rating}/10</span>
+                <span className="text-slate-400 font-normal">({movie.votes || '24K'} Votes)</span>
               </div>
 
               <div className="flex items-center gap-1.5 text-slate-300">
-                <Clock className="w-4 h-4 text-amber-400" />
-                <span>{movie.duration}</span>
+                <Clock className="w-4 h-4 text-slate-400" />
+                <span>{movie.duration || '2h 45m'}</span>
               </div>
 
               <div className="text-slate-300 font-medium">
-                <span>{movie.genres?.join(', ')}</span>
+                <span>{movie.genres?.join(', ') || movie.genre}</span>
               </div>
 
               <div className="text-slate-400">
-                <span>{movie.languages?.join(' • ')}</span>
+                <span>{movie.languages?.join(' • ') || movie.language}</span>
               </div>
             </div>
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
               <button
+                type="button"
                 onClick={() => {
                   const element = document.getElementById('showtimes-section');
                   element?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg transition-all"
+                className="px-7 py-3 rounded-xl bg-[#E50914] hover:bg-[#B80710] text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
               >
                 Book Tickets in {selectedCity.name}
               </button>
 
               <button
+                type="button"
                 onClick={() => setIsTrailerOpen(true)}
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs sm:text-sm font-bold backdrop-blur-md transition-all"
+                className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-white text-xs sm:text-sm font-semibold transition-all cursor-pointer"
               >
                 <Play className="w-4 h-4 fill-white" />
-                <span>Trailer</span>
+                <span>Watch Trailer</span>
               </button>
 
               <button
+                type="button"
                 onClick={handleShare}
-                className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all"
+                className="p-3 rounded-xl bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-slate-300 hover:text-white transition-all cursor-pointer"
                 title="Share Movie"
               >
                 <Share2 className="w-4 h-4" />
@@ -226,28 +231,28 @@ const MovieDetailPage = () => {
 
       {/* 2. SYNOPSIS & CAST */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4 glass-panel p-6 rounded-3xl">
-            <h2 className="text-lg font-black text-theme-primary">About the Movie</h2>
-            <p className="text-xs sm:text-sm text-theme-secondary leading-relaxed">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4 bg-[#11141D] p-6 rounded-xl border border-[#1E2332]">
+            <h2 className="text-base font-bold text-white uppercase tracking-wider">About the Movie</h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
               {movie.description}
             </p>
 
-            <div className="pt-4 border-t border-[var(--theme-border)]">
-              <h3 className="text-xs font-black uppercase tracking-wider text-theme-muted mb-3">
-                Cast & Star Ensemble
+            <div className="pt-4 border-t border-[#1E2332]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                Cast & Crew Ensemble
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {movie.cast?.map((actor) => (
-                  <div key={actor.name} className="flex items-center gap-2.5 p-2 rounded-2xl glass-card">
+                  <div key={actor.name} className="flex items-center gap-2.5 p-2 rounded-lg bg-[#181C28] border border-[#1E2332]">
                     <img
                       src={actor.photo}
                       alt={actor.name}
-                      className="w-10 h-10 rounded-full object-cover border border-[var(--theme-border)]"
+                      className="w-9 h-9 rounded-full object-cover border border-[#1E2332]"
                     />
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-theme-primary truncate">{actor.name}</p>
-                      <p className="text-[10px] text-theme-muted truncate">{actor.role}</p>
+                      <p className="text-xs font-bold text-white truncate">{actor.name}</p>
+                      <p className="text-[10px] text-slate-400 truncate">{actor.role}</p>
                     </div>
                   </div>
                 ))}
@@ -255,27 +260,27 @@ const MovieDetailPage = () => {
             </div>
           </div>
 
-          {/* Quick Info Box */}
-          <div className="glass-panel p-6 rounded-3xl space-y-3 h-fit text-xs">
-            <h3 className="font-black text-xs uppercase tracking-wider text-pink-500">
+          {/* Quick Facts Box */}
+          <div className="bg-[#11141D] p-6 rounded-xl border border-[#1E2332] space-y-3 h-fit text-xs">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-white">
               Movie Facts
             </h3>
-            <div className="space-y-2.5 text-theme-secondary">
-              <div className="flex justify-between py-1 border-b border-[var(--theme-border)]">
-                <span className="text-theme-muted">Director</span>
-                <span className="font-bold text-theme-primary">{movie.director}</span>
+            <div className="space-y-2.5 text-slate-300">
+              <div className="flex justify-between py-1.5 border-b border-[#1E2332]">
+                <span className="text-slate-400">Director</span>
+                <span className="font-semibold text-white">{movie.director}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--theme-border)]">
-                <span className="text-theme-muted">Release Date</span>
-                <span className="font-bold text-theme-primary">{movie.releaseDate}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1E2332]">
+                <span className="text-slate-400">Release Date</span>
+                <span className="font-semibold text-white">{movie.releaseDate}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-[var(--theme-border)]">
-                <span className="text-theme-muted">Languages</span>
-                <span className="font-bold text-theme-primary">{movie.languages?.join(', ')}</span>
+              <div className="flex justify-between py-1.5 border-b border-[#1E2332]">
+                <span className="text-slate-400">Languages</span>
+                <span className="font-semibold text-white">{movie.languages?.join(', ') || movie.language}</span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-theme-muted">Certification</span>
-                <span className="font-bold text-theme-primary">{movie.censorRating || 'UA'}</span>
+              <div className="flex justify-between py-1.5">
+                <span className="text-slate-400">Certification</span>
+                <span className="font-semibold text-white">{movie.censorRating || 'UA'}</span>
               </div>
             </div>
           </div>
@@ -283,19 +288,20 @@ const MovieDetailPage = () => {
       </section>
 
       {/* 3. SHOWTIMES & THEATRE MATRIX SECTION (CITY FILTERED) */}
-      <section id="showtimes-section" className="pt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl glass-panel">
+      <section id="showtimes-section" className="pt-2 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#11141D] border border-[#1E2332]">
           <div>
-            <span className="text-xs font-black text-pink-500 uppercase tracking-wider flex items-center gap-1.5">
+            <span className="text-xs font-bold text-[#E50914] uppercase tracking-wider flex items-center gap-1.5">
               <Building className="w-4 h-4" /> Available Cinemas in {selectedCity.name}
             </span>
-            <h3 className="text-lg font-black text-theme-primary mt-0.5">
+            <h3 className="text-base font-bold text-white mt-0.5">
               {theatresWithShows.length} Theatres Showing in {selectedCity.name}
             </h3>
           </div>
           <button
+            type="button"
             onClick={() => setIsCityModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-bold shadow-sm self-start sm:self-auto"
+            className="px-4 py-2 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-white text-xs font-bold self-start sm:self-auto cursor-pointer"
           >
             Change City ({selectedCity.name})
           </button>

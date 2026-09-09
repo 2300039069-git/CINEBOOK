@@ -21,7 +21,7 @@ const PartnerAuthPage = () => {
     email: 'partner@sivacinemas.com',
     phone: '+91 98480 12345',
     city: 'Guntur',
-    password: 'password123',
+    password: 'TheatrePass@2026',
     bank_name: 'State Bank of India',
     bank_account_num: '308491029481',
     ifsc_code: 'SBIN0000840',
@@ -34,17 +34,19 @@ const PartnerAuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 flex items-center justify-center transition-colors">
-      <div className="max-w-xl w-full glass-panel rounded-3xl p-8 space-y-6 shadow-2xl border border-[var(--theme-border)]">
+    <div className="min-h-screen py-12 px-4 flex items-center justify-center transition-colors relative">
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-xl w-full bg-[#0F1523]/90 rounded-3xl p-8 space-y-6 shadow-2xl border border-[#1E293B] relative z-10 backdrop-blur-xl">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-3xl bg-gradient-to-tr from-pink-500 via-purple-600 to-cyan-500 flex items-center justify-center text-white mx-auto shadow-glow-pink">
+          <div className="w-14 h-14 rounded-2xl bg-[#172033] border border-[#1E293B] flex items-center justify-center text-[#D4AF37] mx-auto shadow-glow-gold">
             <Store className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-theme-primary font-display">
-            Exhibitor & Theatre Partner Portal
+          <h1 className="text-2xl sm:text-3xl font-black text-white font-display">
+            Exhibitor & Cinema Partner Portal
           </h1>
-          <p className="text-xs text-theme-muted">
+          <p className="text-xs text-[#94A3B8]">
             {isRegister
               ? 'Onboard your cinema to sell tickets online with daily T+1 automated payouts'
               : 'Sign in to manage screens, showtimes, counter quota, and gate scanning'}
@@ -52,14 +54,14 @@ const PartnerAuthPage = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex p-1.5 glass-card rounded-2xl">
+        <div className="flex p-1.5 bg-[#080B10] border border-[#1E293B] rounded-2xl">
           <button
             type="button"
             onClick={() => setIsRegister(false)}
-            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
+            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               !isRegister
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-sm'
-                : 'text-theme-muted hover:text-theme-primary'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black shadow-glow-gold'
+                : 'text-[#94A3B8] hover:text-white'
             }`}
           >
             Partner Sign In
@@ -67,10 +69,10 @@ const PartnerAuthPage = () => {
           <button
             type="button"
             onClick={() => setIsRegister(true)}
-            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
+            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
               isRegister
-                ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-sm'
-                : 'text-theme-muted hover:text-theme-primary'
+                ? 'bg-gradient-to-r from-[#D4AF37] to-[#E2B714] text-black shadow-glow-gold'
+                : 'text-[#94A3B8] hover:text-white'
             }`}
           >
             New Theatre Registration
@@ -83,36 +85,36 @@ const PartnerAuthPage = () => {
             <>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-theme-muted font-bold block mb-1">Theatre Name</label>
+                  <label className="text-[#94A3B8] font-bold block mb-1">Theatre Name</label>
                   <input
                     type="text"
                     value={formData.theatre_name}
                     onChange={(e) => setFormData({ ...formData, theatre_name: e.target.value })}
-                    className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                    className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-theme-muted font-bold block mb-1">City / Town</label>
+                  <label className="text-[#94A3B8] font-bold block mb-1">City / Town</label>
                   <select
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                    className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
                   >
-                    <option value="Guntur" className="bg-[#131527] text-white">Guntur</option>
-                    <option value="Vijayawada" className="bg-[#131527] text-white">Vijayawada</option>
-                    <option value="Tenali" className="bg-[#131527] text-white">Tenali</option>
+                    <option value="Guntur" className="bg-[#080B10] text-white">Guntur</option>
+                    <option value="Vijayawada" className="bg-[#080B10] text-white">Vijayawada</option>
+                    <option value="Tenali" className="bg-[#080B10] text-white">Tenali</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-theme-muted font-bold block mb-1">Owner / Manager Name</label>
+                <label className="text-[#94A3B8] font-bold block mb-1">Owner / Manager Name</label>
                 <input
                   type="text"
                   value={formData.owner_name}
                   onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                  className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+                  className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
                   required
                 />
               </div>
@@ -120,48 +122,48 @@ const PartnerAuthPage = () => {
           )}
 
           <div>
-            <label className="text-theme-muted font-bold block mb-1">Partner Email</label>
+            <label className="text-[#94A3B8] font-bold block mb-1">Partner Email</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+              className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               required
             />
           </div>
 
           <div>
-            <label className="text-theme-muted font-bold block mb-1">Password</label>
+            <label className="text-[#94A3B8] font-bold block mb-1">Password</label>
             <input
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full p-2.5 glass-card rounded-2xl text-theme-primary font-bold focus:outline-none focus:border-pink-500"
+              className="w-full p-2.5 bg-[#080B10] border border-[#1E293B] rounded-xl text-white font-bold focus:outline-none focus:border-[#D4AF37]"
               required
             />
           </div>
 
           {isRegister && (
-            <div className="p-4 rounded-2xl glass-card space-y-3 border border-amber-500/30">
-              <h4 className="text-[11px] font-black uppercase text-amber-500">T+1 Bank Payout Details</h4>
+            <div className="p-4 rounded-2xl bg-[#080B10] space-y-3 border border-[#D4AF37]/30">
+              <h4 className="text-[11px] font-black uppercase text-[#D4AF37]">T+1 Bank Payout Details</h4>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-theme-muted block mb-0.5">Account Number</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-0.5">Account Number</label>
                   <input
                     type="text"
                     value={formData.bank_account_num}
                     onChange={(e) => setFormData({ ...formData, bank_account_num: e.target.value })}
-                    className="w-full p-2 glass-panel rounded-xl text-theme-primary font-mono text-xs focus:outline-none"
+                    className="w-full p-2 bg-[#0F1523] border border-[#1E293B] rounded-xl text-[#D4AF37] font-mono text-xs focus:outline-none focus:border-[#D4AF37]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-theme-muted block mb-0.5">IFSC Code</label>
+                  <label className="text-[10px] text-[#94A3B8] block mb-0.5">IFSC Code</label>
                   <input
                     type="text"
                     value={formData.ifsc_code}
                     onChange={(e) => setFormData({ ...formData, ifsc_code: e.target.value })}
-                    className="w-full p-2 glass-panel rounded-xl text-theme-primary font-mono text-xs focus:outline-none uppercase"
+                    className="w-full p-2 bg-[#0F1523] border border-[#1E293B] rounded-xl text-[#D4AF37] font-mono text-xs focus:outline-none focus:border-[#D4AF37] uppercase"
                     required
                   />
                 </div>
@@ -171,15 +173,15 @@ const PartnerAuthPage = () => {
 
           <button
             type="submit"
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white font-black uppercase tracking-wider shadow-glow-pink flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black font-black uppercase tracking-wider shadow-glow-gold flex items-center justify-center gap-2 cursor-pointer transition-all"
           >
             <span>{isRegister ? 'Complete Onboarding & Access Portal' : 'Sign In to Partner Portal'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-black" />
           </button>
         </form>
 
-        <div className="pt-2 text-center text-xs text-theme-muted">
-          <Link to="/" className="text-pink-500 hover:underline">
+        <div className="pt-2 text-center text-xs text-[#94A3B8]">
+          <Link to="/" className="text-[#D4AF37] hover:underline">
             ← Return to Customer App
           </Link>
         </div>

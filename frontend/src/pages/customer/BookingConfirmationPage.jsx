@@ -15,18 +15,14 @@ import {
   ShieldCheck,
   Sparkles,
   Printer,
-  Image as ImageIcon,
-  ReceiptText,
-  FileText
+  ReceiptText
 } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
-import { useTheme } from '../../context/ThemeContext';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
   const { clearBooking } = useBooking();
-  const { currentTheme, theme } = useTheme();
   const ticketRef = useRef(null);
 
   // Load booking from localStorage or fallback
@@ -34,7 +30,7 @@ const BookingConfirmationPage = () => {
   const booking = bookings.find((b) => b.bookingId === bookingId) || bookings[0] || {
     bookingId: bookingId || 'CB-2026-894120',
     movie: { title: 'Pushpa 2: The Rule (2024)' },
-    theatre: { name: 'Siva Cinemas', address: 'Near Old Bus Stand, Guntur' },
+    theatre: { name: 'Siva Cinemas 4K Laser', address: 'Near Old Bus Stand, Guntur' },
     show: { time: '11:00 AM', format: '2D Dolby Atmos', language: 'Telugu' },
     showDate: new Date().toISOString().split('T')[0],
     seats: [{ id: 'C5' }, { id: 'C6' }],
@@ -72,12 +68,12 @@ const BookingConfirmationPage = () => {
     canvas.width = 800;
     canvas.height = 1050;
 
-    const isLight = currentTheme === 'LUXE_WHITE';
-    const bgColor = isLight ? '#FFFFFF' : currentTheme === 'MIDNIGHT_BLACK' ? '#070709' : '#0A0B14';
-    const cardColor = isLight ? '#F8FAFC' : currentTheme === 'MIDNIGHT_BLACK' ? '#111116' : '#131527';
-    const textColor = isLight ? '#0F172A' : '#FFFFFF';
-    const accentColor = isLight ? '#4F46E5' : currentTheme === 'MIDNIGHT_BLACK' ? '#FF003A' : '#EC4899';
-    const mutedColor = isLight ? '#64748B' : '#94A3B8';
+    const bgColor = '#090A0E';
+    const cardColor = '#11141D';
+    const textColor = '#FFFFFF';
+    const accentColor = '#E50914';
+    const goldColor = '#F59E0B';
+    const mutedColor = '#94A3B8';
 
     // 1. Draw Canvas Background
     ctx.fillStyle = bgColor;
@@ -85,7 +81,7 @@ const BookingConfirmationPage = () => {
 
     // 2. Draw Card Body
     ctx.fillStyle = cardColor;
-    ctx.strokeStyle = accentColor;
+    ctx.strokeStyle = '#1E2332';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.roundRect(40, 40, 720, 970, 24);
@@ -102,7 +98,7 @@ const BookingConfirmationPage = () => {
     ctx.fillText(`BOOKING REF: ${booking.bookingId}`, 480, 100);
 
     // Divider
-    ctx.strokeStyle = isLight ? '#E2E8F0' : 'rgba(255,255,255,0.15)';
+    ctx.strokeStyle = '#1E2332';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(70, 130);
@@ -115,7 +111,7 @@ const BookingConfirmationPage = () => {
     ctx.fillText((booking.show?.format || '2D DOLBY ATMOS').toUpperCase(), 70, 175);
 
     ctx.fillStyle = textColor;
-    ctx.font = 'bold 36px sans-serif';
+    ctx.font = 'bold 34px sans-serif';
     ctx.fillText(booking.movie?.title || 'Pushpa 2: The Rule', 70, 225);
 
     // 5. Cinema & Showtime
@@ -132,7 +128,7 @@ const BookingConfirmationPage = () => {
     ctx.fillText(`📅 Date: ${booking.showDate}     ⏰ Time: ${booking.show?.time || '11:00 AM'}`, 70, 360);
 
     // 6. Confirmed Seats Box
-    ctx.fillStyle = isLight ? '#EEF2F6' : 'rgba(255,255,255,0.06)';
+    ctx.fillStyle = '#181C28';
     ctx.beginPath();
     ctx.roundRect(70, 400, 660, 110, 16);
     ctx.fill();
@@ -141,25 +137,25 @@ const BookingConfirmationPage = () => {
     ctx.font = 'bold 16px sans-serif';
     ctx.fillText('CONFIRMED SEATS:', 95, 445);
 
-    ctx.fillStyle = accentColor;
+    ctx.fillStyle = goldColor;
     ctx.font = 'bold 28px monospace';
-    ctx.fillText(booking.seats?.map(s => s.id).join(', ') || 'C5, C6', 280, 448);
+    ctx.fillText(booking.seats?.map(s => (typeof s === 'string' ? s : s.id)).join(', ') || 'C5, C6', 280, 448);
 
     ctx.fillStyle = textColor;
     ctx.font = 'bold 18px sans-serif';
     ctx.fillText(`Total Paid: ₹${booking.totalAmount}.00 (Verified via 256-Bit SSL)`, 95, 490);
 
-    // 7. Security & Active Theme Badge
-    ctx.fillStyle = accentColor;
+    // 7. Security & Brand Badge
+    ctx.fillStyle = goldColor;
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(`🎨 CineBook Theme: ${theme.name} ${theme.icon}`, 70, 560);
+    ctx.fillText('🎬 CINEBOOK PLATINUM PASS', 70, 560);
 
     ctx.fillStyle = '#10B981';
     ctx.font = 'bold 16px sans-serif';
     ctx.fillText(`✓ Payment ID: ${booking.paymentId}`, 70, 595);
 
     // 8. Gate QR Scan Guidance
-    ctx.fillStyle = isLight ? '#0F172A' : '#FFFFFF';
+    ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 18px sans-serif';
     ctx.fillText('SCAN THIS QR PASS AT CINEMA GATE FOR INSTANT ADMISSION', 110, 680);
 
@@ -182,7 +178,7 @@ const BookingConfirmationPage = () => {
 
     // Download trigger
     const link = document.createElement('a');
-    link.download = `CineBook_Ticket_${booking.bookingId}_${currentTheme.toLowerCase()}.png`;
+    link.download = `CineBook_Ticket_${booking.bookingId}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -190,16 +186,16 @@ const BookingConfirmationPage = () => {
   const qrSecureValue = `https://cinebook.in/verify-ticket?ref=${booking.bookingId}&sig=${booking.paymentId}`;
 
   return (
-    <div className="min-h-screen py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-[#080B10] text-[#F8FAFC]">
+    <div className="min-h-screen py-12 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-[#090A0E] text-slate-100">
       {/* 1. CELEBRATION HEADER (Hidden in Print) */}
       <div className="text-center space-y-2 animate-fade-in no-print">
-        <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-md">
-          <CheckCircle2 className="w-9 h-9" />
+        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-md">
+          <CheckCircle2 className="w-8 h-8" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-display font-black text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Booking Confirmed!
         </h1>
-        <p className="text-xs text-[#94A3B8]">
+        <p className="text-xs text-slate-400">
           Your payment was verified via 256-Bit SSL. Download or print your verified QR pass below!
         </p>
       </div>
@@ -208,27 +204,27 @@ const BookingConfirmationPage = () => {
       <div
         id="printable-ticket"
         ref={ticketRef}
-        className="relative bg-[#0F1523]/95 rounded-3xl overflow-hidden shadow-2xl border border-[#D4AF37]/30 transition-colors text-[#F8FAFC]"
+        className="relative bg-[#11141D] rounded-2xl overflow-hidden shadow-2xl border border-[#1E2332] text-slate-100"
       >
         {/* Ticket Header */}
-        <div className="p-6 border-b border-[#1E293B] flex items-center justify-between bg-[#080B10]">
+        <div className="p-5 sm:p-6 border-b border-[#1E2332] flex items-center justify-between bg-[#181C28]">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#D4AF37] to-[#E2B714] flex items-center justify-center text-black shadow-md">
-              <Film className="w-5 h-5 text-black" />
+            <div className="w-9 h-9 rounded-xl bg-[#E50914] flex items-center justify-center text-white shadow-sm">
+              <Film className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-display font-black text-white text-base block leading-none">
-                CINE<span className="text-[#D4AF37]">BOOK</span> E-TICKET
+              <span className="font-extrabold text-white text-base block leading-none tracking-wider">
+                CINE<span className="text-[#E50914]">BOOK</span> E-PASS
               </span>
-              <span className="text-[10px] text-[#94A3B8] uppercase font-bold tracking-wider mt-0.5 block">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold tracking-wider mt-0.5 block">
                 Official Digital Admission Pass
               </span>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-[10px] uppercase text-[#94A3B8] block font-black">Booking ID</span>
-            <span className="text-sm font-mono font-black text-[#D4AF37]">{booking.bookingId}</span>
+            <span className="text-[10px] uppercase text-slate-400 block font-bold">Booking ID</span>
+            <span className="text-sm font-mono font-extrabold text-[#F59E0B]">{booking.bookingId}</span>
           </div>
         </div>
 
@@ -237,59 +233,59 @@ const BookingConfirmationPage = () => {
           {/* Left 2 Cols: Movie & Cinema details */}
           <div className="sm:col-span-2 space-y-4">
             <div>
-              <span className="text-[11px] font-black text-[#E50914] uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#E50914] uppercase tracking-wider">
                 {booking.show?.format || '2D Dolby Atmos'} • {booking.show?.language || 'Telugu'}
               </span>
-              <h2 className="text-2xl font-black text-white mt-0.5">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mt-0.5">
                 {booking.movie?.title || 'Pushpa 2: The Rule (2024)'}
               </h2>
             </div>
 
             <div className="space-y-2 text-xs text-slate-300">
               <p className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+                <MapPin className="w-4 h-4 text-[#F59E0B] flex-shrink-0" />
                 <span className="font-bold text-white">{booking.theatre?.name || 'Siva Cinemas 4K Dolby Atmos'}</span>
               </p>
-              <p className="text-[#94A3B8] text-[11px] pl-6">
+              <p className="text-slate-400 text-xs pl-6">
                 {booking.theatre?.address || 'Near Old Bus Stand, Guntur'}
               </p>
 
-              <div className="flex flex-wrap gap-3 pt-2">
-                <div className="flex items-center gap-1.5 bg-[#080B10] px-3 py-1.5 rounded-xl border border-[#1E293B]">
-                  <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span className="font-bold text-white">{booking.showDate}</span>
+              <div className="flex flex-wrap gap-2.5 pt-2">
+                <div className="flex items-center gap-1.5 bg-[#181C28] px-3 py-1.5 rounded-lg border border-[#1E2332]">
+                  <Calendar className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <span className="font-semibold text-white">{booking.showDate}</span>
                 </div>
-                <div className="flex items-center gap-1.5 bg-[#080B10] px-3 py-1.5 rounded-xl border border-[#1E293B]">
-                  <Clock className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span className="font-bold text-white">{booking.show?.time || '11:00 AM'}</span>
+                <div className="flex items-center gap-1.5 bg-[#181C28] px-3 py-1.5 rounded-lg border border-[#1E2332]">
+                  <Clock className="w-3.5 h-3.5 text-[#F59E0B]" />
+                  <span className="font-semibold text-white">{booking.show?.time || '11:00 AM'}</span>
                 </div>
               </div>
             </div>
 
             {/* Seats Box */}
-            <div className="p-4 rounded-2xl bg-[#080B10] space-y-1.5 border border-[#1E293B]">
+            <div className="p-4 rounded-xl bg-[#181C28] space-y-1.5 border border-[#1E2332]">
               <div className="flex justify-between text-xs">
-                <span className="text-[#94A3B8] font-bold">Confirmed Seats ({booking.seats?.length || 0}):</span>
-                <span className="font-mono font-black text-[#E50914] text-sm">
+                <span className="text-slate-400 font-semibold">Confirmed Seats ({booking.seats?.length || 0}):</span>
+                <span className="font-mono font-bold text-[#E50914] text-sm">
                   {booking.seats?.map((s) => (typeof s === 'string' ? s : s.id)).join(', ')}
                 </span>
               </div>
-              <div className="flex justify-between text-xs text-slate-300 pt-1 border-t border-[#1E293B]">
+              <div className="flex justify-between text-xs text-slate-300 pt-1.5 border-t border-[#1E2332]">
                 <span>Total Paid (256-Bit SSL)</span>
-                <span className="font-black text-emerald-400">₹{booking.totalAmount}.00</span>
+                <span className="font-bold text-emerald-400">₹{booking.totalAmount}.00</span>
               </div>
             </div>
           </div>
 
           {/* Right Col: QR Code */}
-          <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-slate-300 text-center shadow-inner">
+          <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white border border-slate-300 text-center shadow-inner">
             <QRCodeSVG
               value={qrSecureValue}
-              size={130}
+              size={125}
               level="H"
               includeMargin={true}
             />
-            <span className="text-[10px] text-slate-900 font-black uppercase tracking-wider mt-1">
+            <span className="text-[10px] text-slate-900 font-extrabold uppercase tracking-wider mt-1">
               Scan at Gate
             </span>
           </div>
@@ -297,30 +293,30 @@ const BookingConfirmationPage = () => {
 
         {/* Notches on Ticket Separator */}
         <div className="relative flex items-center justify-between px-2 -my-3">
-          <div className="w-6 h-6 rounded-full bg-[#080B10] border-r border-[#1E293B] -ml-3" />
-          <div className="w-full border-t-2 border-dashed border-[#1E293B] mx-2" />
-          <div className="w-6 h-6 rounded-full bg-[#080B10] border-l border-[#1E293B] -mr-3" />
+          <div className="w-6 h-6 rounded-full bg-[#090A0E] border-r border-[#1E2332] -ml-3" />
+          <div className="w-full border-t-2 border-dashed border-[#1E2332] mx-2" />
+          <div className="w-6 h-6 rounded-full bg-[#090A0E] border-l border-[#1E2332] -mr-3" />
         </div>
 
         {/* Ticket Footer Strip */}
-        <div className="p-4 bg-[#080B10] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#94A3B8]">
-          <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+        <div className="p-4 bg-[#181C28] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+          <span className="flex items-center gap-1.5 text-emerald-400 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <span>Verified: {booking.paymentId}</span>
           </span>
-          <span className="text-[11px] text-[#94A3B8]">
+          <span className="text-[11px] text-slate-400">
             Present this QR code at cinema gate for instant admission
           </span>
         </div>
       </div>
 
       {/* 3. ACTION CONTROLS (Hidden in Print) */}
-      <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2 no-print">
+      <div className="flex flex-wrap items-center justify-center gap-3 pt-2 no-print">
         {/* 1. Print Standard Theme Ticket */}
         <button
           type="button"
           onClick={handlePrint}
-          className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#E50914] to-[#B80710] hover:from-[#FF1E27] hover:to-[#E50914] text-white text-xs font-black uppercase tracking-wider shadow-glow-crimson transition-all transform hover:scale-105 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-3 rounded-lg bg-[#E50914] hover:bg-[#B80710] text-white text-xs font-bold uppercase tracking-wider shadow-sm transition-all cursor-pointer active:scale-95"
         >
           <Printer className="w-4 h-4 text-white" />
           <span>Print E-Ticket</span>
@@ -330,9 +326,9 @@ const BookingConfirmationPage = () => {
         <button
           type="button"
           onClick={handlePrintThermal}
-          className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E2B714] hover:from-[#E2B714] hover:to-[#D4AF37] text-black text-xs font-black uppercase tracking-wider shadow-glow-gold transition-all transform hover:scale-105 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-3 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-[#F59E0B] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer active:scale-95"
         >
-          <ReceiptText className="w-4 h-4 text-black" />
+          <ReceiptText className="w-4 h-4 text-[#F59E0B]" />
           <span>Print 80mm Thermal Slip</span>
         </button>
 
@@ -340,15 +336,15 @@ const BookingConfirmationPage = () => {
         <button
           type="button"
           onClick={handleDownloadImage}
-          className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#0F1523] border border-[#1E293B] hover:border-[#D4AF37] text-white text-xs font-black transition-all cursor-pointer shadow-md"
+          className="flex items-center gap-2 px-5 py-3 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-slate-200 text-xs font-bold transition-all cursor-pointer"
         >
-          <Download className="w-4 h-4 text-[#D4AF37]" />
-          <span>Download PNG Pass</span>
+          <Download className="w-4 h-4 text-slate-400" />
+          <span>Download PNG</span>
         </button>
 
         <Link
           to="/my-bookings"
-          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-[#0F1523] border border-[#1E293B] hover:border-slate-400 text-slate-300 hover:text-white text-xs font-bold transition-all"
+          className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-slate-300 hover:text-white text-xs font-semibold transition-all"
         >
           <Ticket className="w-4 h-4" />
           <span>My Bookings</span>
@@ -356,7 +352,7 @@ const BookingConfirmationPage = () => {
 
         <Link
           to="/"
-          className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-[#0F1523] border border-[#1E293B] hover:border-slate-400 text-slate-300 hover:text-white text-xs font-bold transition-all"
+          className="flex items-center gap-2 px-4 py-3 rounded-lg bg-[#181C28] hover:bg-[#1D2232] border border-[#1E2332] text-slate-300 hover:text-white text-xs font-semibold transition-all"
         >
           <Home className="w-4 h-4" />
           <span>Home</span>
@@ -366,19 +362,19 @@ const BookingConfirmationPage = () => {
       {/* 4. MODAL: 80MM CONTINUOUS THERMAL RECEIPT SLIP */}
       {showThermalModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#0F1523] p-6 rounded-3xl max-w-md w-full border border-[#D4AF37]/30 shadow-2xl space-y-4 animate-scale-up">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1E293B] no-print">
+          <div className="bg-[#11141D] p-6 rounded-2xl max-w-md w-full border border-[#1E2332] shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#1E2332] no-print">
               <div className="flex items-center gap-2">
-                <ReceiptText className="w-5 h-5 text-[#D4AF37]" />
+                <ReceiptText className="w-5 h-5 text-[#F59E0B]" />
                 <div>
-                  <h3 className="font-black text-sm text-white">80mm Box-Office Thermal Slip</h3>
-                  <p className="text-[10px] text-[#94A3B8]">Formatted for continuous thermal POS paper roll</p>
+                  <h3 className="font-bold text-sm text-white">80mm Box-Office Thermal Slip</h3>
+                  <p className="text-[10px] text-slate-400">Formatted for continuous thermal POS paper roll</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowThermalModal(false)}
-                className="w-7 h-7 rounded-full bg-[#080B10] border border-[#1E293B] flex items-center justify-center text-[#94A3B8] hover:text-white text-xs cursor-pointer"
+                className="w-7 h-7 rounded-lg bg-[#181C28] border border-[#1E2332] flex items-center justify-center text-slate-400 hover:text-white text-xs cursor-pointer"
               >
                 ✕
               </button>
