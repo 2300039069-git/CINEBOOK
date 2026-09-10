@@ -8,21 +8,22 @@ export const THEMES = {
     name: 'Midnight Obsidian',
     icon: '🌙',
     description: 'Executive Void Obsidian, Champagne Gold & Cinema Crimson',
-    bg: '#07090E',
-    surface: '#0E121B',
-    card: '#111622',
-    elevated: '#161D2C',
-    hover: '#1D2638',
-    subtle: '#0A0D14',
-    border: '#1C2436',
-    borderSubtle: '#141A28',
+    bg: '#05070B',
+    surface: '#0D111A',
+    card: '#0F1420',
+    elevated: '#131926',
+    hover: '#1A2234',
+    subtle: '#080A10',
+    border: '#1B2336',
+    borderSubtle: '#121826',
     borderHover: '#D4AF37',
     accent: '#D4AF37',
     accentCrimson: '#E50914',
     accentGradient: 'from-[#D4AF37] via-amber-500 to-yellow-600',
     primary: '#E50914',
-    primaryHover: '#CC0812',
+    primaryHover: '#FF1E2B',
     gold: '#D4AF37',
+    cyan: '#06B6D4',
     text: '#F8FAFC',
     textSecondary: '#94A3B8',
     textMuted: '#64748B'
@@ -32,14 +33,14 @@ export const THEMES = {
     name: 'Daylight Porcelain',
     icon: '☀️',
     description: 'Ultra-clean porcelain white, titanium cards & high-contrast clarity',
-    bg: '#F6F8FB',
+    bg: '#F4F6FB',
     surface: '#FFFFFF',
     card: '#FFFFFF',
-    elevated: '#F0F3F8',
-    hover: '#E7EDF5',
+    elevated: '#E8EDF5',
+    hover: '#DEE5F0',
     subtle: '#F8FAFD',
-    border: '#E2E8F0',
-    borderSubtle: '#EDF2F7',
+    border: '#D8E0EC',
+    borderSubtle: '#E8EEF5',
     borderHover: '#D4AF37',
     accent: '#B45309',
     accentCrimson: '#E50914',
@@ -47,6 +48,7 @@ export const THEMES = {
     primary: '#E50914',
     primaryHover: '#CC0812',
     gold: '#B45309',
+    cyan: '#0284C7',
     text: '#090D16',
     textSecondary: '#334155',
     textMuted: '#64748B'
@@ -89,8 +91,9 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--theme-accent', themeObj.accent);
     root.style.setProperty('--theme-crimson', themeObj.accentCrimson || '#E50914');
     root.style.setProperty('--theme-primary', themeObj.primary);
-    root.style.setProperty('--theme-primary-hover', themeObj.primaryHover || '#CC0812');
+    root.style.setProperty('--theme-primary-hover', themeObj.primaryHover || '#FF1E2B');
     root.style.setProperty('--theme-gold', themeObj.gold || themeObj.accent);
+    root.style.setProperty('--theme-cyan', themeObj.cyan || '#06B6D4');
     root.style.setProperty('--theme-text', themeObj.text);
     root.style.setProperty('--theme-text-primary', themeObj.text);
     root.style.setProperty('--theme-text-secondary', themeObj.textSecondary);
