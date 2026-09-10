@@ -18,6 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
 import { loadRazorpayScript, paymentApi, RAZORPAY_KEY_ID } from '../../services/paymentApi';
+import { seatLockManager, getShowKey } from '../../services/seatLockManager';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -103,6 +104,10 @@ const CheckoutPage = () => {
       status: 'CONFIRMED',
       bookedAt: new Date().toISOString()
     };
+
+    // Permanently book seats and broadcast to all open tabs
+    const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
+    seatLockManager.confirmBooking(currentShowKey, seats, bookingId, show?.id);
 
     const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));

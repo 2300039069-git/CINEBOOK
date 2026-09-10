@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useBooking } from '../../context/BookingContext';
+import { seatLockManager, getShowKey, getTabId } from '../../services/seatLockManager';
+import { bookingApi } from '../../services/bookingApi';
 import SeatGrid from '../../components/booking/SeatGrid';
 
 const SeatSelectionPage = () => {
@@ -34,12 +36,61 @@ const SeatSelectionPage = () => {
   const movie = selectedMovie || MOVIES.find((m) => m.id === show.movieId) || MOVIES[0];
   const theatre = selectedTheatre || THEATRES.find((t) => t.id === show.theatreId) || THEATRES[0];
 
-  const [seatLayout, setSeatLayout] = useState([]);
+  const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
+  const currentTabId = getTabId();
 
+  const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
+  const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
+
+  // Load layout and subscribe to real-time cross-tab seat lock & booking events
   useEffect(() => {
-    const layout = generateSeatLayout(show.id);
-    setSeatLayout(layout);
-  }, [show.id]);
+    // 1. Initial local + API layout sync
+    setRawLayout(generateSeatLayout(show.id));
+    setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+
+    // Async backend fetch
+    bookingApi.getSeatLayout(show.id).then((res) => {
+      if (res && res.tiers && res.tiers.length > 0) {
+        setRawLayout(res.tiers);
+      }
+    }).catch(() => {});
+
+    // 2. Real-time subscription across all browser tabs & storage events
+    const unsubscribe = seatLockManager.subscribe((event) => {
+      setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [show.id, currentShowKey]);
+
+  // Merge base layout with live atomic locks and bookings
+  const dynamicLayout = rawLayout.map((tier) => ({
+    ...tier,
+    rows: tier.rows.map((row) => ({
+      ...row,
+      seats: row.seats.map((seat) => {
+        const liveInfo = liveStatuses[seat.id];
+        let status = seat.status;
+
+        if (liveInfo) {
+          if (liveInfo.status === 'BOOKED') {
+            status = 'BOOKED';
+          } else if (liveInfo.status === 'LOCKED') {
+            // If locked by another tab, mark LOCKED. If locked by this tab, mark AVAILABLE for selection engine
+            status = liveInfo.isLockedByOtherTab ? 'LOCKED' : (seat.status === 'COUNTER_QUOTA' ? 'COUNTER_QUOTA' : 'AVAILABLE');
+          }
+        }
+
+        return {
+          ...seat,
+          status,
+          isLockedByOtherTab: liveInfo?.isLockedByOtherTab || false
+        };
+      })
+    }))
+  }));
 
   // Format seconds into MM:SS
   const formatTime = (secs) => {
@@ -125,7 +176,7 @@ const SeatSelectionPage = () => {
       {/* 3. MAIN CINEMA SEAT MATRIX CONTAINER */}
       <div className="max-w-5xl mx-auto px-4 pt-6">
         <SeatGrid
-          seatLayout={seatLayout}
+          seatLayout={dynamicLayout}
           selectedSeats={selectedSeats}
           onToggleSeat={toggleSeatSelection}
         />

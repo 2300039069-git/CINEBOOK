@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { MOVIES, THEATRES } from '../../data/mockData';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
+import { seatLockManager, getShowKey as getGlobalShowKey } from '../../services/seatLockManager';
 
 // Base Screen 1 Seat Layout Template
 const BASE_SEAT_LAYOUT = {
@@ -214,6 +215,10 @@ const PartnerCounterPosPage = () => {
     try {
       localStorage.setItem(key, JSON.stringify(Array.from(updatedBookedSet)));
     } catch (e) {}
+
+    // Broadcast permanently booked seats across all customer tabs
+    const globalKey = getGlobalShowKey(selectedShow, selectedTheatre, selectedMovie, showDate);
+    seatLockManager.confirmBooking(globalKey, selectedSeats, bookingId, selectedShow?.id);
 
     // 2. Save transaction locally
     const updatedHistory = [newReceipt, ...counterHistory];

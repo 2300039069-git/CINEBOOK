@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.models.seat_lock import (
     SeatLayoutResponse,
@@ -7,7 +8,7 @@ from app.models.seat_lock import (
 )
 from app.models.user import UserResponse
 from app.services.seat_lock_service import SeatLockService
-from app.api.deps import get_current_active_user
+from app.api.deps import get_optional_user
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ async def get_seat_layout(show_id: str):
 @router.post("/lock", response_model=SeatLockResponse)
 async def lock_seats(
     req: SeatLockRequest,
-    current_user: UserResponse = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """
     Atomically request a 5-minute lock on requested seats.
@@ -31,16 +32,17 @@ async def lock_seats(
             detail="You can select between 1 and 8 seats per booking session."
         )
     
+    user_id = current_user.id if current_user else "guest_session"
     return await SeatLockService.lock_seats(
         show_id=req.show_id,
         seat_ids=req.seat_ids,
-        user_id=current_user.id
+        user_id=user_id
     )
 
 @router.post("/release")
 async def release_seats(
     req: SeatReleaseRequest,
-    current_user: UserResponse = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """Explicitly release temporary seat lock"""
     await SeatLockService.release_seats(

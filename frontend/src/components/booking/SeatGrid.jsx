@@ -82,7 +82,7 @@ const SeatGrid = ({
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
                         const isCounterQuota = seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE';
                         const isBooked = seat.status === 'BOOKED';
-                        const isLocked = seat.status === 'LOCKED';
+                        const isLocked = seat.status === 'LOCKED' && !isSelected;
                         const isDisabled = isBooked || isLocked || isCounterQuota;
 
                         return (
@@ -92,28 +92,34 @@ const SeatGrid = ({
                               disabled={isDisabled}
                               onClick={() => onToggleSeat(seat)}
                               title={
-                                isCounterQuota
-                                  ? `${seat.id} — Box Office Counter Quota (Held for offline theatre counter)`
-                                  : isBooked
-                                  ? `${seat.id} (Booked / Sold Out)`
+                                isSelected
+                                  ? `${seat.id} — Selected by you (Click to unselect)`
                                   : isLocked
-                                  ? `${seat.id} (Temporarily Reserved 8m)`
+                                  ? `${seat.id} — Temporarily locked by another user in another tab/session`
+                                  : isBooked
+                                  ? `${seat.id} — Booked / Sold Out`
+                                  : isCounterQuota
+                                  ? `${seat.id} — Box Office Counter Quota (Held for offline box office)`
                                   : `${seat.id} — ₹${seat.price}`
                               }
                               className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md text-[11px] font-bold transition-all flex items-center justify-center ${
                                 isSelected
-                                  ? 'bg-accent text-white shadow-sm scale-105 cursor-pointer ring-1 ring-white/50'
-                                  : isDisabled
+                                  ? 'bg-accent text-white shadow-md scale-105 cursor-pointer ring-2 ring-accent/50 z-10'
+                                  : isLocked
+                                  ? 'bg-amber-500/15 border border-amber-500/40 text-amber-500 cursor-not-allowed opacity-75'
+                                  : isBooked
+                                  ? 'bg-surface-elevated border border-dashed border-border opacity-30 cursor-not-allowed text-text-muted'
+                                  : isCounterQuota
                                   ? 'bg-surface-elevated border border-dashed border-border opacity-40 cursor-not-allowed text-text-muted'
                                   : 'bg-surface-elevated border border-border hover:border-accent text-text-primary hover:scale-105 cursor-pointer'
                               }`}
                             >
                               {isSelected ? (
                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              ) : isLocked ? (
+                                <Clock className="w-3.5 h-3.5 text-amber-500" />
                               ) : isCounterQuota ? (
                                 <Lock className="w-3 h-3 text-text-muted" />
-                              ) : isLocked ? (
-                                <Clock className="w-3 h-3 text-text-muted" />
                               ) : (
                                 seat.number
                               )}
