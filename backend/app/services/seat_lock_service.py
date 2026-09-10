@@ -142,71 +142,79 @@ class SeatLockService:
         )
 
     @classmethod
-    async def lock_seats(cls, show_id: str, seat_ids: List[str], user_id: str) -> SeatLockResponse:
+    async def lock_seats(cls, show_id: str, seat_ids: List[str], user_id: str, lock_token: Optional[str] = None) -> SeatLockResponse:
         """
         Atomically lock seats for 5 minutes (300s).
-        Enforces strict race condition protection: if ANY seat is occupied, fails immediately.
+        Enforces strict race condition protection: if ANY seat is occupied, fails immediately with HTTP 409 Conflict.
         """
         async with LOCK_MUTEX:
             cls._cleanup_expired_locks()
             now = datetime.now(timezone.utc)
             expires_at = now + timedelta(seconds=settings.SEAT_LOCK_DURATION_SECONDS)
-            lock_token = f"lock_{uuid.uuid4().hex}"
+            if not lock_token:
+                lock_token = f"lock_{uuid.uuid4().hex}"
 
-            # 1. Check availability of all requested seats
-            unavailable_seats = []
+            # 1. Atomic In-Memory Verification
             for seat_id in seat_ids:
                 mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
                 if mem_entry:
-                    if mem_entry["status"] == "BOOKED":
-                        unavailable_seats.append(f"{seat_id} (already booked)")
-                    elif mem_entry["status"] == "LOCKED" and mem_entry["expires_at"] > now:
-                        unavailable_seats.append(f"{seat_id} (locked by another customer)")
-
-            if unavailable_seats:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail=f"Seats unavailable: {', '.join(unavailable_seats)}. Please select different seats."
-                )
-
-            # 2. If MongoDB is connected, execute atomic transaction or compound upsert
-            if db_manager.is_connected:
-                try:
-                    # Check for conflicting locks in DB
-                    existing_db = await db_manager.db.seat_locks.find({
-                        "show_id": show_id,
-                        "seat_id": {"$in": seat_ids},
-                        "$or": [
-                            {"status": "BOOKED"},
-                            {"expires_at": {"$gt": now}}
-                        ]
-                    }).to_list(length=10)
-                    
-                    if existing_db:
-                        conflict_names = [d["seat_id"] for d in existing_db]
+                    if mem_entry.get("isBooked") is True or mem_entry.get("status") == "BOOKED":
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Seats {conflict_names} just got locked by another customer. Please choose other seats."
+                            detail="Seat already booked"
                         )
+                    if mem_entry.get("status") == "LOCKED" and mem_entry.get("expires_at") > now:
+                        if mem_entry.get("lock_token") != lock_token:
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail="Seat already booked"
+                            )
 
-                    # Bulk insert locks into MongoDB
-                    docs = [
-                        {
-                            "show_id": show_id,
-                            "seat_id": seat_id,
-                            "user_id": user_id,
-                            "lock_token": lock_token,
-                            "status": "LOCKED",
-                            "locked_at": now,
-                            "expires_at": expires_at
-                        }
-                        for seat_id in seat_ids
-                    ]
-                    await db_manager.db.seat_locks.insert_many(docs)
+            # 2. MongoDB Atomic reservation with find_one_and_update & isBooked check
+            if db_manager.is_connected:
+                try:
+                    for seat_id in seat_ids:
+                        # Atomic find_one_and_update with isBooked: False
+                        doc = await db_manager.db.seat_locks.find_one_and_update(
+                            {
+                                "show_id": show_id,
+                                "seat_id": seat_id,
+                                "isBooked": {"$ne": True},
+                                "status": {"$ne": "BOOKED"},
+                                "$or": [
+                                    {"expires_at": {"$lte": now}},
+                                    {"lock_token": lock_token},
+                                    {"status": {"$exists": False}}
+                                ]
+                            },
+                            {
+                                "$set": {
+                                    "show_id": show_id,
+                                    "seat_id": seat_id,
+                                    "user_id": user_id,
+                                    "lock_token": lock_token,
+                                    "status": "LOCKED",
+                                    "isBooked": False,
+                                    "locked_at": now,
+                                    "expires_at": expires_at
+                                }
+                            },
+                            upsert=True,
+                            return_document=True
+                        )
+                        if not doc:
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail="Seat already booked"
+                            )
                 except HTTPException:
                     raise
-                except Exception as e:
-                    pass
+                except Exception:
+                    # In case of DB conflict or race condition on unique index
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Seat already booked"
+                    )
 
             # 3. Store in Memory
             for seat_id in seat_ids:
@@ -214,7 +222,8 @@ class SeatLockService:
                     "lock_token": lock_token,
                     "user_id": user_id,
                     "expires_at": expires_at,
-                    "status": "LOCKED"
+                    "status": "LOCKED",
+                    "isBooked": False
                 }
 
             return SeatLockResponse(
@@ -225,7 +234,7 @@ class SeatLockService:
                 locked_at=now.isoformat(),
                 expires_at=expires_at.isoformat(),
                 seconds_remaining=settings.SEAT_LOCK_DURATION_SECONDS,
-                message=f"Successfully locked {len(seat_ids)} seats for 5 minutes."
+                message=f"Successfully locked {len(seat_ids)} seats."
             )
 
     @classmethod
@@ -257,10 +266,16 @@ class SeatLockService:
         async with LOCK_MUTEX:
             if db_manager.is_connected:
                 try:
-                    await db_manager.db.seat_locks.update_many(
-                        {"show_id": show_id, "seat_id": {"$in": seat_ids}},
-                        {"$set": {"status": "BOOKED", "expires_at": datetime.max.replace(tzinfo=timezone.utc)}}
-                    )
+                    for seat_id in seat_ids:
+                        await db_manager.db.seat_locks.find_one_and_update(
+                            {"show_id": show_id, "seat_id": seat_id},
+                            {"$set": {
+                                "status": "BOOKED",
+                                "isBooked": True,
+                                "expires_at": datetime.max.replace(tzinfo=timezone.utc)
+                            }},
+                            upsert=True
+                        )
                 except Exception:
                     pass
 
@@ -269,5 +284,6 @@ class SeatLockService:
                     "lock_token": lock_token,
                     "user_id": "confirmed",
                     "expires_at": datetime.max.replace(tzinfo=timezone.utc),
-                    "status": "BOOKED"
+                    "status": "BOOKED",
+                    "isBooked": True
                 }

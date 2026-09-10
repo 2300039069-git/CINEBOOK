@@ -17,7 +17,22 @@ async def create_booking_session(
     booking_in: BookingCreate,
     current_user: UserResponse = Depends(get_current_active_user)
 ):
-    """Initialize a booking record tied to the active seat lock"""
+    """Initialize a booking record tied to the active seat lock after atomic seat validation"""
+    seat_ids = [s.id for s in booking_in.seats]
+    if not seat_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one seat must be selected."
+        )
+
+    # Atomically verify and lock seats (raises HTTP 409 Conflict if already taken)
+    await SeatLockService.lock_seats(
+        show_id=booking_in.show_id,
+        seat_ids=seat_ids,
+        user_id=current_user.id,
+        lock_token=booking_in.lock_token
+    )
+
     booking_id = f"CB-2026-{uuid.uuid4().hex[:6].upper()}"
     now_str = datetime.now(timezone.utc).isoformat()
     

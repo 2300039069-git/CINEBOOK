@@ -125,7 +125,8 @@ export const BookingProvider = ({ children }) => {
     // Lock seat atomically
     const result = await seatLockManager.lockSeat(showKey, seat.id, selectedShow?.id);
     if (!result.success) {
-      alert(result.message || `Seat ${seat.id} could not be locked. Please select another seat.`);
+      alert(result.message || `Seat ${seat.id} is already booked. Please select another seat.`);
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
       return;
     }
 

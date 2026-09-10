@@ -104,6 +104,17 @@ const SeatSelectionPage = () => {
       alert('Please select at least 1 seat to continue.');
       return;
     }
+    // Check if any selected seat has become booked or locked by another session
+    const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
+    const conflicted = selectedSeats.find(
+      (s) => statuses[s.id]?.status === 'BOOKED' || statuses[s.id]?.isLockedByOtherTab
+    );
+    if (conflicted) {
+      alert(`Seat ${conflicted.id} is already booked or locked by another customer. Please select another seat.`);
+      setLiveStatuses(statuses);
+      return;
+    }
+
     // Start atomic 8-minute seat lock
     startSeatLock();
     navigate('/checkout');

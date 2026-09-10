@@ -158,9 +158,9 @@ export const seatLockManager = {
     const locks = getCleanLocksMap();
     const booked = getBookedSeatsMap();
 
-    // Check if already booked
+    // Check if already booked locally
     if (booked[showKey]?.[seatId]) {
-      return { success: false, reason: 'SEAT_ALREADY_BOOKED', message: `Seat ${seatId} has already been booked.` };
+      return { success: false, status: 409, reason: 'SEAT_ALREADY_BOOKED', message: `Seat ${seatId} has already been booked.` };
     }
 
     // Check if locked by another tab
@@ -168,32 +168,69 @@ export const seatLockManager = {
     if (existingLock && existingLock.tabId !== currentTabId && existingLock.expiresAt > Date.now()) {
       return {
         success: false,
+        status: 409,
         reason: 'SEAT_LOCKED_BY_ANOTHER_USER',
-        message: `Seat ${seatId} is currently held by another user in a different session.`
+        message: `Seat ${seatId} is currently held by another customer in a different session.`
       };
     }
 
-    // Set lock
-    if (!locks[showKey]) locks[showKey] = {};
-    const lockToken = `lock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    let backendLockToken = null;
+    // Sync with backend API if showId provided
+    if (showId) {
+      try {
+        const res = await bookingApi.lockSeats(showId, [seatId]);
+        if (res && res.lock_token) {
+          backendLockToken = res.lock_token;
+        }
+      } catch (err) {
+        if (err.status === 409 || err.response?.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+          // Immediately record as booked in local storage so UI disables it
+          const updatedBooked = getBookedSeatsMap();
+          if (!updatedBooked[showKey]) updatedBooked[showKey] = {};
+          updatedBooked[showKey][seatId] = {
+            status: 'BOOKED',
+            bookingId: 'REMOTE_BOOKED',
+            bookedAt: Date.now()
+          };
+          localStorage.setItem(STORAGE_KEY_BOOKED, JSON.stringify(updatedBooked));
+
+          // Clean up any stale lock
+          const updatedLocks = getCleanLocksMap();
+          if (updatedLocks[showKey]?.[seatId]) {
+            delete updatedLocks[showKey][seatId];
+            localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(updatedLocks));
+          }
+
+          // Broadcast to all other tabs
+          seatLockManager.broadcastChange(showKey, { action: 'BOOKED_CONFIRMED', seatIds: [seatId] });
+
+          return {
+            success: false,
+            status: 409,
+            reason: 'SEAT_ALREADY_BOOKED',
+            message: `Seat ${seatId} is already booked. Please select another seat.`
+          };
+        }
+      }
+    }
+
+    // Set lock locally
+    const currentLocks = getCleanLocksMap();
+    if (!currentLocks[showKey]) currentLocks[showKey] = {};
+    const lockToken = backendLockToken || `lock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const expiresAt = Date.now() + LOCK_DURATION_MS;
 
-    locks[showKey][seatId] = {
+    currentLocks[showKey][seatId] = {
       tabId: currentTabId,
       lockToken,
       expiresAt,
       status: 'LOCKED'
     };
 
-    localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
+    localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(currentLocks));
 
     // Broadcast change across tabs
     seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: currentTabId, expiresAt });
-
-    // Sync with backend API if showId provided
-    if (showId) {
-      bookingApi.lockSeats(showId, [seatId]).catch(() => {});
-    }
 
     return { success: true, lockToken, expiresAt };
   },

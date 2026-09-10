@@ -123,6 +123,19 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
     const bookingTempId = `TEMP-${Date.now()}`;
 
+    // Verify atomic seat availability prior to payment initialization
+    try {
+      if (show?.id && seats?.length > 0) {
+        await bookingApi.lockSeats(show.id, seats.map((s) => s.id));
+      }
+    } catch (err) {
+      if (err.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+        setErrorMessage(err.message || 'Seat already booked. Another customer has reserved this seat.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     // Ensure Razorpay SDK is loaded
     const isSdkLoaded = await loadRazorpayScript();
 

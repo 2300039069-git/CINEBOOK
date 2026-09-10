@@ -18,6 +18,12 @@ export const bookingApi = {
         seat_ids: seatIds
       });
     } catch (err) {
+      if (err.status === 409 || err.response?.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+        const conflictErr = new Error(err.message || 'Seat already booked');
+        conflictErr.status = 409;
+        conflictErr.response = err.response;
+        throw conflictErr;
+      }
       console.warn('Backend seat lock fallback:', err.message);
       return {
         success: true,
@@ -43,6 +49,12 @@ export const bookingApi = {
     try {
       return await api.post('/bookings', bookingData);
     } catch (err) {
+      if (err.status === 409 || err.response?.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+        const conflictErr = new Error(err.message || 'Seat already booked');
+        conflictErr.status = 409;
+        conflictErr.response = err.response;
+        throw conflictErr;
+      }
       console.warn('Backend booking create fallback:', err.message);
       return {
         booking_id: `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`,
