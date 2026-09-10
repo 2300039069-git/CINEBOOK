@@ -11,6 +11,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { seatLockManager, getShowKey, getTabId } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
@@ -19,10 +20,14 @@ import SeatGrid from '../../components/booking/SeatGrid';
 const SeatSelectionPage = () => {
   const { showId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     selectedMovie,
+    setSelectedMovie,
     selectedTheatre,
+    setSelectedTheatre,
     selectedShow,
+    setSelectedShow,
     selectedDate,
     selectedSeats,
     toggleSeatSelection,
@@ -32,12 +37,25 @@ const SeatSelectionPage = () => {
     secondsLeft
   } = useBooking();
 
-  const show = selectedShow || SAMPLE_SHOWTIMES.find((s) => s.id === showId) || SAMPLE_SHOWTIMES[0];
-  const movie = selectedMovie || MOVIES.find((m) => m.id === show.movieId) || MOVIES[0];
-  const theatre = selectedTheatre || THEATRES.find((t) => t.id === show.theatreId) || THEATRES[0];
+  const show = (showId && SAMPLE_SHOWTIMES.find((s) => s.id === showId)) || (selectedShow?.id === showId ? selectedShow : null) || selectedShow || SAMPLE_SHOWTIMES[0];
+  const movie = (show?.movieId && MOVIES.find((m) => m.id === show.movieId)) || selectedMovie || MOVIES[0];
+  const theatre = (show?.theatreId && THEATRES.find((t) => t.id === show.theatreId)) || selectedTheatre || THEATRES[0];
 
   const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
   const currentTabId = getTabId();
+
+  // Keep BookingContext synced with the current show
+  useEffect(() => {
+    if (show && show.id !== selectedShow?.id) {
+      setSelectedShow(show);
+    }
+    if (movie && movie.id !== selectedMovie?.id) {
+      setSelectedMovie(movie);
+    }
+    if (theatre && theatre.id !== selectedTheatre?.id) {
+      setSelectedTheatre(theatre);
+    }
+  }, [show?.id, movie?.id, theatre?.id]);
 
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
@@ -104,6 +122,14 @@ const SeatSelectionPage = () => {
       alert('Please select at least 1 seat to continue.');
       return;
     }
+
+    // Strict Login Requirement Check
+    if (!user) {
+      startSeatLock(currentShowKey, show.id);
+      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      return;
+    }
+
     // Check if any selected seat has become booked or locked by another session
     const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
     const conflicted = selectedSeats.find(
@@ -116,7 +142,7 @@ const SeatSelectionPage = () => {
     }
 
     // Start atomic 8-minute seat lock
-    startSeatLock();
+    startSeatLock(currentShowKey, show.id);
     navigate('/checkout');
   };
 
@@ -189,7 +215,7 @@ const SeatSelectionPage = () => {
         <SeatGrid
           seatLayout={dynamicLayout}
           selectedSeats={selectedSeats}
-          onToggleSeat={toggleSeatSelection}
+          onToggleSeat={(seat) => toggleSeatSelection(seat, currentShowKey, show.id)}
         />
       </div>
 

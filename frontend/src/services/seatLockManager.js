@@ -28,14 +28,14 @@ export const getTabId = () => {
 
 // Generate standardized unique key for a show
 export const getShowKey = (show, theatre, movie, date) => {
-  const sId = show?.id || 'sh-001';
-  const tId = theatre?.id || show?.theatreId || 'th-001';
-  const sDate = date || new Date().toISOString().split('T')[0];
+  const sId = typeof show === 'string' ? show : (show?.id || 'sh-001');
+  const tId = typeof theatre === 'string' ? theatre : (theatre?.id || (typeof show === 'object' ? show?.theatreId : null) || 'th-001');
+  const sDate = typeof date === 'string' ? date : (typeof show === 'object' ? show?.showDate || show?.date : null) || new Date().toISOString().split('T')[0];
   return `show_${tId}_${sId}_${sDate}`;
 };
 
 // Helper to read and clean expired locks from localStorage
-const getCleanLocksMap = () => {
+export const getCleanLocksMap = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_LOCKS);
     if (!raw) return {};
@@ -69,7 +69,7 @@ const getCleanLocksMap = () => {
 };
 
 // Helper to get permanently booked seats map
-const getBookedSeatsMap = () => {
+export const getBookedSeatsMap = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_BOOKED);
     const booked = raw ? JSON.parse(raw) : {};
@@ -77,7 +77,7 @@ const getBookedSeatsMap = () => {
     // Also include seats from cinebook_bookings in localStorage
     const userBookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     userBookings.forEach((b) => {
-      const showKey = getShowKey(b.show, b.theatre, b.movie, b.showDate);
+      const showKey = getShowKey(b.show || b.showId, b.theatre || b.theatreId, b.movie || b.movieId, b.showDate || b.date);
       if (!booked[showKey]) booked[showKey] = {};
       (b.seats || []).forEach((seat) => {
         const seatId = typeof seat === 'string' ? seat : seat.id;

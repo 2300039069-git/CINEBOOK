@@ -93,15 +93,16 @@ export const BookingProvider = ({ children }) => {
   }, [lockExpiresAt, selectedSeats.length, currentShowKey, selectedShow?.id]);
 
   // Toggle seat selection with atomic cross-tab lock verification
-  const toggleSeatSelection = async (seat) => {
+  const toggleSeatSelection = async (seat, overrideShowKey, overrideShowId) => {
     if (seat.status === 'BOOKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') return;
 
-    const showKey = getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
+    const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
+    const showId = overrideShowId || selectedShow?.id;
     const exists = selectedSeats.find((s) => s.id === seat.id);
 
     if (exists) {
       // Unselect and release lock
-      await seatLockManager.unlockSeat(showKey, seat.id, selectedShow?.id);
+      await seatLockManager.unlockSeat(showKey, seat.id, showId);
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
       return;
     }
@@ -123,7 +124,7 @@ export const BookingProvider = ({ children }) => {
     }
 
     // Lock seat atomically
-    const result = await seatLockManager.lockSeat(showKey, seat.id, selectedShow?.id);
+    const result = await seatLockManager.lockSeat(showKey, seat.id, showId);
     if (!result.success) {
       alert(result.message || `Seat ${seat.id} is already booked. Please select another seat.`);
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
@@ -142,10 +143,11 @@ export const BookingProvider = ({ children }) => {
     setSelectedSeats((prev) => [...prev, seat]);
   };
 
-  const startSeatLock = () => {
-    const showKey = getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
+  const startSeatLock = (overrideShowKey, overrideShowId) => {
+    const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
+    const showId = overrideShowId || selectedShow?.id;
     selectedSeats.forEach((seat) => {
-      seatLockManager.lockSeat(showKey, seat.id, selectedShow?.id);
+      seatLockManager.lockSeat(showKey, seat.id, showId);
     });
     const token = `lock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = Date.now() + LOCK_DURATION_SECONDS * 1000;

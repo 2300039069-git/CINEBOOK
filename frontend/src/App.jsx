@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/public/HomePage';
@@ -36,6 +36,16 @@ import PrivateAccessGate from './components/common/PrivateAccessGate';
 import CineBotSupportModal from './components/common/CineBotSupportModal';
 
 import { useAuth } from './context/AuthContext';
+
+// Protected Route Component for Customers
+const CustomerRoute = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+};
 
 // Protected Route Component for Admins
 const AdminRoute = ({ children }) => {
@@ -96,10 +106,38 @@ function App() {
 
                     {/* Customer Booking Flow */}
                     <Route path="/seat-selection/:showId" element={<SeatSelectionPage />} />
-                    <Route path="/checkout" element={<CheckoutPage />} />
-                    <Route path="/booking-confirmation/:bookingId" element={<BookingConfirmationPage />} />
-                    <Route path="/my-bookings" element={<MyBookingsPage />} />
-                    <Route path="/dashboard" element={<CustomerDashboardPage />} />
+                    <Route
+                      path="/checkout"
+                      element={
+                        <CustomerRoute>
+                          <CheckoutPage />
+                        </CustomerRoute>
+                      }
+                    />
+                    <Route
+                      path="/booking-confirmation/:bookingId"
+                      element={
+                        <CustomerRoute>
+                          <BookingConfirmationPage />
+                        </CustomerRoute>
+                      }
+                    />
+                    <Route
+                      path="/my-bookings"
+                      element={
+                        <CustomerRoute>
+                          <MyBookingsPage />
+                        </CustomerRoute>
+                      }
+                    />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <CustomerRoute>
+                          <CustomerDashboardPage />
+                        </CustomerRoute>
+                      }
+                    />
 
                     {/* Admin Portal */}
                     <Route

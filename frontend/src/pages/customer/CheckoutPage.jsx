@@ -40,20 +40,52 @@ const CheckoutPage = () => {
   const [processing, setProcessing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [processingStep, setProcessingStep] = useState(1);
-  const [email, setEmail] = useState(user?.email || 'customer@cinebook.in');
-  const [phone, setPhone] = useState(user?.phone || '9848012345');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Ensure robust fallback data so payment flow is always resilient
+  // Fallback metadata references
   const movie = selectedMovie || MOVIES[0];
   const theatre = selectedTheatre || THEATRES[0];
   const show = selectedShow || SAMPLE_SHOWTIMES[0];
-  const seats = selectedSeats && selectedSeats.length > 0 ? selectedSeats : [
-    { id: 'C5', row: 'C', number: 5, price: 200 },
-    { id: 'C6', row: 'C', number: 6, price: 200 }
-  ];
-  const finalTotal = totalAmount > 0 ? totalAmount : 459;
+  const seats = selectedSeats || [];
+  const finalTotal = totalAmount > 0 ? totalAmount : 0;
+  const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
+
+  // Strict Login & Selected Seats Guard
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/checkout' } }, replace: true });
+      return;
+    }
+    if (!selectedSeats || selectedSeats.length === 0) {
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`, { replace: true });
+    }
+  }, [user, selectedSeats, navigate, show?.id]);
+
+  // Keep contact info updated with user profile
+  useEffect(() => {
+    if (user) {
+      if (!email && user.email) setEmail(user.email);
+      if (!phone && user.phone) setPhone(user.phone);
+    }
+  }, [user]);
+
+  // Real-time listener for cross-tab seat conflicts while on checkout
+  useEffect(() => {
+    const unsubscribe = seatLockManager.subscribe((event) => {
+      const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
+      const conflicted = seats.find((s) => statuses[s.id]?.status === 'BOOKED');
+      if (conflicted) {
+        setErrorMessage(`Seat ${conflicted.id} has just been booked by another customer in another session. Please select different seats.`);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [currentShowKey, seats]);
 
   useEffect(() => {
     loadRazorpayScript().then((loaded) => {
@@ -81,7 +113,18 @@ const CheckoutPage = () => {
     return `${m.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
   };
 
-  const finalizeBooking = (paymentId, orderId = '', gateway = 'RAZORPAY') => {
+  const finalizeBooking = async (paymentId, orderId = '', gateway = 'RAZORPAY') => {
+    // 1. Verify seat is not already booked in local / global registry
+    const isConflict = seats.some((s) => seatLockManager.isSeatBooked(currentShowKey, s.id));
+    if (isConflict) {
+      setProcessing(false);
+      setIsSubmitting(false);
+      setErrorMessage('Seat already booked. Another customer completed checkout for these seats before you.');
+      alert('Seat already booked. Another customer completed payment for these seats first.');
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      return;
+    }
+
     const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const confirmedBooking = {
@@ -99,15 +142,49 @@ const CheckoutPage = () => {
       orderId: orderId,
       paymentMethod: gateway,
       customerName: user?.name || 'Valued Cinema Guest',
-      customerEmail: email,
-      customerPhone: phone,
+      customerEmail: email || user?.email || 'customer@cinebook.in',
+      customerPhone: phone || user?.phone || '9848012345',
       status: 'CONFIRMED',
       bookedAt: new Date().toISOString()
     };
 
     // Permanently book seats and broadcast to all open tabs
-    const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
     seatLockManager.confirmBooking(currentShowKey, seats, bookingId, show?.id);
+
+    // Sync to backend booking API
+    try {
+      await bookingApi.createBooking({
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: selectedDate || new Date().toISOString().split('T')[0],
+        show_time: show?.time || '11:00 AM',
+        lock_token: confirmedBooking.paymentId,
+        seats: seats.map((s) => ({
+          id: s.id,
+          row: s.row || s.id.charAt(0),
+          number: s.number || parseInt(s.id.slice(1)) || 1,
+          tier: s.tier || 'CLASSIC',
+          price: s.price || 200
+        })),
+        base_amount: confirmedBooking.baseAmount,
+        convenience_fee: confirmedBooking.convenienceFee,
+        taxes: confirmedBooking.taxes,
+        total_amount: confirmedBooking.totalAmount,
+        customer_name: confirmedBooking.customerName,
+        customer_email: confirmedBooking.customerEmail,
+        customer_phone: confirmedBooking.customerPhone
+      });
+    } catch (err) {
+      if (err.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+        setProcessing(false);
+        setIsSubmitting(false);
+        setErrorMessage('Seat already booked on server.');
+        alert('Seat already booked. Another customer reserved this seat.');
+        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+        return;
+      }
+    }
 
     const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));
@@ -120,6 +197,19 @@ const CheckoutPage = () => {
 
   const handlePayNow = async () => {
     setErrorMessage('');
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      return;
+    }
+
+    const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
+    const isConflict = seats.some((s) => statuses[s.id]?.status === 'BOOKED');
+    if (isConflict) {
+      setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer. Please go back and select available seats.');
+      alert('Seat already booked. One or more seats were reserved by another customer.');
+      return;
+    }
+
     setIsSubmitting(true);
     const bookingTempId = `TEMP-${Date.now()}`;
 
