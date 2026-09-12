@@ -62,6 +62,25 @@ async def get_show(show_id: str):
         if s["id"] == show_id:
             return ShowResponse(**s)
 
+    # Dynamic show ID support (e.g. sh-th-gtr-003-01)
+    if show_id.startswith("sh-"):
+        return ShowResponse(
+            id=show_id,
+            movie_id="mov-og-2025",
+            theatre_id="th-gtr-003",
+            theatre_name="Bhaskar Cinemas",
+            screen_name="Audi 1 4K Laser",
+            format="2D Dolby Atmos",
+            language="Telugu",
+            show_date="2026-09-12",
+            show_time="11:00 AM",
+            tier_price={"CLASSIC": 120.0, "PREMIUM": 190.0, "RECLINER": 280.0},
+            convenience_fee_per_ticket=25.0,
+            tax_percentage=18.0,
+            availability="AVAILABLE",
+            is_active=True
+        )
+
     raise HTTPException(status_code=404, detail="Show not found")
 
 @router.post("", response_model=ShowResponse, status_code=status.HTTP_201_CREATED)

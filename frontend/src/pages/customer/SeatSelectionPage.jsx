@@ -42,11 +42,54 @@ const SeatSelectionPage = () => {
     secondsLeft
   } = useBooking();
 
-  const show = (showId && SAMPLE_SHOWTIMES.find((s) => s.id === showId)) || (selectedShow?.id === showId ? selectedShow : null) || selectedShow || SAMPLE_SHOWTIMES[0];
-  const movie = (show?.movieId && MOVIES.find((m) => m.id === show.movieId)) || selectedMovie || MOVIES[0];
-  const theatre = (show?.theatreId && THEATRES.find((t) => t.id === show.theatreId)) || selectedTheatre || THEATRES[0];
+  // Resolve exact show details using showId from URL as the primary source of truth
+  const show = React.useMemo(() => {
+    if (showId) {
+      const foundInMock = SAMPLE_SHOWTIMES.find((s) => s.id === showId);
+      if (foundInMock) return foundInMock;
 
-  const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
+      if (selectedShow && selectedShow.id === showId) return selectedShow;
+
+      // Match theatre from showId slug (e.g. sh-th-gtr-003-01 -> th-gtr-003)
+      let matchedTheatre = null;
+      for (const t of THEATRES) {
+        if (showId.includes(t.id)) {
+          matchedTheatre = t;
+          break;
+        }
+      }
+
+      const theatreObj = matchedTheatre || selectedTheatre || THEATRES[0];
+      const movieObj = selectedMovie || MOVIES[0];
+      const timeStr = showId.endsWith('01') ? '11:00 AM' : showId.endsWith('02') ? '02:30 PM' : showId.endsWith('03') ? '06:15 PM' : '09:45 PM';
+
+      return {
+        id: showId,
+        movieId: movieObj.id,
+        movieTitle: movieObj.title,
+        theatreId: theatreObj.id,
+        theatreName: theatreObj.name,
+        screenName: theatreObj.screens?.[0]?.name || 'Audi 1 4K Laser',
+        format: '2D Dolby Atmos',
+        language: 'Telugu',
+        time: timeStr,
+        price: { CLASSIC: 120, PREMIUM: 190, RECLINER: 280 },
+        availability: 'AVAILABLE'
+      };
+    }
+    return selectedShow || SAMPLE_SHOWTIMES[0];
+  }, [showId, selectedShow, selectedMovie, selectedTheatre]);
+
+  const movie = React.useMemo(() => {
+    return (show?.movieId && MOVIES.find((m) => m.id === show.movieId)) || selectedMovie || MOVIES[0];
+  }, [show?.movieId, selectedMovie]);
+
+  const theatre = React.useMemo(() => {
+    return (show?.theatreId && THEATRES.find((t) => t.id === show.theatreId)) || selectedTheatre || THEATRES[0];
+  }, [show?.theatreId, selectedTheatre]);
+
+  const effectiveDate = selectedDate || new Date().toISOString().split('T')[0];
+  const currentShowKey = getShowKey(show.id, theatre.id, movie.id, effectiveDate);
   const currentTabId = getTabId();
 
   // Keep BookingContext synced with the current show
@@ -60,7 +103,7 @@ const SeatSelectionPage = () => {
     if (theatre && theatre.id !== selectedTheatre?.id) {
       setSelectedTheatre(theatre);
     }
-  }, [show?.id, movie?.id, theatre?.id]);
+  }, [show.id, movie.id, theatre.id]);
 
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
