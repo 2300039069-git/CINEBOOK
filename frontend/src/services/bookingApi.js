@@ -11,27 +11,20 @@ export const bookingApi = {
     }
   },
 
-  lockSeats: async (showId, seatIds) => {
+  lockSeats: async (showId, seatIds, clientSessionId, lockToken) => {
     try {
       return await api.post('/seats/lock', {
         show_id: showId,
-        seat_ids: seatIds
+        seat_ids: seatIds,
+        client_session_id: clientSessionId,
+        lock_token: lockToken
       });
     } catch (err) {
-      if (err.status === 409 || err.response?.status === 409 || err.message?.toLowerCase().includes('already booked')) {
-        const conflictErr = new Error(err.message || 'Seat already booked');
-        conflictErr.status = 409;
-        conflictErr.response = err.response;
-        throw conflictErr;
-      }
-      if (err.status === 401 || err.response?.status === 401) {
-        const authErr = new Error('Authentication required to reserve seats. Please log in.');
-        authErr.status = 401;
-        authErr.response = err.response;
-        throw authErr;
-      }
-      console.warn('Backend seat lock error:', err.message);
-      throw err;
+      const msg = err.response?.data?.detail || err.message || 'Seat already booked';
+      const conflictErr = new Error(msg);
+      conflictErr.status = err.status || err.response?.status || 409;
+      conflictErr.response = err.response;
+      throw conflictErr;
     }
   },
 

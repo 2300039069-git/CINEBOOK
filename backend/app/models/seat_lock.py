@@ -43,6 +43,8 @@ class SeatLayoutResponse(BaseModel):
 class SeatLockRequest(BaseModel):
     show_id: str
     seat_ids: List[str] = Field(..., min_length=1, max_length=8)
+    lock_token: Optional[str] = None
+    client_session_id: Optional[str] = None
 
 class SeatLockResponse(BaseModel):
     success: bool

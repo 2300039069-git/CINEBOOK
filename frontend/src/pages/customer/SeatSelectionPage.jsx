@@ -65,28 +65,69 @@ const SeatSelectionPage = () => {
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
 
-  // Load layout and subscribe to real-time cross-tab seat lock & booking events
+  // Load layout and subscribe to real-time seat locks & bookings from Supabase backend & cross-tabs
   useEffect(() => {
-    // 1. Initial local + API layout sync
-    setRawLayout(generateSeatLayout(show.id));
-    setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+    let isMounted = true;
 
-    // Async backend fetch
-    bookingApi.getSeatLayout(show.id).then((res) => {
-      if (res && res.tiers && res.tiers.length > 0) {
-        setRawLayout(res.tiers);
+    const fetchLatestLayout = async () => {
+      try {
+        const res = await bookingApi.getSeatLayout(show.id);
+        if (res && res.tiers && res.tiers.length > 0 && isMounted) {
+          setRawLayout(res.tiers);
+
+          // Extract real-time backend lock & booked statuses
+          const backendStatuses = {};
+          res.tiers.forEach((tier) => {
+            (tier.rows || []).forEach((row) => {
+              (row.seats || []).forEach((seat) => {
+                if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
+                  const isMine = selectedSeats.some((s) => s.id === seat.id);
+                  backendStatuses[seat.id] = {
+                    status: seat.status,
+                    isLockedByOtherTab: !isMine,
+                    isLockedByCurrentTab: isMine
+                  };
+                }
+              });
+            });
+          });
+
+          // Merge local and backend statuses
+          const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
+          const merged = { ...localStatuses, ...backendStatuses };
+          setLiveStatuses(merged);
+
+          // If another account just locked a seat that this tab had highlighted, deselect it and notify user
+          const conflictedSeats = selectedSeats.filter((s) => backendStatuses[s.id]?.isLockedByOtherTab);
+          if (conflictedSeats.length > 0) {
+            toast.conflict(`Seat(s) ${conflictedSeats.map((s) => s.id).join(', ')} were just reserved by another customer.`);
+            conflictedSeats.forEach((s) => toggleSeatSelection(s, currentShowKey, show.id));
+          }
+        }
+      } catch (err) {
+        // Fallback to local
       }
-    }).catch(() => {});
+    };
 
-    // 2. Real-time subscription across all browser tabs & storage events
-    const unsubscribe = seatLockManager.subscribe((event) => {
-      setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+    // 1. Initial fetch
+    fetchLatestLayout();
+
+    // 2. Real-time fast polling (every 1.5 seconds) for instant cross-device / cross-account lock blocking
+    const pollTimer = setInterval(fetchLatestLayout, 1500);
+
+    // 3. Local cross-tab broadcast listener
+    const unsubscribe = seatLockManager.subscribe(() => {
+      if (isMounted) {
+        setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+      }
     });
 
     return () => {
+      isMounted = false;
+      clearInterval(pollTimer);
       unsubscribe();
     };
-  }, [show.id, currentShowKey]);
+  }, [show.id, currentShowKey, selectedSeats.length]);
 
   // Merge base layout with live atomic locks and bookings
   const dynamicLayout = rawLayout.map((tier) => ({

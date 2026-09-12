@@ -153,7 +153,7 @@ export const seatLockManager = {
   },
 
   // Attempt to atomically lock a seat for current tab
-  lockSeat: async (showKey, seatId, showId) => {
+  lockSeat: async (showKey, seatId, showId, existingLockToken) => {
     const currentTabId = getTabId();
     const locks = getCleanLocksMap();
     const booked = getBookedSeatsMap();
@@ -174,43 +174,35 @@ export const seatLockManager = {
       };
     }
 
-    let backendLockToken = null;
+    let backendLockToken = existingLockToken || null;
     // Sync with backend API if showId provided
     if (showId) {
       try {
-        const res = await bookingApi.lockSeats(showId, [seatId]);
+        const res = await bookingApi.lockSeats(showId, [seatId], currentTabId, existingLockToken);
         if (res && res.lock_token) {
           backendLockToken = res.lock_token;
         }
       } catch (err) {
-        if (err.status === 409 || err.response?.status === 409 || err.message?.toLowerCase().includes('already booked')) {
-          // Immediately record as booked in local storage so UI disables it
-          const updatedBooked = getBookedSeatsMap();
-          if (!updatedBooked[showKey]) updatedBooked[showKey] = {};
-          updatedBooked[showKey][seatId] = {
-            status: 'BOOKED',
-            bookingId: 'REMOTE_BOOKED',
-            bookedAt: Date.now()
-          };
-          localStorage.setItem(STORAGE_KEY_BOOKED, JSON.stringify(updatedBooked));
+        // Immediately record as remote lock in local storage so UI disables it immediately
+        const updatedLocks = getCleanLocksMap();
+        if (!updatedLocks[showKey]) updatedLocks[showKey] = {};
+        updatedLocks[showKey][seatId] = {
+          tabId: 'remote_holder',
+          lockToken: 'remote_token',
+          expiresAt: Date.now() + LOCK_DURATION_MS,
+          status: 'LOCKED'
+        };
+        localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(updatedLocks));
 
-          // Clean up any stale lock
-          const updatedLocks = getCleanLocksMap();
-          if (updatedLocks[showKey]?.[seatId]) {
-            delete updatedLocks[showKey][seatId];
-            localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(updatedLocks));
-          }
+        // Broadcast to all other tabs
+        seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: 'remote_holder' });
 
-          // Broadcast to all other tabs
-          seatLockManager.broadcastChange(showKey, { action: 'BOOKED_CONFIRMED', seatIds: [seatId] });
-
-          return {
-            success: false,
-            status: 409,
-            reason: 'SEAT_ALREADY_BOOKED',
-            message: `Seat ${seatId} is already booked. Please select another seat.`
-          };
-        }
+        return {
+          success: false,
+          status: err.status || 409,
+          reason: 'SEAT_ALREADY_BOOKED',
+          message: err.message || `Seat ${seatId} is already booked or held by another customer.`
+        };
       }
     }
 

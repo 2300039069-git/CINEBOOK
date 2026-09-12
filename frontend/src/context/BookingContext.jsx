@@ -129,10 +129,10 @@ export const BookingProvider = ({ children }) => {
       return;
     }
 
-    // Lock seat atomically
-    const result = await seatLockManager.lockSeat(showKey, seat.id, showId);
+    // Lock seat atomically with Supabase database sync
+    const result = await seatLockManager.lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null);
     if (!result.success) {
-      toast.conflict(result.message || `Seat ${seat.id} was just reserved by another customer. Please select another seat.`);
+      toast.conflict(result.message || `Seat ${seat.id} is currently held by another customer. Please select another seat.`);
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
       return;
     }
@@ -153,9 +153,9 @@ export const BookingProvider = ({ children }) => {
     const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
     const showId = overrideShowId || selectedShow?.id;
     selectedSeats.forEach((seat) => {
-      seatLockManager.lockSeat(showKey, seat.id, showId);
+      seatLockManager.lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null);
     });
-    const token = `lock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const token = lockToken && lockToken !== 'lock_init' ? lockToken : `lock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = Date.now() + LOCK_DURATION_SECONDS * 1000;
     
     setLockToken(token);
