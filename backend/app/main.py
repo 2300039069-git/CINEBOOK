@@ -53,6 +53,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Health Check
 @app.get("/health", tags=["System"])
+@app.get("/api/health", tags=["System"])
+@app.get("/api", tags=["System"])
+@app.get("/", tags=["System"])
 async def health_check():
     return {
         "status": "healthy",
@@ -62,5 +65,8 @@ async def health_check():
         "concurrency_engine": "active"
     }
 
-# Mount API v1 Router
+# Mount API Router on /api/v1, /v1, and root to seamlessly handle both local and Vercel proxy paths
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.include_router(api_router, prefix="/v1")
+app.include_router(api_router, prefix="")
+
