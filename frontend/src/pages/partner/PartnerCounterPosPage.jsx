@@ -31,28 +31,21 @@ const BASE_SEAT_LAYOUT = {
   tiers: [
     {
       id: 'BALCONY',
-      name: 'Balcony (Gold Recliner)',
-      price: 280,
+      name: 'Balcony Class',
+      price: 147,
       rows: [
         { rowLetter: 'A', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [1, 2], initialBooked: [5, 6, 7] },
-        { rowLetter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [], initialBooked: [8, 9] }
-      ]
-    },
-    {
-      id: 'PREMIUM',
-      name: 'Premium Executive',
-      price: 200,
-      rows: [
+        { rowLetter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [], initialBooked: [8, 9] },
         { rowLetter: 'C', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [10, 11, 12] },
-        { rowLetter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [4, 5] },
-        { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], initialBooked: [] }
+        { rowLetter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [4, 5] }
       ]
     },
     {
-      id: 'EXECUTIVE',
-      name: 'Classic Second Class',
-      price: 130,
+      id: 'SECOND_CLASS',
+      name: 'Second Class',
+      price: 110,
       rows: [
+        { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], initialBooked: [] },
         { rowLetter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [8, 9, 10] },
         { rowLetter: 'G', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [] },
         { rowLetter: 'H', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [], initialBooked: [11, 12] }

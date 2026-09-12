@@ -38,6 +38,9 @@ const SeatSelectionPage = () => {
     toggleSeatSelection,
     startSeatLock,
     baseAmount,
+    convenienceFee,
+    cgst,
+    sgst,
     totalAmount,
     secondsLeft
   } = useBooking();
@@ -73,7 +76,7 @@ const SeatSelectionPage = () => {
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: timeStr,
-        price: { CLASSIC: 120, PREMIUM: 190, RECLINER: 280 },
+        price: { BALCONY: 147, SECOND_CLASS: 110 },
         availability: 'AVAILABLE'
       };
     }
@@ -361,8 +364,8 @@ const SeatSelectionPage = () => {
                   <span className="text-text-muted italic">Click on seat layout above</span>
                 )}
               </div>
-              <p className="text-xs text-text-muted mt-1">
-                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base Amount: <strong className="text-text-primary font-bold">₹{baseAmount}</strong>
+              <p className="text-[11px] text-text-muted mt-1">
+                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base: <strong className="text-text-primary font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + 10% Fee: <strong className="text-text-primary font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong> + GST (CGST+SGST): <strong className="text-text-primary font-bold">₹{Number((cgst || 0) + (sgst || 0)).toFixed(2)}</strong>
               </p>
             </div>
           </div>
@@ -370,8 +373,8 @@ const SeatSelectionPage = () => {
           {/* Action Total and Checkout Button */}
           <div className="flex items-center justify-between sm:justify-end gap-6">
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Total Amount</span>
-              <span className="text-xl sm:text-2xl font-black text-brand">₹{totalAmount}</span>
+              <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Total Amount (Incl. All)</span>
+              <span className="text-xl sm:text-2xl font-black text-brand font-mono">₹{Number(totalAmount || 0).toFixed(2)}</span>
             </div>
 
             <button

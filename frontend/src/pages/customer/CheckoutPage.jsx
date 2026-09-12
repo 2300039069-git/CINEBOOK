@@ -35,6 +35,8 @@ const CheckoutPage = () => {
     secondsLeft,
     baseAmount,
     convenienceFee,
+    cgst,
+    sgst,
     taxes,
     totalAmount,
     lockToken
@@ -141,9 +143,11 @@ const CheckoutPage = () => {
       showDate: selectedDate || new Date().toISOString().split('T')[0],
       seats: seats,
       totalAmount: finalTotal,
-      convenienceFee: convenienceFee || 50,
-      taxes: taxes || 9,
-      baseAmount: baseAmount || (finalTotal - 59),
+      baseAmount: baseAmount || 0,
+      convenienceFee: convenienceFee || 0,
+      cgst: cgst || 0,
+      sgst: sgst || 0,
+      taxes: taxes || 0,
       paymentId: paymentId || `pay_rzp_${Date.now()}`,
       orderId: orderId,
       paymentMethod: 'RAZORPAY',
@@ -447,27 +451,38 @@ const CheckoutPage = () => {
               {/* Itemized Bill */}
               <div className="space-y-2.5 text-xs text-text-secondary">
                 <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Seats ({seats.length})</span>
+                  <span className="text-text-muted">Selected Seats ({seats.length})</span>
                   <span className="font-mono font-black text-brand bg-void-800 px-2 py-0.5 rounded-md border border-brand/30">
-                    {seats.map((s) => s.id).join(', ')}
+                    {seats.map((s) => `${s.id} (${s.tier === 'BALCONY' ? 'Balcony' : '2nd Class'})`).join(', ')}
                   </span>
                 </div>
-                <div className="flex justify-between">
+
+                <div className="flex justify-between items-center pt-1 border-t border-white/5">
                   <span className="text-text-muted">Ticket Base Price</span>
-                  <span className="font-semibold text-text-primary">₹{baseAmount || (finalTotal - 59)}</span>
+                  <span className="font-semibold text-text-primary font-mono">₹{Number(baseAmount || 0).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text-muted">Convenience Fee</span>
-                  <span className="font-semibold text-text-primary">₹{convenienceFee || 50}</span>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted">Convenience Fee (10%)</span>
+                  <span className="font-semibold text-text-primary font-mono">₹{Number(convenienceFee || 0).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-text-muted">GST (18%)</span>
-                  <span className="font-semibold text-text-primary">₹{taxes || 9}</span>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted">Integrated Central GST (CGST ₹2.34/seat)</span>
+                  <span className="font-semibold text-text-primary font-mono">₹{Number(cgst || 0).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted">Integrated State GST (SGST ₹2.34/seat)</span>
+                  <span className="font-semibold text-text-primary font-mono">₹{Number(sgst || 0).toFixed(2)}</span>
                 </div>
 
                 <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
-                  <span className="text-text-primary">Total Payable</span>
-                  <span className="text-2xl text-brand font-black">₹{finalTotal}</span>
+                  <div>
+                    <span className="text-text-primary block">Total Payable Amount</span>
+                    <span className="text-[10px] text-emerald-400 font-medium">All Taxes & Fees Included</span>
+                  </div>
+                  <span className="text-2xl text-brand font-black font-mono">₹{Number(finalTotal || 0).toFixed(2)}</span>
                 </div>
               </div>
 

@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import CinebookSeat3D from './CinebookSeat3D';
 
 const DEFAULT_TIERS = [
-  { name: 'BALCONY', label: 'BALCONY (GOLD)', price: 280, color: 'text-[#D4AF37]', rows: ['A', 'B'] },
-  { name: 'PREMIUM', label: 'PREMIUM EXECUTIVE', price: 200, color: 'text-[#E50914]', rows: ['C', 'D', 'E'] },
-  { name: 'EXECUTIVE', label: 'CLASSIC FIRST CLASS', price: 130, color: 'text-slate-300', rows: ['F', 'G', 'H', 'J'] }
+  { name: 'BALCONY', label: 'BALCONY CLASS', price: 147, color: 'text-gold', rows: ['A', 'B', 'C', 'D'] },
+  { name: 'SECOND_CLASS', label: 'SECOND CLASS', price: 110, color: 'text-blue-400', rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
 ];
 
 const SeatSelectionModal = ({
@@ -23,8 +22,8 @@ const SeatSelectionModal = ({
 }) => {
   const navigate = useNavigate();
   const [selectedSeats, setSelectedSeats] = useState([
-    { id: 'C7', tier: 'PREMIUM', price: 200 },
-    { id: 'C8', tier: 'PREMIUM', price: 200 }
+    { id: 'A7', tier: 'BALCONY', price: 147 },
+    { id: 'A8', tier: 'BALCONY', price: 147 }
   ]);
 
   if (!isOpen) return null;
@@ -39,7 +38,11 @@ const SeatSelectionModal = ({
     }
   };
 
-  const totalAmount = selectedSeats.reduce((acc, s) => acc + s.price, 0);
+  const baseAmount = selectedSeats.reduce((acc, s) => acc + Number(s.price || 147), 0);
+  const convFee = Number((baseAmount * 0.10).toFixed(2));
+  const cgst = Number((selectedSeats.length * 2.34).toFixed(2));
+  const sgst = Number((selectedSeats.length * 2.34).toFixed(2));
+  const totalAmount = Number((baseAmount + convFee + cgst + sgst).toFixed(2));
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
@@ -79,15 +82,11 @@ const SeatSelectionModal = ({
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-gold/30">
               <span className="w-2.5 h-2.5 rounded-full bg-gold shadow-sm" />
-              <span className="text-text-secondary font-bold">BALCONY <strong className="text-gold">₹280</strong></span>
+              <span className="text-text-secondary font-bold">BALCONY <strong className="text-gold">₹147 + Fees</strong></span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-primary/30">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary shadow-sm" />
-              <span className="text-text-secondary font-bold">PREMIUM <strong className="text-primary">₹200</strong></span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border">
-              <span className="w-2.5 h-2.5 rounded-full bg-text-muted shadow-sm" />
-              <span className="text-text-secondary font-bold">CLASSIC <strong className="text-text-primary">₹130</strong></span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-blue-500/30">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-sm" />
+              <span className="text-text-secondary font-bold">SECOND CLASS <strong className="text-blue-400">₹110 + Fees</strong></span>
             </div>
           </div>
 

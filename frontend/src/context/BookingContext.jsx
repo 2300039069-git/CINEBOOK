@@ -187,12 +187,23 @@ export const BookingProvider = ({ children }) => {
   };
 
   // Pricing calculations
-  const baseAmount = selectedSeats.reduce((sum, seat) => sum + (seat.price || 200), 0);
-  const convenienceFeePerTicket = 25;
-  const convenienceFee = selectedSeats.length > 0 ? selectedSeats.length * convenienceFeePerTicket : 0;
-  const gstRate = 0.18;
-  const taxes = Math.round(convenienceFee * gstRate);
-  const totalAmount = baseAmount + convenienceFee + taxes;
+  // Base Ticket Price: sum of seat prices (Balcony: ₹147, Second Class: ₹110)
+  const baseAmount = selectedSeats.reduce((sum, seat) => sum + Number(seat.price || 147), 0);
+
+  // Convenience Fee: 10% of Base Ticket Price
+  const convenienceFee = Number((baseAmount * 0.10).toFixed(2));
+
+  // Central GST (CGST): ₹2.34 per ticket
+  const cgst = Number((selectedSeats.length * 2.34).toFixed(2));
+
+  // State GST (SGST): ₹2.34 per ticket
+  const sgst = Number((selectedSeats.length * 2.34).toFixed(2));
+
+  // Total Taxes = CGST + SGST (₹4.68 per ticket)
+  const taxes = Number((cgst + sgst).toFixed(2));
+
+  // Total Amount Payable = Base Amount + 10% Convenience Fee + ₹2.34 CGST + ₹2.34 SGST
+  const totalAmount = Number((baseAmount + convenienceFee + cgst + sgst).toFixed(2));
 
   return (
     <BookingContext.Provider
@@ -216,6 +227,8 @@ export const BookingProvider = ({ children }) => {
         clearBooking,
         baseAmount,
         convenienceFee,
+        cgst,
+        sgst,
         taxes,
         totalAmount,
         seatsCount: selectedSeats.length

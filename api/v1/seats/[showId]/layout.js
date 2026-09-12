@@ -65,9 +65,8 @@ module.exports = async function handler(req, res) {
   }
 
   const tiersConfig = [
-    { tier: 'RECLINER', label: 'Recliner (Plush Loungers)', price: 550.0, rows: ['A', 'B'] },
-    { tier: 'PREMIUM', label: 'Premium (Executive Seating)', price: 380.0, rows: ['C', 'D', 'E', 'F'] },
-    { tier: 'CLASSIC', label: 'Classic (Standard Cinema)', price: 250.0, rows: ['G', 'H', 'J', 'K'] }
+    { tier: 'BALCONY', label: 'Balcony Class', price: 147.0, rows: ['A', 'B', 'C', 'D'] },
+    { tier: 'SECOND_CLASS', label: 'Second Class', price: 110.0, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
   ];
 
   let totalSeats = 0;

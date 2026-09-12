@@ -81,10 +81,15 @@ const SeatGrid = ({
               {/* Tier Header with Price */}
               <div className="flex items-center justify-between pb-2 border-b border-white/8 text-xs">
                 <span className="font-extrabold text-text-primary uppercase tracking-wider flex items-center gap-2">
-                  <span>{tier.label}</span>
-                  {tier.name === 'RECLINER' && (
+                  <span>{tier.label || (tier.name === 'BALCONY' ? 'Balcony Class' : 'Second Class')}</span>
+                  {tier.name === 'BALCONY' && (
                     <span className="px-2 py-0.5 rounded-full bg-brand/15 text-brand text-[10px] font-black border border-brand/30">
-                      VIP Recliner
+                      Balcony (₹147 + 10% Fee + GST)
+                    </span>
+                  )}
+                  {tier.name === 'SECOND_CLASS' && (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-black border border-blue-500/30">
+                      Second Class (₹110 + 10% Fee + GST)
                     </span>
                   )}
                 </span>

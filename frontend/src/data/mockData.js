@@ -609,7 +609,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:00 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { RECLINER: 280, PREMIUM: 200, CLASSIC: 130 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -624,7 +624,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:30 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { RECLINER: 280, PREMIUM: 200, CLASSIC: 130 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -639,7 +639,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:15 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { RECLINER: 350, PREMIUM: 250, CLASSIC: 150 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   },
@@ -654,7 +654,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '09:30 PM',
     slot: 'Second Show',
     date: '2026-09-02',
-    price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -669,7 +669,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:00 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -684,7 +684,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '09:45 PM',
     slot: 'Second Show',
     date: '2026-09-02',
-    price: { RECLINER: 220, PREMIUM: 160, CLASSIC: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -701,7 +701,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:15 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { RECLINER: 300, PREMIUM: 220, CLASSIC: 150 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -716,7 +716,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:15 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { RECLINER: 300, PREMIUM: 220, CLASSIC: 150 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -731,7 +731,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:30 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { RECLINER: 320, PREMIUM: 240, CLASSIC: 160 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   },
@@ -748,7 +748,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:15 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -763,7 +763,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:45 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { RECLINER: 250, PREMIUM: 180, CLASSIC: 120 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -778,7 +778,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '07:00 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { RECLINER: 260, PREMIUM: 190, CLASSIC: 130 },
+    price: { BALCONY: 147, SECOND_CLASS: 110 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   }
@@ -787,9 +787,8 @@ export const SAMPLE_SHOWTIMES = [
 // Dual-Quota Aware Seat Layout Generator (Real-time Supabase Synchronized)
 export const generateSeatLayout = (showId) => {
   const tiers = [
-    { name: 'RECLINER', tier: 'RECLINER', label: 'Balcony / Recliner (VIP)', price: 280, rows: ['A', 'B'] },
-    { name: 'PREMIUM', tier: 'PREMIUM', label: 'Premium Executive', price: 190, rows: ['C', 'D', 'E', 'F'] },
-    { name: 'CLASSIC', tier: 'CLASSIC', label: 'Classic First Class', price: 130, rows: ['G', 'H', 'J', 'K'] }
+    { name: 'BALCONY', tier: 'BALCONY', label: 'Balcony Class', price: 147, rows: ['A', 'B', 'C', 'D'] },
+    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 110, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
   ];
 
   const seatsPerRow = 14;
