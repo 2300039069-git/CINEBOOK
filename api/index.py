@@ -13,36 +13,29 @@ for path in [backend_dir, root_dir]:
 import traceback
 
 try:
-    from app.main import app as fastapi_app
+    from app.main import app
 except Exception as e:
-    logging.error(f"Failed to import app.main in Vercel handler: {e}\n{traceback.format_exc()}")
-    raise e
+    import_err = str(e)
+    import_tb = traceback.format_exc()
+    logging.error(f"Failed to import app.main in Vercel handler: {import_err}\n{import_tb}")
+    from fastapi import FastAPI, Request
+    from fastapi.responses import JSONResponse
 
-class VercelPathMiddleware:
-    def __init__(self, inner_app):
-        self.inner_app = inner_app
+    app = FastAPI(title="CineBook Fallback API")
 
-    async def __call__(self, scope, receive, send):
-        if scope.get("type") == "http":
-            headers = dict(scope.get("headers", []))
-            matched_path = headers.get(b"x-matched-path", b"").decode("utf-8", errors="ignore")
-            invoke_path = headers.get(b"x-invoke-path", b"").decode("utf-8", errors="ignore")
-            forwarded_uri = headers.get(b"x-forwarded-uri", b"").decode("utf-8", errors="ignore")
-            now_route = headers.get(b"x-now-route-matches", b"").decode("utf-8", errors="ignore")
+    @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+    async def fallback_catchall(request: Request, full_path: str):
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Failed to import CineBook app.main",
+                "detail": import_err,
+                "traceback": import_tb,
+                "cwd": os.getcwd(),
+                "sys_path": sys.path,
+                "path": full_path
+            }
+        )
 
-            raw_target = matched_path or invoke_path or forwarded_uri
-            if raw_target and raw_target.startswith("/api"):
-                target_path = raw_target.split("?")[0]
-                scope["path"] = target_path
-                scope["raw_path"] = target_path.encode("utf-8")
-            elif now_route and "1=" in now_route:
-                part = now_route.split("1=")[-1].split("&")[0]
-                target_path = "/api/" + part.lstrip("/")
-                scope["path"] = target_path
-                scope["raw_path"] = target_path.encode("utf-8")
-
-        await self.inner_app(scope, receive, send)
-
-app = VercelPathMiddleware(fastapi_app)
 
 
