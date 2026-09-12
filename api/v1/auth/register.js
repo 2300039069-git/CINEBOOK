@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
 
   try {
     await client.connect();
-    const existing = await client.query('SELECT id FROM users WHERE LOWER(email) = ', [emailLower]);
+    const existing = await client.query('SELECT id FROM users WHERE LOWER(email) = $1', [emailLower]);
     if (existing.rows.length > 0) {
       return res.status(400).json({ detail: 'An account with this email is already registered. Please sign in.' });
     }
@@ -41,10 +41,11 @@ module.exports = async function handler(req, res) {
     const userId = 'usr-' + crypto.randomBytes(4).toString('hex');
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password, salt);
+    const userRole = (req.body.role === 'THEATRE_ADMIN' || req.body.role === 'SUPER_ADMIN') ? req.body.role : 'CUSTOMER';
 
     await client.query(
-      'INSERT INTO users (id, name, email, phone, password_hash, role, is_active, theatre_ids) VALUES (, , , , , , , )',
-      [userId, name.trim(), emailLower, phone || null, passwordHash, 'CUSTOMER', true, JSON.stringify([])]
+      'INSERT INTO users (id, name, email, phone, password_hash, role, is_active, theatre_ids) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [userId, name.trim(), emailLower, phone || null, passwordHash, userRole, true, []]
     );
 
     const user = {
@@ -52,7 +53,7 @@ module.exports = async function handler(req, res) {
       name: name.trim(),
       email: emailLower,
       phone: phone || null,
-      role: 'CUSTOMER',
+      role: userRole,
       is_active: true,
       theatre_ids: []
     };
