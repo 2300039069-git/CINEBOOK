@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { X, Lock, Check, Ticket, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, Lock, Ticket, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CinebookSeat3D from './CinebookSeat3D';
 
 const DEFAULT_TIERS = [
   { name: 'BALCONY', label: 'BALCONY (GOLD)', price: 280, color: 'text-[#D4AF37]', rows: ['A', 'B'] },
@@ -155,7 +156,7 @@ const SeatSelectionModal = ({
                                 onClick={() => toggleSeat(seatObj)}
                                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] font-black flex items-center justify-center transition-all cursor-pointer ${
                                   isSelected
-                                    ? 'bg-primary text-white shadow-cta scale-110 ring-2 ring-primary/60'
+                                    ? 'bg-gradient-to-br from-amber-400 via-brand to-amber-600 text-void-950 shadow-cta scale-110 ring-2 ring-brand'
                                     : isBooked
                                     ? 'bg-surface-elevated text-text-muted cursor-not-allowed opacity-40 border border-border line-through'
                                     : isLocked
@@ -164,7 +165,7 @@ const SeatSelectionModal = ({
                                 }`}
                               >
                                 {isSelected ? (
-                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                  <CinebookSeat3D size="xs" />
                                 ) : isLocked ? (
                                   <Lock className="w-3 h-3" />
                                 ) : (

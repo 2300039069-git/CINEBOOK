@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, Clock, Ticket, Sparkles, Check, Lock, Store, Zap } from 'lucide-react';
+import { ShieldCheck, Clock, Ticket, Sparkles, Lock, Store, Zap } from 'lucide-react';
+import CinebookSeat3D from './CinebookSeat3D';
 
 const SeatGrid = ({
   seatLayout = [],
@@ -47,8 +48,8 @@ const SeatGrid = ({
             <span className="text-text-muted font-medium text-xs">Available</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-brand text-void-950 flex items-center justify-center font-black shadow-xs shadow-brand/40">
-              <Check className="w-3 h-3 stroke-[3]" />
+            <div className="w-5 h-5 rounded-md bg-brand/20 border border-brand/40 flex items-center justify-center shadow-xs shadow-brand/40">
+              <CinebookSeat3D size="xs" />
             </div>
             <span className="text-text-primary font-bold text-xs">Selected</span>
           </div>
@@ -124,9 +125,9 @@ const SeatGrid = ({
                                   ? `${seat.id} — Sold Out`
                                   : `${seat.id} — ₹${seat.price}`
                               }
-                              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center select-none ${
+                              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center select-none relative ${
                                 isSelected
-                                  ? 'bg-brand text-void-950 shadow-lg shadow-brand/35 ring-2 ring-brand scale-105 active:scale-95 cursor-pointer z-10 font-black'
+                                  ? 'bg-gradient-to-br from-amber-400 via-brand to-amber-600 text-void-950 shadow-lg shadow-brand/40 ring-2 ring-brand ring-offset-1 ring-offset-void-900 scale-110 active:scale-95 cursor-pointer z-10 font-black'
                                   : isLocked
                                   ? 'bg-brand/20 border border-brand/50 text-brand cursor-not-allowed opacity-80 shadow-xs shadow-brand/20'
                                   : isBooked
@@ -135,7 +136,7 @@ const SeatGrid = ({
                               }`}
                             >
                               {isSelected ? (
-                                <Check className="w-4 h-4 stroke-[3]" />
+                                <CinebookSeat3D size="md" />
                               ) : isLocked ? (
                                 <Clock className="w-3.5 h-3.5 text-brand animate-pulse" />
                               ) : (
