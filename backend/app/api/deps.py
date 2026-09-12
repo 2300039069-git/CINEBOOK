@@ -36,33 +36,6 @@ async def get_current_user(
     payload = decode_access_token(token)
     
     if not payload:
-        # Check mock token format for frontend demo mode
-        if token.startswith("jwt_"):
-            try:
-                import base64, json
-                mock_data = json.loads(base64.b64decode(token[4:]).decode())
-                user_id = mock_data.get("id") or "usr-001"
-                if user_id in DEFAULT_USERS_STORE:
-                    return UserResponse(**DEFAULT_USERS_STORE[user_id])
-                
-                email = mock_data.get("email") or f"{user_id}@cinebook.in"
-                name = mock_data.get("name") or "CineBook User"
-                role_val = mock_data.get("role", "CUSTOMER")
-                user_role = UserRole(role_val) if role_val in UserRole.__members__ else UserRole.CUSTOMER
-                user_resp = UserResponse(
-                    id=user_id,
-                    name=name,
-                    email=email,
-                    role=user_role,
-                    avatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
-                    is_active=True,
-                    theatre_ids=[]
-                )
-                DEFAULT_USERS_STORE[user_id] = user_resp.model_dump()
-                return user_resp
-            except Exception:
-                pass
-
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired authentication token.",
@@ -77,27 +50,25 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    if db_manager.is_connected:
-        try:
-            doc = await db_manager.fetch_one(
-                "SELECT * FROM users WHERE id = $1 OR email = $1;",
-                user_id
-            )
-            if doc:
-                return UserResponse(**doc)
-        except Exception:
-            pass
+    doc = None
+    try:
+        doc = await db_manager.fetch_one(
+            "SELECT * FROM users WHERE id = $1 OR LOWER(email) = LOWER($1);",
+            user_id
+        )
+    except Exception:
+        pass
+
+    if doc:
+        return UserResponse(**doc)
 
     if user_id in DEFAULT_USERS_STORE:
         return UserResponse(**DEFAULT_USERS_STORE[user_id])
-    
-    # Generate user response if sub is email
-    return UserResponse(
-        id=user_id,
-        name="CineBook User",
-        email=user_id if "@" in user_id else f"{user_id}@cinebook.in",
-        role=payload.get("role", UserRole.CUSTOMER),
-        is_active=True
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="User account not found or has been removed.",
+        headers={"WWW-Authenticate": "Bearer"},
     )
 
 async def get_optional_user(

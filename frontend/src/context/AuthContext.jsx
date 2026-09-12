@@ -12,88 +12,57 @@ export const VALID_THEATRE_CODES = [
   '2026'
 ];
 
-const MOCK_USERS = {
-  customer: {
-    id: 'usr-001',
-    name: 'Aarav Sharma',
-    email: 'aarav.sharma@example.com',
-    phone: '+91 98765 43210',
-    role: 'CUSTOMER',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'
-  },
-  theatre_admin: {
-    id: 'usr-002',
-    name: 'K. Siva Rama Krishna',
-    email: 'partner@sivacinemas.com',
-    phone: '+91 98480 12345',
-    role: 'THEATRE_ADMIN',
-    theatreId: 'th-gtr-001',
-    theatreName: 'Siva Cinemas (Guntur)',
-    city: 'Guntur',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop'
-  },
-  super_admin: {
-    id: 'usr-admin-dhanush',
-    name: 'Dhanush Kancharla',
-    email: 'kancharladhanush2003@gmail.com',
-    phone: '+91 98765 00001',
-    role: 'SUPER_ADMIN',
-    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200&auto=format&fit=crop'
-  }
-};
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('cinebook_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('cinebook_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [token, setToken] = useState(() => {
     return localStorage.getItem('cinebook_token') || null;
   });
 
-  const login = async (email, password, role = 'CUSTOMER') => {
-    try {
-      const data = await authApi.login(email, password);
-      if (data?.access_token && data?.user) {
-        setUser(data.user);
-        setToken(data.access_token);
-        localStorage.setItem('cinebook_user', JSON.stringify(data.user));
-        localStorage.setItem('cinebook_token', data.access_token);
-        return data.user;
-      }
-    } catch (err) {
-      console.warn('Backend login fallback:', err.message);
-    }
-
-    // Demo/Fallback login
-    let loggedInUser;
-    if (
-      role === 'SUPER_ADMIN' ||
-      email.includes('kancharladhanush2003@gmail.com') ||
-      email.includes('admin@cinebook')
+  // Automatically purge legacy mock tokens or deleted demo sessions from localStorage
+  useEffect(() => {
+    const savedToken = localStorage.getItem('cinebook_token');
+    const savedUserStr = localStorage.getItem('cinebook_user');
+    if (savedToken && savedToken.startsWith('jwt_')) {
+      console.info('Clearing legacy mock session token...');
+      localStorage.removeItem('cinebook_user');
+      localStorage.removeItem('cinebook_token');
+      setUser(null);
+      setToken(null);
+    } else if (
+      savedUserStr &&
+      (savedUserStr.includes('aarav.sharma@example.com') || savedUserStr.includes('partner@sivacinemas.com'))
     ) {
-      loggedInUser = MOCK_USERS.super_admin;
-    } else if (role === 'THEATRE_ADMIN' || email.includes('partner') || email.includes('siva') || email.includes('theatre')) {
-      loggedInUser = MOCK_USERS.theatre_admin;
-    } else {
-      const emailClean = (email || 'guest@example.com').toLowerCase().trim();
-      const emailHash = btoa(emailClean).replace(/[^a-zA-Z0-9]/g, '').slice(-8).toLowerCase();
-      loggedInUser = {
-        ...MOCK_USERS.customer,
-        id: `usr-${emailHash}`,
-        email: emailClean,
-        name: email ? email.split('@')[0].toUpperCase() : MOCK_USERS.customer.name
-      };
+      console.info('Clearing legacy wiped demo user session...');
+      localStorage.removeItem('cinebook_user');
+      localStorage.removeItem('cinebook_token');
+      setUser(null);
+      setToken(null);
+    }
+  }, []);
+
+  const login = async (email, password, role = 'CUSTOMER') => {
+    if (!email || !password) {
+      throw new Error('Please fill in both email and password.');
     }
 
-    const mockToken = `jwt_${btoa(JSON.stringify({ id: loggedInUser.id, email: loggedInUser.email, role: loggedInUser.role, exp: Date.now() + 86400000 }))}`;
-    
-    setUser(loggedInUser);
-    setToken(mockToken);
-    localStorage.setItem('cinebook_user', JSON.stringify(loggedInUser));
-    localStorage.setItem('cinebook_token', mockToken);
-    return loggedInUser;
+    const data = await authApi.login(email.trim().toLowerCase(), password);
+    if (!data?.access_token || !data?.user) {
+      throw new Error('Authentication failed: No valid token received from server.');
+    }
+
+    setUser(data.user);
+    setToken(data.access_token);
+    localStorage.setItem('cinebook_user', JSON.stringify(data.user));
+    localStorage.setItem('cinebook_token', data.access_token);
+    return data.user;
   };
 
   const register = async (userData) => {
@@ -108,38 +77,24 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    try {
-      const data = await authApi.register(userData);
-      if (data?.access_token && data?.user) {
-        setUser(data.user);
-        setToken(data.access_token);
-        localStorage.setItem('cinebook_user', JSON.stringify(data.user));
-        localStorage.setItem('cinebook_token', data.access_token);
-        return data.user;
-      }
-    } catch (err) {
-      console.warn('Backend register fallback:', err.message);
-    }
-
-    const emailClean = (userData.email || 'guest@example.com').toLowerCase().trim();
-    const emailHash = btoa(emailClean).replace(/[^a-zA-Z0-9]/g, '').slice(-8).toLowerCase();
-    const newUser = {
-      id: `usr-${emailHash}`,
-      name: userData.name,
-      email: emailClean,
-      phone: userData.phone,
-      role: isTheatreAdmin ? 'THEATRE_ADMIN' : 'CUSTOMER',
-      theatreName: userData.theatreName || (isTheatreAdmin ? 'Siva Cinemas' : undefined),
-      city: userData.city || 'Guntur',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'
+    const payload = {
+      name: (userData.name || '').trim(),
+      email: (userData.email || '').trim().toLowerCase(),
+      phone: (userData.phone || '').trim() || null,
+      password: userData.password,
+      role: userData.role || (isTheatreAdmin ? 'THEATRE_ADMIN' : 'CUSTOMER')
     };
 
-    const mockToken = `jwt_${btoa(JSON.stringify({ id: newUser.id, email: newUser.email, role: newUser.role, exp: Date.now() + 86400000 }))}`;
-    setUser(newUser);
-    setToken(mockToken);
-    localStorage.setItem('cinebook_user', JSON.stringify(newUser));
-    localStorage.setItem('cinebook_token', mockToken);
-    return newUser;
+    const data = await authApi.register(payload);
+    if (!data?.access_token || !data?.user) {
+      throw new Error('Registration failed: No valid session received from server.');
+    }
+
+    setUser(data.user);
+    setToken(data.access_token);
+    localStorage.setItem('cinebook_user', JSON.stringify(data.user));
+    localStorage.setItem('cinebook_token', data.access_token);
+    return data.user;
   };
 
   const logout = () => {
@@ -147,19 +102,6 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem('cinebook_user');
     localStorage.removeItem('cinebook_token');
-  };
-
-  const switchRole = (newRole) => {
-    if (newRole === 'SUPER_ADMIN') {
-      setUser(MOCK_USERS.super_admin);
-      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.super_admin));
-    } else if (newRole === 'THEATRE_ADMIN') {
-      setUser(MOCK_USERS.theatre_admin);
-      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.theatre_admin));
-    } else {
-      setUser(MOCK_USERS.customer);
-      localStorage.setItem('cinebook_user', JSON.stringify(MOCK_USERS.customer));
-    }
   };
 
   const setUserAndToken = (newUser, newToken) => {
@@ -190,8 +132,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         setUserAndToken,
-        logout,
-        switchRole
+        logout
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import uuid
+import logging
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Depends, status
 from app.models.user import (
@@ -23,6 +24,8 @@ from app.core.security import (
 from app.core.database import db_manager
 from app.api.deps import get_current_active_user, DEFAULT_USERS_STORE
 from app.services.otp_service import OTPService
+
+logger = logging.getLogger("cinebook.auth")
 
 router = APIRouter()
 
@@ -143,17 +146,16 @@ async def verify_registration_otp(req: VerifyRegistrationOTPRequest):
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def register(req: UserCreate):
     """Direct user registration into Supabase and token issuance"""
-    email_clean = req.email.lower()
+    email_clean = req.email.strip().lower()
     
-    if db_manager.is_connected:
-        try:
-            existing = await db_manager.fetch_one("SELECT id FROM users WHERE email = $1;", email_clean)
-            if existing:
-                raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
-        except HTTPException:
-            raise
-        except Exception:
-            pass
+    try:
+        existing = await db_manager.fetch_one("SELECT id FROM users WHERE LOWER(email) = $1;", email_clean)
+        if existing:
+            raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error checking existing user: {e}")
 
     if email_clean in USERS_DATABASE:
         raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
@@ -164,9 +166,9 @@ async def register(req: UserCreate):
 
     user_dict = {
         "id": new_user_id,
-        "name": req.name,
+        "name": req.name.strip(),
         "email": email_clean,
-        "phone": req.phone,
+        "phone": req.phone.strip() if req.phone else None,
         "password_hash": hashed_pwd,
         "role": req.role.value if hasattr(req.role, "value") else str(req.role),
         "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
@@ -175,22 +177,25 @@ async def register(req: UserCreate):
         "created_at": now_dt
     }
 
-    if db_manager.is_connected:
-        try:
-            await db_manager.execute(
-                """
-                INSERT INTO users (id, name, email, phone, password_hash, role, avatar, is_active, theatre_ids, created_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                ON CONFLICT (email) DO UPDATE SET
-                    name = EXCLUDED.name,
-                    phone = EXCLUDED.phone,
-                    password_hash = EXCLUDED.password_hash;
-                """,
-                new_user_id, req.name, email_clean, req.phone, hashed_pwd,
-                user_dict["role"], user_dict["avatar"], True, [], now_dt
-            )
-        except Exception:
-            pass
+    try:
+        await db_manager.execute(
+            """
+            INSERT INTO users (id, name, email, phone, password_hash, role, avatar, is_active, theatre_ids, created_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            ON CONFLICT (email) DO UPDATE SET
+                name = EXCLUDED.name,
+                phone = EXCLUDED.phone,
+                password_hash = EXCLUDED.password_hash;
+            """,
+            new_user_id, user_dict["name"], email_clean, user_dict["phone"], hashed_pwd,
+            user_dict["role"], user_dict["avatar"], True, [], now_dt
+        )
+    except Exception as e:
+        logger.error(f"Supabase user registration insert error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to register user in database. Please try again."
+        )
 
     USERS_DATABASE[email_clean] = user_dict
     DEFAULT_USERS_STORE[new_user_id] = user_dict
@@ -198,9 +203,9 @@ async def register(req: UserCreate):
     token_str = create_access_token(subject=new_user_id, role=user_dict["role"])
     user_response = UserResponse(
         id=new_user_id,
-        name=req.name,
+        name=user_dict["name"],
         email=email_clean,
-        phone=req.phone,
+        phone=user_dict["phone"],
         role=req.role,
         avatar=user_dict["avatar"],
         is_active=True,
@@ -266,14 +271,13 @@ async def verify_reset_otp(req: ResetPasswordWithOTPRequest):
 @router.post("/login", response_model=Token)
 async def login(credentials: UserLogin):
     """Authenticate user with email/password and issue JWT token"""
-    email_lower = credentials.email.lower()
+    email_lower = credentials.email.strip().lower()
     user_doc = None
 
-    if db_manager.is_connected:
-        try:
-            user_doc = await db_manager.fetch_one("SELECT * FROM users WHERE email = $1;", email_lower)
-        except Exception:
-            pass
+    try:
+        user_doc = await db_manager.fetch_one("SELECT * FROM users WHERE LOWER(email) = $1;", email_lower)
+    except Exception as e:
+        logger.error(f"Supabase login lookup error: {e}")
 
     if not user_doc and email_lower in USERS_DATABASE:
         user_doc = USERS_DATABASE[email_lower]

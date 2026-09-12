@@ -40,20 +40,6 @@ export const LoginModal = ({ isOpen, onClose, onSuccess, initialMode = 'login', 
     }
   };
 
-  const handleQuickDemoCustomer = async () => {
-    setLoading(true);
-    try {
-      await login('aarav.sharma@example.com', 'password123');
-      toast.success('Signed in as demo customer Aarav Sharma');
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (err) {
-      toast.error('Quick login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -150,18 +136,6 @@ export const LoginModal = ({ isOpen, onClose, onSuccess, initialMode = 'login', 
         >
           {mode === 'login' ? 'Sign In to Continue' : 'Create Account & Book'}
         </Button>
-
-        {/* Quick Demo Access */}
-        <div className="pt-2 border-t border-border/60">
-          <button
-            type="button"
-            onClick={handleQuickDemoCustomer}
-            className="w-full py-2 px-3 rounded-lg bg-surface-elevated/80 hover:bg-surface-elevated text-xs font-medium text-text-secondary hover:text-text-primary border border-border flex items-center justify-center gap-2 transition-colors"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-accent" />
-            <span>1-Click Demo Login (Aarav Sharma)</span>
-          </button>
-        </div>
 
         {/* Switch Mode Toggle */}
         <div className="text-center pt-2 text-xs text-text-secondary">

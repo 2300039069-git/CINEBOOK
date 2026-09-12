@@ -41,17 +41,15 @@ const LoginPage = () => {
     }
   };
 
-  const handleQuickLogin = (demoRole) => {
-    setRole(demoRole);
-    if (demoRole === 'SUPER_ADMIN') {
+  const handleRoleTabChange = (newRole) => {
+    setRole(newRole);
+    setError('');
+    if (newRole === 'SUPER_ADMIN') {
       setEmail('kancharladhanush2003@gmail.com');
       setPassword('AdminPass@2026');
-    } else if (demoRole === 'THEATRE_ADMIN') {
-      setEmail('partner@sivacinemas.com');
-      setPassword('TheatrePass@2026');
     } else {
-      setEmail('aarav.sharma@example.com');
-      setPassword('CustomerPass@2026');
+      setEmail('');
+      setPassword('');
     }
   };
 
@@ -88,7 +86,7 @@ const LoginPage = () => {
         <div className="p-1.5 bg-surface-elevated border border-border rounded-2xl flex gap-1">
           <button
             type="button"
-            onClick={() => handleQuickLogin('CUSTOMER')}
+            onClick={() => handleRoleTabChange('CUSTOMER')}
             className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               role === 'CUSTOMER'
                 ? 'bg-accent text-white shadow-sm'
@@ -100,7 +98,7 @@ const LoginPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => handleQuickLogin('THEATRE_ADMIN')}
+            onClick={() => handleRoleTabChange('THEATRE_ADMIN')}
             className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               role === 'THEATRE_ADMIN'
                 ? 'bg-amber-500 text-black shadow-sm font-bold'
@@ -112,7 +110,7 @@ const LoginPage = () => {
           </button>
           <button
             type="button"
-            onClick={() => handleQuickLogin('SUPER_ADMIN')}
+            onClick={() => handleRoleTabChange('SUPER_ADMIN')}
             className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               role === 'SUPER_ADMIN'
                 ? 'bg-surface text-text-primary border border-border shadow-sm'
@@ -182,10 +180,16 @@ const LoginPage = () => {
           </button>
         </form>
 
-        {/* Quick Demo Fill Info */}
+        {/* Super Admin Access Info */}
         <div className="p-3 rounded-2xl bg-surface-elevated border border-border text-[11px] text-text-muted flex items-center justify-between">
-          <span>Click any role tab above to auto-fill demo credentials</span>
-          <span className="text-amber-500 font-bold">Demo Ready</span>
+          <span>Super Admin: <span className="text-text-primary font-mono font-bold">kancharladhanush2003@gmail.com</span></span>
+          <button
+            type="button"
+            onClick={() => handleRoleTabChange('SUPER_ADMIN')}
+            className="text-amber-500 font-bold hover:underline cursor-pointer"
+          >
+            Auto-fill Admin
+          </button>
         </div>
 
         {/* Footer */}

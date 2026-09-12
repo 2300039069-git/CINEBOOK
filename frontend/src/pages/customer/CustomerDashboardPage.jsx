@@ -18,9 +18,8 @@ import { useLocation } from '../../context/LocationContext';
 
 const CustomerDashboardPage = () => {
   const { user } = useAuth();
-  const { selectedCity } = useLocation();
-  const [name, setName] = useState(user?.name || 'Aarav Sharma');
-  const [phone, setPhone] = useState(user?.phone || '+91 98765 43210');
+  const [name, setName] = useState(user?.name || 'Moviegoer');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [saved, setSaved] = useState(false);
 
   const bookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
@@ -56,7 +55,7 @@ const CustomerDashboardPage = () => {
                 {user?.role || 'VIP MEMBER'}
               </span>
             </div>
-            <p className="text-xs text-text-muted">{user?.email || 'aarav.sharma@example.com'}</p>
+            <p className="text-xs text-text-muted">{user?.email || 'customer@cinebook.in'}</p>
             <p className="text-xs text-text-secondary flex items-center justify-center sm:justify-start gap-1 pt-1 font-medium">
               <MapPin className="w-3.5 h-3.5 text-amber-500" />
               <span>Preferred Cinema City: <strong className="text-text-primary">{selectedCity.name}</strong></span>

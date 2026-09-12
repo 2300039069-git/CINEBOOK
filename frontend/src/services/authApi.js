@@ -5,6 +5,10 @@ export const authApi = {
     return await api.post('/auth/login', { email, password });
   },
 
+  register: async (userData) => {
+    return await api.post('/auth/register', userData);
+  },
+
   // 1. Registration with OTP
   sendRegistrationOTP: async (email) => {
     return await api.post('/auth/send-registration-otp', { email });
