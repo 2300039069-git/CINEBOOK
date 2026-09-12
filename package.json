@@ -9,5 +9,9 @@
     "scrape": "node scrapers/bmsScraper.js",
     "scrape:all": "node scrapers/cronRunner.js --once",
     "scrape:cron": "node scrapers/cronRunner.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "pg": "^8.23.0"
   }
 }
