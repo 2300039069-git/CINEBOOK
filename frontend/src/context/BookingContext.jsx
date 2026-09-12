@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../data/mockData';
-import { seatLockManager, getShowKey, getTabId } from '../services/seatLockManager';
+import { seatLockManager, getShowKey, getTabId, getTabLockToken } from '../services/seatLockManager';
 import { useToast } from './ToastContext';
 
 const BookingContext = createContext();
@@ -58,7 +58,7 @@ export const BookingProvider = ({ children }) => {
   });
 
   // Seat locking & countdown
-  const [lockToken, setLockToken] = useState(() => sessionStorage.getItem('cinebook_tab_lock_token') || 'lock_init');
+  const [lockToken, setLockToken] = useState(() => getTabLockToken());
   const [lockExpiresAt, setLockExpiresAt] = useState(() => {
     const saved = sessionStorage.getItem('cinebook_tab_lock_expires_at');
     return saved ? parseInt(saved, 10) : 0;
@@ -116,35 +116,32 @@ export const BookingProvider = ({ children }) => {
 
   // Toggle seat selection with instant 0ms optimistic UI updates & atomic background lock verification
   const toggleSeatSelection = (seat, overrideShowKey, overrideShowId) => {
-    if (seat.status === 'BOOKED' || (seat.status === 'LOCKED' && !selectedSeats.some((s) => s.id === seat.id))) {
-      toast.warning(`Seat ${seat.id} is already booked or reserved.`);
-      return;
-    }
-
     const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
     const showId = overrideShowId || selectedShow?.id;
     const exists = selectedSeats.find((s) => s.id === seat.id);
 
     if (exists) {
-      // 1. Instant 0ms UI update for deselecting
+      // 1. Instant 0ms UI update for deselecting (ALWAYS allowed for current user)
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
       seatLockManager.unlockSeat(showKey, seat.id, showId).catch(() => {});
+      return;
+    }
+
+    // Check if permanently booked
+    if (seat.status === 'BOOKED') {
+      toast.warning(`Seat ${seat.id} is already booked.`);
+      return;
+    }
+
+    // Check if locked by another user (NOT current user)
+    if (seat.isLockedByOther || seatLockManager.isSeatLockedByOtherTab(showKey, seat.id) || (seat.status === 'LOCKED' && !seat.isLockedByMe)) {
+      toast.conflict(`Seat ${seat.id} is currently held by another customer.`);
       return;
     }
 
     // Check maximum 8 seats limit
     if (selectedSeats.length >= 8) {
       toast.warning('You can select a maximum of 8 seats per transaction.', 'Limit Reached');
-      return;
-    }
-
-    // Check if locked by another tab or already booked
-    if (seatLockManager.isSeatLockedByOtherTab(showKey, seat.id)) {
-      toast.conflict(`Seat ${seat.id} is currently held by another customer.`);
-      return;
-    }
-    if (seatLockManager.isSeatBooked(showKey, seat.id)) {
-      toast.conflict(`Seat ${seat.id} is already booked.`);
       return;
     }
 
@@ -156,22 +153,19 @@ export const BookingProvider = ({ children }) => {
     };
     setSelectedSeats((prev) => [...prev, sanitizedSeat]);
 
-    // 3. Fast background atomic lock synchronization
+    const activeToken = getTabLockToken();
+    const expiresAt = Date.now() + LOCK_DURATION_SECONDS * 1000;
+    setLockExpiresAt(expiresAt);
+    sessionStorage.setItem('cinebook_tab_lock_expires_at', expiresAt.toString());
+
+    // 3. Fast background atomic lock synchronization with consistent session token
     seatLockManager
-      .lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null)
+      .lockSeat(showKey, seat.id, showId, activeToken)
       .then((result) => {
         if (!result.success) {
-          // Rollback selection if conflict or already booked
+          // Rollback selection only if conflict or already booked by someone else
           setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
           toast.conflict(result.message || `Seat ${seat.id} was just reserved by another customer.`);
-        } else {
-          const expiresAt = result.expiresAt || (Date.now() + LOCK_DURATION_SECONDS * 1000);
-          setLockExpiresAt(expiresAt);
-          sessionStorage.setItem('cinebook_tab_lock_expires_at', expiresAt.toString());
-          if (result.lockToken) {
-            setLockToken(result.lockToken);
-            sessionStorage.setItem('cinebook_tab_lock_token', result.lockToken);
-          }
         }
       })
       .catch((err) => {
@@ -183,10 +177,10 @@ export const BookingProvider = ({ children }) => {
   const startSeatLock = (overrideShowKey, overrideShowId) => {
     const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
     const showId = overrideShowId || selectedShow?.id;
+    const token = getTabLockToken();
     selectedSeats.forEach((seat) => {
-      seatLockManager.lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null);
+      seatLockManager.lockSeat(showKey, seat.id, showId, token);
     });
-    const token = lockToken && lockToken !== 'lock_init' ? lockToken : `lock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = Date.now() + LOCK_DURATION_SECONDS * 1000;
     
     setLockToken(token);
@@ -257,8 +251,7 @@ export const BookingProvider = ({ children }) => {
         cgst,
         sgst,
         taxes,
-        totalAmount,
-        seatsCount: selectedSeats.length
+        totalAmount
       }}
     >
       {children}
@@ -273,4 +266,3 @@ export const useBooking = () => {
   }
   return context;
 };
-

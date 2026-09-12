@@ -26,6 +26,17 @@ export const getTabId = () => {
   return tabId;
 };
 
+// Get or generate consistent unique lock token for current browser tab session
+export const getTabLockToken = () => {
+  if (typeof window === 'undefined') return 'lock_server';
+  let token = sessionStorage.getItem('cinebook_tab_lock_token');
+  if (!token || token === 'lock_init') {
+    token = `lock_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+    sessionStorage.setItem('cinebook_tab_lock_token', token);
+  }
+  return token;
+};
+
 // Generate standardized unique key for a show
 export const getShowKey = (show, theatre, movie, date) => {
   const sId = typeof show === 'string' ? show : (show?.id || 'sh-001');
@@ -110,6 +121,7 @@ export const seatLockManager = {
     const locks = getCleanLocksMap();
     const booked = getBookedSeatsMap();
     const currentTabId = getTabId();
+    const currentLockToken = getTabLockToken();
 
     const showLocks = locks[showKey] || {};
     const showBooked = booked[showKey] || {};
@@ -129,7 +141,7 @@ export const seatLockManager = {
     // 2. Mark active locks
     Object.keys(showLocks).forEach((seatId) => {
       const lock = showLocks[seatId];
-      const isMine = lock.tabId === currentTabId;
+      const isMine = lock.tabId === currentTabId || (currentLockToken && lock.lockToken === currentLockToken);
       statusMap[seatId] = {
         status: 'LOCKED',
         isLockedByCurrentTab: isMine,
@@ -150,7 +162,9 @@ export const seatLockManager = {
     const lock = showLocks[seatId];
     if (!lock) return false;
     const currentTabId = getTabId();
-    return lock.tabId !== currentTabId && lock.expiresAt > Date.now();
+    const currentLockToken = getTabLockToken();
+    const isMine = lock.tabId === currentTabId || (currentLockToken && lock.lockToken === currentLockToken);
+    return !isMine && lock.expiresAt > Date.now();
   },
 
   // Check if a seat is already booked
@@ -161,20 +175,13 @@ export const seatLockManager = {
 
   // Get active lock token held by current tab for a show
   getHeldToken: (showKey) => {
-    const locks = getCleanLocksMap();
-    const showLocks = locks[showKey] || {};
-    const currentTabId = getTabId();
-    for (const seatId of Object.keys(showLocks)) {
-      if (showLocks[seatId].tabId === currentTabId && showLocks[seatId].lockToken) {
-        return showLocks[seatId].lockToken;
-      }
-    }
-    return null;
+    return getTabLockToken();
   },
 
   // Attempt to atomically lock a seat for current tab
-  lockSeat: async (showKey, seatId, showId, existingLockToken) => {
+  lockSeat: async (showKey, seatId, showId, customToken) => {
     const currentTabId = getTabId();
+    const lockToken = customToken || getTabLockToken();
     const locks = getCleanLocksMap();
     const booked = getBookedSeatsMap();
 
@@ -185,7 +192,7 @@ export const seatLockManager = {
 
     // Check if locked by another tab
     const existingLock = locks[showKey]?.[seatId];
-    if (existingLock && existingLock.tabId !== currentTabId && existingLock.expiresAt > Date.now()) {
+    if (existingLock && existingLock.tabId !== currentTabId && existingLock.lockToken !== lockToken && existingLock.expiresAt > Date.now()) {
       return {
         success: false,
         status: 409,
@@ -194,42 +201,37 @@ export const seatLockManager = {
       };
     }
 
-    let backendLockToken = existingLockToken || null;
     // Sync with backend API if showId provided
     if (showId) {
       try {
-        const res = await bookingApi.lockSeats(showId, [seatId], currentTabId, existingLockToken);
-        if (res && res.lock_token) {
-          backendLockToken = res.lock_token;
-        }
+        await bookingApi.lockSeats(showId, [seatId], currentTabId, lockToken);
       } catch (err) {
-        // Immediately record as remote lock in local storage so UI disables it immediately
-        const updatedLocks = getCleanLocksMap();
-        if (!updatedLocks[showKey]) updatedLocks[showKey] = {};
-        updatedLocks[showKey][seatId] = {
-          tabId: 'remote_holder',
-          lockToken: 'remote_token',
-          expiresAt: Date.now() + LOCK_DURATION_MS,
-          status: 'LOCKED'
-        };
-        localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(updatedLocks));
+        if (err.status === 409 || err.message?.toLowerCase().includes('already booked') || err.message?.toLowerCase().includes('held by another')) {
+          // Immediately record as remote lock in local storage so other UI reflects it
+          const updatedLocks = getCleanLocksMap();
+          if (!updatedLocks[showKey]) updatedLocks[showKey] = {};
+          updatedLocks[showKey][seatId] = {
+            tabId: 'remote_holder',
+            lockToken: 'remote_token',
+            expiresAt: Date.now() + LOCK_DURATION_MS,
+            status: 'LOCKED'
+          };
+          localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(updatedLocks));
+          seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: 'remote_holder' });
 
-        // Broadcast to all other tabs
-        seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: 'remote_holder' });
-
-        return {
-          success: false,
-          status: err.status || 409,
-          reason: 'SEAT_ALREADY_BOOKED',
-          message: err.message || `Seat ${seatId} is already booked or held by another customer.`
-        };
+          return {
+            success: false,
+            status: err.status || 409,
+            reason: 'SEAT_ALREADY_BOOKED',
+            message: err.message || `Seat ${seatId} is already booked or held by another customer.`
+          };
+        }
       }
     }
 
-    // Set lock locally
+    // Set lock locally for this tab
     const currentLocks = getCleanLocksMap();
     if (!currentLocks[showKey]) currentLocks[showKey] = {};
-    const lockToken = backendLockToken || `lock_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const expiresAt = Date.now() + LOCK_DURATION_MS;
 
     currentLocks[showKey][seatId] = {
@@ -250,13 +252,14 @@ export const seatLockManager = {
   // Unlock a seat
   unlockSeat: async (showKey, seatId, showId) => {
     const currentTabId = getTabId();
+    const currentLockToken = getTabLockToken();
     const locks = getCleanLocksMap();
 
-    let lockToken = null;
+    let lockToken = currentLockToken;
     if (locks[showKey]?.[seatId]) {
       const lock = locks[showKey][seatId];
-      if (lock.tabId === currentTabId || lock.expiresAt <= Date.now()) {
-        lockToken = lock.lockToken;
+      if (lock.tabId === currentTabId || lock.lockToken === currentLockToken || lock.expiresAt <= Date.now()) {
+        lockToken = lock.lockToken || currentLockToken;
         delete locks[showKey][seatId];
         localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
       }
@@ -276,15 +279,16 @@ export const seatLockManager = {
   // Release all seats locked by current tab for a show
   releaseCurrentTabLocks: (showKey, showId) => {
     const currentTabId = getTabId();
+    const currentLockToken = getTabLockToken();
     const locks = getCleanLocksMap();
     if (!locks[showKey]) return;
 
     let releasedAny = false;
-    let lastToken = null;
+    let lastToken = currentLockToken;
 
     Object.keys(locks[showKey]).forEach((seatId) => {
-      if (locks[showKey][seatId].tabId === currentTabId) {
-        lastToken = locks[showKey][seatId].lockToken;
+      if (locks[showKey][seatId].tabId === currentTabId || locks[showKey][seatId].lockToken === currentLockToken) {
+        lastToken = locks[showKey][seatId].lockToken || lastToken;
         delete locks[showKey][seatId];
         releasedAny = true;
       }

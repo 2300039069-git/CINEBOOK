@@ -26,6 +26,10 @@ module.exports = async function handler(req, res) {
     showId = 'sh-001';
   }
 
+  // Caller identification to differentiate user's own locks from other users' locks
+  const clientLockToken = req.query?.lock_token || '';
+  const clientSessionId = req.query?.client_session_id || '';
+
   const client = new Client({
     connectionString: DB_URL,
     ssl: { rejectUnauthorized: false }
@@ -46,16 +50,24 @@ module.exports = async function handler(req, res) {
       dbLocks[r.seat_id] = 'BOOKED';
     }
 
-    // 2. Active locks
+    // 2. Active temporary locks
     const locksRes = await client.query(
-      "SELECT seat_id, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND (expires_at > $2 OR status = 'BOOKED' OR is_booked = TRUE)",
+      "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND (expires_at > $2 OR status = 'BOOKED' OR is_booked = TRUE)",
       [showId, now]
     );
     for (const r of locksRes.rows) {
       if (r.is_booked || r.status === 'BOOKED') {
         dbLocks[r.seat_id] = 'BOOKED';
-      } else {
-        dbLocks[r.seat_id] = 'LOCKED';
+      } else if (r.status === 'LOCKED') {
+        const isMine =
+          (clientLockToken && clientLockToken !== 'lock_init' && r.lock_token === clientLockToken) ||
+          (clientSessionId && r.user_id === clientSessionId);
+
+        if (isMine) {
+          dbLocks[r.seat_id] = 'LOCKED_BY_CALLER';
+        } else {
+          dbLocks[r.seat_id] = 'LOCKED';
+        }
       }
     }
   } catch (err) {
@@ -86,12 +98,20 @@ module.exports = async function handler(req, res) {
         totalSeats++;
 
         let seatStatus = 'AVAILABLE';
+        let isLockedByOther = false;
+        let isLockedByMe = false;
+
         if (dbLocks[seatId] === 'BOOKED') {
           seatStatus = 'BOOKED';
           bookedCount++;
         } else if (dbLocks[seatId] === 'LOCKED') {
           seatStatus = 'LOCKED';
+          isLockedByOther = true;
           lockedCount++;
+        } else if (dbLocks[seatId] === 'LOCKED_BY_CALLER') {
+          seatStatus = 'AVAILABLE';
+          isLockedByMe = true;
+          availableCount++;
         } else {
           availableCount++;
         }
@@ -104,6 +124,8 @@ module.exports = async function handler(req, res) {
           tier: tc.tier,
           price: tc.price,
           status: seatStatus,
+          isLockedByOther: isLockedByOther,
+          isLockedByMe: isLockedByMe,
           is_aisle_after: (num === 3 || num === 11),
           isAisleAfter: (num === 3 || num === 11)
         });

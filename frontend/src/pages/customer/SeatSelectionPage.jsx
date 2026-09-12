@@ -111,31 +111,45 @@ const SeatSelectionPage = () => {
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
 
+  // Keep a live mutable reference to selectedSeats to prevent stale closures in polling loops
+  const selectedSeatsRef = React.useRef(selectedSeats);
+  selectedSeatsRef.current = selectedSeats;
+
   // Load layout and subscribe to real-time seat locks & bookings from Supabase backend & cross-tabs
   useEffect(() => {
     let isMounted = true;
 
     const fetchLatestLayout = async () => {
       try {
-        const res = await bookingApi.getSeatLayout(show.id);
+        const token = sessionStorage.getItem('cinebook_tab_lock_token') || '';
+        const tabId = getTabId();
+        const res = await bookingApi.getSeatLayout(show.id, token, tabId);
         if (res && res.tiers && res.tiers.length > 0 && isMounted) {
           setRawLayout(res.tiers);
 
           // Extract real-time backend lock & booked statuses
           const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
           const backendStatuses = {};
+          const currentSelected = selectedSeatsRef.current || [];
+
           res.tiers.forEach((tier) => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
-                const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
-                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
+                const isSelectedInThisTab = currentSelected.some((sel) => sel.id === seat.id);
+                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab) || Boolean(seat.isLockedByMe);
                 const isMine = isSelectedInThisTab || isLockedByThisTab;
 
-                if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
+                if (seat.status === 'BOOKED') {
                   backendStatuses[seat.id] = {
-                    status: seat.status,
-                    isLockedByOtherTab: !isMine && seat.status === 'LOCKED',
-                    isLockedByCurrentTab: isMine && seat.status === 'LOCKED'
+                    status: 'BOOKED',
+                    isLockedByOtherTab: false,
+                    isLockedByCurrentTab: false
+                  };
+                } else if (seat.status === 'LOCKED' || seat.isLockedByOther) {
+                  backendStatuses[seat.id] = {
+                    status: isMine ? 'AVAILABLE' : 'LOCKED',
+                    isLockedByOtherTab: !isMine,
+                    isLockedByCurrentTab: isMine
                   };
                 } else {
                   backendStatuses[seat.id] = {
@@ -152,7 +166,7 @@ const SeatSelectionPage = () => {
           setLiveStatuses(backendStatuses);
 
           // Only alert if a seat was permanently purchased by another customer while this tab had it selected
-          const permanentlyBookedConflicted = selectedSeats.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
+          const permanentlyBookedConflicted = currentSelected.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
           if (permanentlyBookedConflicted.length > 0) {
             toast.conflict(`Seat(s) ${permanentlyBookedConflicted.map((s) => s.id).join(', ')} were just purchased by another customer.`);
             permanentlyBookedConflicted.forEach((s) => toggleSeatSelection(s, currentShowKey, show.id));
@@ -184,7 +198,7 @@ const SeatSelectionPage = () => {
       clearInterval(pollTimer);
       unsubscribe();
     };
-  }, [show.id, currentShowKey, selectedSeats.length]);
+  }, [show.id, currentShowKey]);
 
   // Merge base layout with live atomic locks and bookings from Supabase
   const dynamicLayout = rawLayout.map((tier) => ({
@@ -195,12 +209,14 @@ const SeatSelectionPage = () => {
         const liveInfo = liveStatuses[seat.id];
         const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
 
-        // 1. If selected in this tab, keep available for current user's selection display
+        // 1. If selected in this tab, ALWAYS keep selected & available for current user
         if (isSelectedInThisTab) {
           return {
             ...seat,
             status: 'AVAILABLE',
-            isLockedByOtherTab: false
+            isLockedByOtherTab: false,
+            isLockedByOther: false,
+            isLockedByMe: true
           };
         }
 
@@ -209,16 +225,18 @@ const SeatSelectionPage = () => {
           return {
             ...seat,
             status: 'BOOKED',
-            isLockedByOtherTab: false
+            isLockedByOtherTab: false,
+            isLockedByOther: false
           };
         }
 
         // 3. If locked by another customer in backend or live state
-        if (seat.status === 'LOCKED' || liveInfo?.status === 'LOCKED') {
+        if (seat.isLockedByOther || liveInfo?.isLockedByOtherTab || (seat.status === 'LOCKED' && !seat.isLockedByMe && !liveInfo?.isLockedByCurrentTab)) {
           return {
             ...seat,
             status: 'LOCKED',
-            isLockedByOtherTab: true
+            isLockedByOtherTab: true,
+            isLockedByOther: true
           };
         }
 
@@ -226,7 +244,8 @@ const SeatSelectionPage = () => {
         return {
           ...seat,
           status: 'AVAILABLE',
-          isLockedByOtherTab: false
+          isLockedByOtherTab: false,
+          isLockedByOther: false
         };
       })
     }))

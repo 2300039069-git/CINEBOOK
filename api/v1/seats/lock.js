@@ -22,13 +22,13 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ detail: 'You can select up to 8 seats per booking.' });
   }
 
-  if (!lock_token) {
+  if (!lock_token || lock_token === 'lock_init') {
     lock_token = 'lock_' + crypto.randomBytes(8).toString('hex');
   }
 
   const userId = client_session_id || ('sess_' + lock_token);
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + (5 * 60 * 1000)); // 5 minutes
+  const expiresAt = new Date(now.getTime() + (8 * 60 * 1000)); // 8 minutes
 
   const client = new Client({
     connectionString: DB_URL,
@@ -44,10 +44,10 @@ module.exports = async function handler(req, res) {
       [show_id, seat_ids]
     );
     if (bookedCheck.rows.length > 0) {
-      return res.status(409).json({ detail: 'Seat already booked' });
+      return res.status(409).json({ detail: 'Seat ' + bookedCheck.rows[0].seat_id + ' is already booked.' });
     }
 
-    // 2. Check active temporary locks held by another session
+    // 2. Check active temporary locks held by ANOTHER session (allow same user / session / lock_token)
     const lockCheck = await client.query(
       "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND (expires_at > $3 OR status = 'BOOKED' OR is_booked = TRUE)",
       [show_id, seat_ids, now.toISOString()]
@@ -55,10 +55,16 @@ module.exports = async function handler(req, res) {
 
     for (const r of lockCheck.rows) {
       if (r.is_booked || r.status === 'BOOKED') {
-        return res.status(409).json({ detail: 'Seat already booked' });
+        return res.status(409).json({ detail: 'Seat ' + r.seat_id + ' is already booked.' });
       }
-      if (r.lock_token !== lock_token && r.user_id !== userId) {
-        return res.status(409).json({ detail: 'Seat already booked' });
+
+      const isMine =
+        (lock_token && r.lock_token === lock_token) ||
+        (userId && r.user_id === userId) ||
+        (client_session_id && r.user_id === client_session_id);
+
+      if (!isMine) {
+        return res.status(409).json({ detail: 'Seat ' + r.seat_id + ' is currently held by another customer.' });
       }
     }
 
@@ -85,8 +91,8 @@ module.exports = async function handler(req, res) {
       seat_ids,
       locked_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),
-      seconds_remaining: 300,
-      message: 'Successfully locked ' + seat_ids.length + ' seats.'
+      seconds_remaining: 480,
+      message: 'Successfully locked ' + seat_ids.length + ' seat(s).'
     });
   } catch (err) {
     console.error('Lock seats error:', err);

@@ -112,7 +112,7 @@ const SeatGrid = ({
                       {row.seats.map((seat) => {
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
                         const isBooked = seat.status === 'BOOKED';
-                        const isLocked = seat.status === 'LOCKED' && !isSelected;
+                        const isLocked = !isSelected && (seat.status === 'LOCKED' || seat.isLockedByOtherTab || seat.isLockedByOther);
                         const isDisabled = isBooked || isLocked;
 
                         return (

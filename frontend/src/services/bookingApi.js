@@ -2,9 +2,16 @@ import api from './api';
 import { generateSeatLayout } from '../data/mockData';
 
 export const bookingApi = {
-  getSeatLayout: async (showId) => {
+  getSeatLayout: async (showId, lockToken, clientSessionId) => {
     try {
-      return await api.get(`/seats/${showId}/layout?_t=${Date.now()}`);
+      const token = lockToken || (typeof window !== 'undefined' ? sessionStorage.getItem('cinebook_tab_lock_token') : '');
+      const session = clientSessionId || (typeof window !== 'undefined' ? sessionStorage.getItem('cinebook_tab_id') : '');
+      const params = new URLSearchParams({
+        _t: Date.now().toString()
+      });
+      if (token && token !== 'lock_init') params.append('lock_token', token);
+      if (session) params.append('client_session_id', session);
+      return await api.get(`/seats/${showId}/layout?${params.toString()}`);
     } catch (err) {
       console.warn('Backend seats layout fallback:', err.message);
       return { tiers: generateSeatLayout(showId) };
