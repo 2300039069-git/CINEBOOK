@@ -5,7 +5,7 @@ import CinebookSeat3D from './CinebookSeat3D';
 
 const DEFAULT_TIERS = [
   { name: 'BALCONY', label: 'BALCONY CLASS', price: 147, color: 'text-gold', rows: ['A', 'B', 'C', 'D'] },
-  { name: 'SECOND_CLASS', label: 'SECOND CLASS', price: 110, color: 'text-blue-400', rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
+  { name: 'SECOND_CLASS', label: 'SECOND CLASS', price: 84, color: 'text-blue-400', rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
 ];
 
 const SeatSelectionModal = ({
@@ -86,7 +86,7 @@ const SeatSelectionModal = ({
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-blue-500/30">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-sm" />
-              <span className="text-text-secondary font-bold">SECOND CLASS <strong className="text-blue-400">₹110 + Fees</strong></span>
+              <span className="text-text-secondary font-bold">SECOND CLASS <strong className="text-blue-400">₹84 + Fees</strong></span>
             </div>
           </div>
 

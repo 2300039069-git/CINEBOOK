@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
 
   const tiersConfig = [
     { tier: 'BALCONY', label: 'Balcony Class', price: 147.0, rows: ['A', 'B', 'C', 'D'] },
-    { tier: 'SECOND_CLASS', label: 'Second Class', price: 110.0, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
+    { tier: 'SECOND_CLASS', label: 'Second Class', price: 84.0, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
   ];
 
   let totalSeats = 0;

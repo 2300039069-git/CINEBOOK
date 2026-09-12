@@ -89,7 +89,7 @@ const SeatGrid = ({
                   )}
                   {tier.name === 'SECOND_CLASS' && (
                     <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-black border border-blue-500/30">
-                      Second Class (₹110 + 10% Fee + GST)
+                      Second Class (₹84 + 10% Fee + GST)
                     </span>
                   )}
                 </span>

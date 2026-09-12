@@ -34,7 +34,10 @@ const CheckoutPage = () => {
     selectedSeats,
     secondsLeft,
     baseAmount,
+    convenienceFeeBase,
+    convenienceFeeTotal,
     convenienceFee,
+    igst,
     cgst,
     sgst,
     taxes,
@@ -449,42 +452,45 @@ const CheckoutPage = () => {
               </div>
 
               {/* Itemized Bill */}
-              <div className="space-y-2.5 text-xs text-text-secondary">
+              <div className="space-y-3 text-xs text-text-secondary">
                 <div className="flex justify-between items-center">
                   <span className="text-text-muted">Selected Seats ({seats.length})</span>
                   <span className="font-mono font-black text-brand bg-void-800 px-2 py-0.5 rounded-md border border-brand/30">
-                    {seats.map((s) => `${s.id} (${s.tier === 'BALCONY' ? 'Balcony' : '2nd Class'})`).join(', ')}
+                    {seats.map((s) => `${s.id} (${s.tier === 'BALCONY' ? 'Balcony ₹147' : '2nd Class ₹84'})`).join(', ')}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center pt-1 border-t border-white/5">
-                  <span className="text-text-muted">Ticket Base Price</span>
-                  <span className="font-semibold text-text-primary font-mono">₹{Number(baseAmount || 0).toFixed(2)}</span>
+                <div className="flex justify-between items-center pt-2 border-t border-white/8 text-xs sm:text-sm">
+                  <span className="text-text-primary font-medium">Ticket(s) price</span>
+                  <span className="font-bold text-text-primary font-mono text-sm">₹{Number(baseAmount || 0).toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Convenience Fee (10%)</span>
-                  <span className="font-semibold text-text-primary font-mono">₹{Number(convenienceFee || 0).toFixed(2)}</span>
-                </div>
+                {/* Convenience fees Section matching uploaded photo */}
+                <div className="p-3 rounded-xl bg-void-800/80 border border-white/8 space-y-2">
+                  <div className="flex justify-between items-center font-bold text-xs text-text-primary">
+                    <span className="flex items-center gap-1 text-text-primary font-semibold">
+                      <span>Convenience fees</span>
+                      <span className="text-[10px] text-brand">^</span>
+                    </span>
+                    <span className="font-mono text-brand font-bold">₹{Number(convenienceFeeTotal || convenienceFee || 0).toFixed(2)}</span>
+                  </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Central GST (CGST 9%)</span>
-                  <span className="font-semibold text-text-primary font-mono">₹{Number(cgst || 0).toFixed(2)}</span>
-                </div>
+                  <div className="pl-3 border-l-2 border-brand/40 space-y-1.5 text-[11px] text-text-muted">
+                    <div className="flex justify-between items-center">
+                      <span>Base Amount</span>
+                      <span className="font-mono text-text-secondary">₹{Number(convenienceFeeBase || (baseAmount * 0.1) || 0).toFixed(2)}</span>
+                    </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-text-muted">State GST (SGST 9%)</span>
-                  <span className="font-semibold text-text-primary font-mono">₹{Number(sgst || 0).toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between items-center text-[11px] text-text-muted italic bg-void-800/50 px-2 py-1 rounded-lg">
-                  <span>Total GST (18% on Amount + Fee)</span>
-                  <span className="font-semibold text-text-secondary font-mono">₹{Number((cgst || 0) + (sgst || 0)).toFixed(2)}</span>
+                    <div className="flex justify-between items-center">
+                      <span>Integrated GST (IGST) @ 18%</span>
+                      <span className="font-mono text-text-secondary">₹{Number(igst || taxes || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
                   <div>
-                    <span className="text-text-primary block">Total Payable Amount</span>
+                    <span className="text-text-primary block">Total Payable</span>
                     <span className="text-[10px] text-emerald-400 font-medium">All Taxes & Fees Included</span>
                   </div>
                   <span className="text-2xl text-brand font-black font-mono">₹{Number(finalTotal || 0).toFixed(2)}</span>

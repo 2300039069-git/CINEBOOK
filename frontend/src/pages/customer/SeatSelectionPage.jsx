@@ -76,7 +76,7 @@ const SeatSelectionPage = () => {
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: timeStr,
-        price: { BALCONY: 147, SECOND_CLASS: 110 },
+        price: { BALCONY: 147, SECOND_CLASS: 84 },
         availability: 'AVAILABLE'
       };
     }
@@ -365,7 +365,7 @@ const SeatSelectionPage = () => {
                 )}
               </div>
               <p className="text-[11px] text-text-muted mt-1">
-                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base: <strong className="text-text-primary font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + 10% Fee: <strong className="text-text-primary font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong> + 18% GST: <strong className="text-text-primary font-bold">₹{Number((cgst || 0) + (sgst || 0)).toFixed(2)}</strong>
+                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Ticket(s): <strong className="text-text-primary font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Convenience Fee (10% + 18% GST): <strong className="text-text-primary font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
               </p>
             </div>
           </div>

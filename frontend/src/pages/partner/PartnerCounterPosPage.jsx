@@ -43,7 +43,7 @@ const BASE_SEAT_LAYOUT = {
     {
       id: 'SECOND_CLASS',
       name: 'Second Class',
-      price: 110,
+      price: 84,
       rows: [
         { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], initialBooked: [] },
         { rowLetter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [8, 9, 10] },

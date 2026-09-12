@@ -187,24 +187,23 @@ export const BookingProvider = ({ children }) => {
   };
 
   // Pricing calculations
-  // Base Ticket Price: sum of seat prices (Balcony: ₹147, Second Class: ₹110)
+  // Base Ticket Price: sum of seat prices (Balcony: ₹147, Second Class: ₹84)
   const baseAmount = selectedSeats.reduce((sum, seat) => sum + Number(seat.price || 147), 0);
 
-  // Convenience Fee: 10% of Base Ticket Price
-  const convenienceFee = Number((baseAmount * 0.10).toFixed(2));
+  // Convenience Fee Base: 10% of Ticket Price
+  const convenienceFeeBase = Number((baseAmount * 0.10).toFixed(2));
 
-  // Subtotal subject to GST (Base Amount + Convenience Fee)
-  const taxableAmount = baseAmount + convenienceFee;
+  // Integrated GST (IGST @ 18% on Convenience Fee Base Amount)
+  const igst = Number((convenienceFeeBase * 0.18).toFixed(2));
+  const cgst = Number((convenienceFeeBase * 0.09).toFixed(2));
+  const sgst = Number((convenienceFeeBase * 0.09).toFixed(2));
+  const taxes = igst;
 
-  // Integrated GST (18% of total amount including convenience fee): split 9% CGST + 9% SGST
-  const cgst = Number((taxableAmount * 0.09).toFixed(2));
-  const sgst = Number((taxableAmount * 0.09).toFixed(2));
+  // Total Convenience Fee = Convenience Base + 18% IGST
+  const convenienceFeeTotal = Number((convenienceFeeBase + igst).toFixed(2));
 
-  // Total GST Taxes (18%)
-  const taxes = Number((cgst + sgst).toFixed(2));
-
-  // Total Amount Payable = Base Amount + Convenience Fee (10%) + 18% GST
-  const totalAmount = Number((taxableAmount + taxes).toFixed(2));
+  // Total Amount Payable = Ticket(s) Price + Total Convenience Fees
+  const totalAmount = Number((baseAmount + convenienceFeeTotal).toFixed(2));
 
   return (
     <BookingContext.Provider
@@ -227,7 +226,10 @@ export const BookingProvider = ({ children }) => {
         releaseSeatLock,
         clearBooking,
         baseAmount,
-        convenienceFee,
+        convenienceFeeBase,
+        convenienceFeeTotal,
+        convenienceFee: convenienceFeeTotal,
+        igst,
         cgst,
         sgst,
         taxes,

@@ -609,7 +609,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:00 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -624,7 +624,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:30 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -639,7 +639,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:15 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   },
@@ -654,7 +654,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '09:30 PM',
     slot: 'Second Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -669,7 +669,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:00 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -684,7 +684,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '09:45 PM',
     slot: 'Second Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -701,7 +701,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:15 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -716,7 +716,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:15 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -731,7 +731,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '06:30 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   },
@@ -748,7 +748,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '11:15 AM',
     slot: 'Morning Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
   },
@@ -763,7 +763,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '02:45 PM',
     slot: 'Matinee Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'FILLING_FAST',
     fillingFast: true
   },
@@ -778,7 +778,7 @@ export const SAMPLE_SHOWTIMES = [
     time: '07:00 PM',
     slot: 'First Show',
     date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 110 },
+    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'ALMOST_FULL',
     fillingFast: true
   }
@@ -788,7 +788,7 @@ export const SAMPLE_SHOWTIMES = [
 export const generateSeatLayout = (showId) => {
   const tiers = [
     { name: 'BALCONY', tier: 'BALCONY', label: 'Balcony Class', price: 147, rows: ['A', 'B', 'C', 'D'] },
-    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 110, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
+    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 84, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
   ];
 
   const seatsPerRow = 14;
