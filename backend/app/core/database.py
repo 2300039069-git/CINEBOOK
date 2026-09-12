@@ -82,11 +82,18 @@ async def init_db_indexes():
             expireAfterSeconds=0
         )
         
-        # 7. Bookings collection
+        # 7. Booked Seats collection (Database-level unique constraint for active/confirmed bookings)
+        await db.booked_seats.create_index(
+            [("show_id", 1), ("seat_id", 1)],
+            unique=True
+        )
+        
+        # 8. Bookings collection
         await db.bookings.create_index("booking_id", unique=True)
         await db.bookings.create_index([("user_id", 1), ("created_at", -1)])
+        await db.bookings.create_index([("show_id", 1), ("booking_status", 1)])
         
-        # 8. Payments collection
+        # 9. Payments collection
         await db.payments.create_index("razorpay_order_id", unique=True)
         await db.payments.create_index("booking_id")
         

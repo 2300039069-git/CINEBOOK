@@ -56,12 +56,14 @@ async def verify_payment(
         booking["booking_status"] = BookingStatus.CONFIRMED
         booking["payment_id"] = req.razorpay_payment_id
         
-        # Permanently book the seats
+        # Permanently book the seats in memory and DB
         seat_ids = [s["id"] for s in booking.get("seats", [])]
         await SeatLockService.permanently_book_seats(
             show_id=booking["show_id"],
             lock_token=booking.get("lock_token", ""),
-            seat_ids=seat_ids
+            seat_ids=seat_ids,
+            user_id=current_user.id,
+            booking_id=req.booking_id
         )
 
     if db_manager.is_connected:

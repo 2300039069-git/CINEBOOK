@@ -178,11 +178,12 @@ const CheckoutPage = () => {
         customer_phone: confirmedBooking.customerPhone
       });
     } catch (err) {
-      if (err.status === 409 || err.message?.toLowerCase().includes('already booked')) {
+      if (err.status === 409 || err.message?.toLowerCase().includes('already booked') || err.message?.toLowerCase().includes('conflict') || err.message?.toLowerCase().includes('held by another') || err.message?.toLowerCase().includes('expired')) {
         setProcessing(false);
         setIsSubmitting(false);
-        setErrorMessage('Seat already booked on server.');
-        toast.conflict('Seat already booked. Another customer reserved this seat.');
+        const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
+        setErrorMessage(msg);
+        toast.conflict(msg);
         navigate(`/seat-selection/${show?.id || 'sh-001'}`);
         return;
       }
@@ -210,6 +211,7 @@ const CheckoutPage = () => {
     if (isConflict) {
       setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer. Please go back and select available seats.');
       toast.conflict('Seat already booked. One or more seats were reserved by another customer.');
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
       return;
     }
 
@@ -222,10 +224,12 @@ const CheckoutPage = () => {
         await bookingApi.lockSeats(show.id, seats.map((s) => s.id));
       }
     } catch (err) {
-      if (err.status === 409 || err.message?.toLowerCase().includes('already booked')) {
-        setErrorMessage(err.message || 'Seat already booked. Another customer has reserved this seat.');
-        toast.conflict(err.message || 'Seat already booked. Another customer has reserved this seat.');
+      if (err.status === 409 || err.message?.toLowerCase().includes('already booked') || err.message?.toLowerCase().includes('conflict') || err.message?.toLowerCase().includes('held by another') || err.message?.toLowerCase().includes('expired')) {
+        const msg = err.message || 'Seat already booked. Another customer has reserved this seat.';
+        setErrorMessage(msg);
+        toast.conflict(msg);
         setIsSubmitting(false);
+        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
         return;
       }
     }

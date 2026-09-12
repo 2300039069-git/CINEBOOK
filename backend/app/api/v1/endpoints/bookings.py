@@ -25,8 +25,10 @@ async def create_booking_session(
             detail="At least one seat must be selected."
         )
 
-    # Atomically verify and lock seats (raises HTTP 409 Conflict if already taken)
-    await SeatLockService.lock_seats(
+    # Concurrency Control & Seat Hold Enforcement:
+    # Under atomic mutex and DB checks, verify only user holding active lock can proceed.
+    # Rejects expired or unauthorized attempts with HTTP 409 Conflict.
+    await SeatLockService.validate_and_claim_lock_for_booking(
         show_id=booking_in.show_id,
         seat_ids=seat_ids,
         user_id=current_user.id,
@@ -64,8 +66,12 @@ async def create_booking_session(
     if db_manager.is_connected:
         try:
             await db_manager.db.bookings.insert_one(booking_dict)
-        except Exception:
-            pass
+        except Exception as e:
+            if "duplicate key" in str(e).lower():
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Booking already exists for these seats."
+                )
 
     BOOKINGS_STORE[booking_id] = booking_dict
     return BookingResponse(**booking_dict)

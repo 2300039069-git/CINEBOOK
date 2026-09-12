@@ -281,18 +281,159 @@ class SeatLockService:
             return True
 
     @classmethod
-    async def permanently_book_seats(cls, show_id: str, lock_token: str, seat_ids: List[str]):
-        """Mark seats permanently BOOKED after payment signature is verified"""
+    async def validate_and_claim_lock_for_booking(
+        cls,
+        show_id: str,
+        seat_ids: List[str],
+        user_id: str,
+        lock_token: Optional[str] = None
+    ) -> bool:
+        """
+        Pessimistic concurrency lock validation before booking session creation.
+        Ensures:
+        1. None of the seats are permanently BOOKED in database or memory.
+        2. If seats are locked, the active hold belongs to this user/lock_token and is not expired.
+        3. Rejects expired or unauthorized hold attempts with HTTP 409 Conflict.
+        """
         async with LOCK_MUTEX:
+            cls._cleanup_expired_locks()
+            now = datetime.now(timezone.utc)
+            expires_at = now + timedelta(seconds=settings.SEAT_LOCK_DURATION_SECONDS)
+
+            for seat_id in seat_ids:
+                # 1. In-Memory checks
+                mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
+                if mem_entry:
+                    if mem_entry.get("isBooked") is True or mem_entry.get("status") == "BOOKED":
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {seat_id} is already booked."
+                        )
+                    if mem_entry.get("status") == "LOCKED":
+                        if mem_entry.get("expires_at") <= now:
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat hold for {seat_id} has expired. Please select your seats again."
+                            )
+                        if (
+                            mem_entry.get("user_id")
+                            and mem_entry.get("user_id") != user_id
+                            and (not lock_token or mem_entry.get("lock_token") != lock_token)
+                        ):
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat {seat_id} is currently held by another customer."
+                            )
+
+                # 2. MongoDB checks if connected
+                if db_manager.is_connected:
+                    # Check permanently booked collection
+                    booked_doc = await db_manager.db.booked_seats.find_one({
+                        "show_id": show_id,
+                        "seat_id": seat_id
+                    })
+                    if booked_doc:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {seat_id} is already booked."
+                        )
+
+                    # Check active seat locks collection
+                    lock_doc = await db_manager.db.seat_locks.find_one({
+                        "show_id": show_id,
+                        "seat_id": seat_id
+                    })
+                    if lock_doc:
+                        if lock_doc.get("isBooked") is True or lock_doc.get("status") == "BOOKED":
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat {seat_id} is already booked."
+                            )
+                        if lock_doc.get("expires_at") and lock_doc.get("expires_at") <= now:
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat hold for {seat_id} has expired. Please select your seats again."
+                            )
+                        if (
+                            lock_doc.get("user_id")
+                            and lock_doc.get("user_id") != user_id
+                            and (not lock_token or lock_doc.get("lock_token") != lock_token)
+                        ):
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat {seat_id} is currently held by another customer."
+                            )
+
+            # Claim / refresh lock for current booking session
+            claim_token = lock_token or f"lock_{user_id}_{uuid.uuid4().hex[:6]}"
             if db_manager.is_connected:
                 try:
                     for seat_id in seat_ids:
+                        await db_manager.db.seat_locks.update_one(
+                            {"show_id": show_id, "seat_id": seat_id},
+                            {"$set": {
+                                "show_id": show_id,
+                                "seat_id": seat_id,
+                                "user_id": user_id,
+                                "lock_token": claim_token,
+                                "status": "LOCKED",
+                                "isBooked": False,
+                                "locked_at": now,
+                                "expires_at": expires_at
+                            }},
+                            upsert=True
+                        )
+                except Exception:
+                    pass
+
+            for seat_id in seat_ids:
+                IN_MEMORY_SEAT_STORE[(show_id, seat_id)] = {
+                    "lock_token": claim_token,
+                    "user_id": user_id,
+                    "expires_at": expires_at,
+                    "status": "LOCKED",
+                    "isBooked": False
+                }
+
+            return True
+
+    @classmethod
+    async def permanently_book_seats(
+        cls,
+        show_id: str,
+        lock_token: str,
+        seat_ids: List[str],
+        user_id: str = "confirmed",
+        booking_id: str = ""
+    ):
+        """Mark seats permanently BOOKED after payment signature is verified"""
+        async with LOCK_MUTEX:
+            now = datetime.now(timezone.utc)
+            max_dt = datetime.max.replace(tzinfo=timezone.utc)
+            if db_manager.is_connected:
+                try:
+                    for seat_id in seat_ids:
+                        # 1. Insert/upsert into booked_seats collection (enforcing unique compound index)
+                        await db_manager.db.booked_seats.update_one(
+                            {"show_id": show_id, "seat_id": seat_id},
+                            {"$set": {
+                                "show_id": show_id,
+                                "seat_id": seat_id,
+                                "user_id": user_id,
+                                "booking_id": booking_id,
+                                "booked_at": now
+                            }},
+                            upsert=True
+                        )
+                        # 2. Update seat_locks status
                         await db_manager.db.seat_locks.find_one_and_update(
                             {"show_id": show_id, "seat_id": seat_id},
                             {"$set": {
                                 "status": "BOOKED",
                                 "isBooked": True,
-                                "expires_at": datetime.max.replace(tzinfo=timezone.utc)
+                                "user_id": user_id,
+                                "booking_id": booking_id,
+                                "expires_at": max_dt
                             }},
                             upsert=True
                         )
@@ -302,8 +443,9 @@ class SeatLockService:
             for seat_id in seat_ids:
                 IN_MEMORY_SEAT_STORE[(show_id, seat_id)] = {
                     "lock_token": lock_token,
-                    "user_id": "confirmed",
-                    "expires_at": datetime.max.replace(tzinfo=timezone.utc),
+                    "user_id": user_id,
+                    "booking_id": booking_id,
+                    "expires_at": max_dt,
                     "status": "BOOKED",
                     "isBooked": True
                 }
