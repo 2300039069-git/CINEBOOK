@@ -66,16 +66,19 @@ class Database:
 
 db_manager = Database()
 
+_schema_initialized = False
+
 async def connect_to_supabase():
     """Establish async connection pool to Supabase PostgreSQL"""
+    global _schema_initialized
     try:
         masked_url = settings.SUPABASE_DB_URL.split('@')[-1] if '@' in settings.SUPABASE_DB_URL else 'Supabase'
         logger.info(f"Connecting to Supabase PostgreSQL at {masked_url}...")
         
         db_manager.pool = await asyncpg.create_pool(
             dsn=settings.SUPABASE_DB_URL,
-            min_size=2,
-            max_size=20,
+            min_size=1,
+            max_size=10,
             init=_init_connection,
             statement_cache_size=0, # Required for Supabase PgBouncer / pooler
             timeout=15
@@ -88,11 +91,11 @@ async def connect_to_supabase():
         
         db_manager.is_connected = True
         
-        # Create database tables and indexes
-        await init_supabase_schema()
-        
-        # Seed initial catalog data if empty
-        await seed_supabase_data_if_empty()
+        # Create database tables and indexes only on initial process bootstrap
+        if not _schema_initialized:
+            await init_supabase_schema()
+            await seed_supabase_data_if_empty()
+            _schema_initialized = True
         
     except Exception as e:
         db_manager.is_connected = False

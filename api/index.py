@@ -13,8 +13,36 @@ for path in [backend_dir, root_dir]:
 import traceback
 
 try:
-    from app.main import app
+    from app.main import app as fastapi_app
 except Exception as e:
     logging.error(f"Failed to import app.main in Vercel handler: {e}\n{traceback.format_exc()}")
     raise e
+
+class VercelPathMiddleware:
+    def __init__(self, inner_app):
+        self.inner_app = inner_app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            headers = dict(scope.get("headers", []))
+            matched_path = headers.get(b"x-matched-path", b"").decode("utf-8", errors="ignore")
+            invoke_path = headers.get(b"x-invoke-path", b"").decode("utf-8", errors="ignore")
+            forwarded_uri = headers.get(b"x-forwarded-uri", b"").decode("utf-8", errors="ignore")
+            now_route = headers.get(b"x-now-route-matches", b"").decode("utf-8", errors="ignore")
+
+            raw_target = matched_path or invoke_path or forwarded_uri
+            if raw_target and raw_target.startswith("/api"):
+                target_path = raw_target.split("?")[0]
+                scope["path"] = target_path
+                scope["raw_path"] = target_path.encode("utf-8")
+            elif now_route and "1=" in now_route:
+                part = now_route.split("1=")[-1].split("&")[0]
+                target_path = "/api/" + part.lstrip("/")
+                scope["path"] = target_path
+                scope["raw_path"] = target_path.encode("utf-8")
+
+        await self.inner_app(scope, receive, send)
+
+app = VercelPathMiddleware(fastapi_app)
+
 
