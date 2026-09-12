@@ -309,12 +309,12 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 bg-background text-text-primary transition-colors">
+    <div className="min-h-screen py-10 bg-void-900 text-text-primary transition-colors">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 1. SEAT LOCK COUNTDOWN BANNER */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-gold/40 flex items-center justify-between shadow-lg backdrop-blur-md">
+        <div className="p-4 sm:p-5 rounded-2xl bg-void-850 border border-brand/30 flex items-center justify-between shadow-lg backdrop-blur-md">
           <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-gold/15 text-gold border border-gold/30">
+            <div className="p-3 rounded-xl bg-brand/15 text-brand border border-brand/30">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -330,7 +330,7 @@ const CheckoutPage = () => {
 
           <div className="text-right flex-shrink-0">
             <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Time Remaining</span>
-            <span className="text-lg sm:text-xl font-mono font-black text-gold">
+            <span className="text-lg sm:text-xl font-mono font-black text-brand">
               {formatTimer(secondsLeft)}
             </span>
           </div>
@@ -348,9 +348,9 @@ const CheckoutPage = () => {
           {/* Left 2 Cols: Contact & Payment Gateway Selection */}
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Details */}
-            <div className="p-6 bg-surface rounded-2xl space-y-4 border border-border/80 shadow-md">
+            <div className="p-6 bg-void-850 rounded-2xl space-y-4 border border-white/8 shadow-md">
               <h2 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-gold" /> Ticket Delivery Details
+                <Sparkles className="w-3.5 h-3.5 text-brand" /> Ticket Delivery Details
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -359,7 +359,7 @@ const CheckoutPage = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-gold transition-colors"
+                    className="w-full px-4 py-2.5 bg-void-800 border border-white/8 rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-brand transition-colors"
                   />
                 </div>
                 <div>
@@ -368,17 +368,17 @@ const CheckoutPage = () => {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-gold transition-colors"
+                    className="w-full px-4 py-2.5 bg-void-800 border border-white/8 rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-brand transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Payment Gateway - Exclusively Razorpay */}
-            <div className="p-6 bg-surface rounded-2xl space-y-4 border border-border/80 shadow-md">
-              <div className="flex items-center justify-between pb-3 border-b border-border/80">
+            <div className="p-6 bg-void-850 rounded-2xl space-y-4 border border-white/8 shadow-md">
+              <div className="flex items-center justify-between pb-3 border-b border-white/8">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center text-gold border border-gold/30">
+                  <div className="w-8 h-8 rounded-xl bg-brand/15 flex items-center justify-center text-brand border border-brand/30">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
@@ -388,14 +388,14 @@ const CheckoutPage = () => {
                     <p className="text-[11px] text-text-muted">Direct Official Integration</p>
                   </div>
                 </div>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
+                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span>256-Bit SSL Encrypted</span>
                 </span>
               </div>
 
               {/* Single Dedicated Razorpay Card */}
-              <div className="p-5 rounded-2xl bg-surface-elevated border border-gold/40 space-y-3 shadow-inner">
+              <div className="p-5 rounded-2xl bg-void-800 border border-brand/30 space-y-3 shadow-inner">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <div className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
@@ -403,10 +403,10 @@ const CheckoutPage = () => {
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-text-primary">Razorpay Official Gateway</h3>
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Verified & Active</p>
+                      <p className="text-[11px] text-emerald-400 font-semibold">Verified & Active</p>
                     </div>
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-gold/20 text-gold flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-brand/20 text-brand flex items-center justify-center">
                     <Check className="w-4 h-4 stroke-[3]" />
                   </div>
                 </div>
@@ -415,9 +415,9 @@ const CheckoutPage = () => {
                   Your payment is securely processed exclusively by <strong>Razorpay</strong>. Click the button below to open the Razorpay checkout and authorize your transaction.
                 </p>
 
-                <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-text-muted">
+                <div className="pt-2 border-t border-white/8 flex items-center justify-between text-[11px] text-text-muted">
                   <span>Merchant: <strong className="text-text-primary font-semibold">CINEBOOK</strong></span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="text-emerald-400 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5" /> PCI-DSS Level 1 Certified
                   </span>
                 </div>
@@ -427,18 +427,18 @@ const CheckoutPage = () => {
 
           {/* Right: Booking Summary Card */}
           <div className="space-y-4">
-            <div className="p-6 bg-surface rounded-2xl space-y-5 h-fit border border-border/80 shadow-xl">
+            <div className="p-6 bg-void-850 rounded-2xl space-y-5 h-fit border border-white/8 shadow-xl">
               {/* Mini Movie Header */}
-              <div className="flex items-start gap-3.5 pb-4 border-b border-border/80">
+              <div className="flex items-start gap-3.5 pb-4 border-b border-white/8">
                 <img
                   src={movie.posterUrl}
                   alt={movie.title}
-                  className="w-16 h-24 rounded-xl object-cover border border-border/80 flex-shrink-0 shadow-sm"
+                  className="w-16 h-24 rounded-xl object-cover border border-white/8 flex-shrink-0 shadow-sm"
                 />
                 <div>
                   <h3 className="text-sm font-black text-text-primary leading-tight">{movie.title}</h3>
-                  <p className="text-xs text-gold font-bold mt-1">{theatre.name}</p>
-                  <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-surface-elevated border border-border text-[10px] font-semibold text-text-secondary">
+                  <p className="text-xs text-brand font-bold mt-1">{theatre.name}</p>
+                  <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-void-800 border border-white/8 text-[10px] font-semibold text-text-secondary">
                     {show.format || '2D Dolby Atmos'} • {show.time || '11:00 AM'}
                   </span>
                 </div>
@@ -448,7 +448,7 @@ const CheckoutPage = () => {
               <div className="space-y-2.5 text-xs text-text-secondary">
                 <div className="flex justify-between items-center">
                   <span className="text-text-muted">Seats ({seats.length})</span>
-                  <span className="font-mono font-black text-gold bg-surface-elevated px-2 py-0.5 rounded-md border border-gold/30">
+                  <span className="font-mono font-black text-brand bg-void-800 px-2 py-0.5 rounded-md border border-brand/30">
                     {seats.map((s) => s.id).join(', ')}
                   </span>
                 </div>
@@ -465,9 +465,9 @@ const CheckoutPage = () => {
                   <span className="font-semibold text-text-primary">₹{taxes || 9}</span>
                 </div>
 
-                <div className="pt-3 border-t border-border flex justify-between items-center text-sm font-black">
+                <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
                   <span className="text-text-primary">Total Payable</span>
-                  <span className="text-2xl text-gold font-black">₹{finalTotal}</span>
+                  <span className="text-2xl text-brand font-black">₹{finalTotal}</span>
                 </div>
               </div>
 
@@ -476,23 +476,23 @@ const CheckoutPage = () => {
                 type="button"
                 onClick={handlePayNow}
                 disabled={processing || isSubmitting}
-                className="w-full py-4 rounded-2xl bg-gold hover:bg-gold-hover text-background text-xs sm:text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-lg shadow-gold/20 transform hover:-translate-y-0.5"
+                className="w-full py-4 rounded-2xl bg-brand hover:bg-brand-hover text-void-950 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-lg shadow-brand/25 transform hover:-translate-y-0.5"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-void-950 border-t-transparent rounded-full animate-spin" />
                     <span>Connecting to Razorpay...</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4 text-background" />
+                    <Lock className="w-4 h-4 text-void-950" />
                     <span>Pay ₹{finalTotal} with Razorpay</span>
                   </>
                 )}
               </button>
 
               <div className="pt-1 text-center space-y-1">
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" /> 100% Instant Refund Guarantee
                 </p>
                 <p className="text-[10px] text-text-muted">

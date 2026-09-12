@@ -5,23 +5,23 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #0E0E12;
-    --theme-surface: #16161F;
-    --theme-card: #161622;
-    --theme-elevated: #1E1E2A;
-    --theme-hover: #262638;
-    --theme-subtle: #121218;
+    --theme-bg: #090A0E;
+    --theme-surface: #12141C;
+    --theme-card: #12141C;
+    --theme-elevated: #1A1D27;
+    --theme-hover: #232736;
+    --theme-subtle: #0C0E14;
     --theme-border: rgba(255, 255, 255, 0.08);
     --theme-border-subtle: rgba(255, 255, 255, 0.05);
-    --theme-border-hover: #F5A623;
+    --theme-border-hover: #F59E0B;
     --theme-primary: #E63950;
     --theme-primary-hover: #F43F5E;
-    --theme-accent: #F5A623;
+    --theme-accent: #F59E0B;
     --theme-crimson: #E63950;
-    --theme-gold: #F5A623;
+    --theme-gold: #F59E0B;
     --theme-cyan: #06B6D4;
-    --theme-text: #F4F4F5;
-    --theme-text-primary: #F4F4F5;
+    --theme-text: #F4F4F6;
+    --theme-text-primary: #F4F4F6;
     --theme-text-secondary: #9CA3AF;
     --theme-text-muted: #6B7280;
   }
@@ -49,8 +49,8 @@
   }
 
   body {
-    background-color: var(--theme-bg);
-    color: var(--theme-text-primary);
+    background-color: var(--theme-bg, #090A0E);
+    color: var(--theme-text-primary, #F4F4F6);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -60,6 +60,22 @@
 }
 
 @layer utilities {
+  /* Cinematic Void & Electric Amber Card */
+  .cine-card {
+    background-color: #12141C;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .cine-card:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.8), 0 0 20px -2px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
   /* 3D Perspective & Transform Contexts */
   .perspective-1000 {
     perspective: 1000px;
@@ -93,11 +109,11 @@
 
   /* Luxury Glassmorphism Container */
   .glass-panel {
-    background: rgba(13, 17, 26, 0.72);
+    background: rgba(18, 20, 28, 0.75);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
   .light .glass-panel {
@@ -108,23 +124,23 @@
 
   /* Glowing Stage Spotlights */
   .stage-spotlight {
-    background: radial-gradient(circle at 50% 0%, rgba(229, 9, 20, 0.18) 0%, rgba(212, 175, 55, 0.08) 35%, transparent 70%);
+    background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 35%, transparent 70%);
   }
 
   .stage-spotlight-gold {
-    background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.22) 0%, rgba(245, 197, 66, 0.06) 40%, transparent 70%);
+    background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.06) 40%, transparent 70%);
   }
 
   /* 3D Specular Highlight Bevel */
   .specular-bevel {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
   }
 
   /* Curved Screen Indicator */
   .cinema-screen-curve {
-    border-top: 3px solid #F5A623;
+    border-top: 3px solid #F59E0B;
     border-radius: 50% 50% 0 0 / 25px 25px 0 0;
-    box-shadow: 0 -8px 25px -4px rgba(245, 166, 35, 0.45);
+    box-shadow: 0 -8px 25px -4px rgba(245, 158, 11, 0.45);
   }
 
   /* Perforated Ticket Stub Separator */

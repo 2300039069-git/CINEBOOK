@@ -246,13 +246,13 @@ const SeatSelectionPage = () => {
   return (
     <div className="min-h-screen bg-background text-text-primary pb-36 transition-colors">
       {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-16 sm:top-20 z-30 bg-surface/95 backdrop-blur-md border-b border-border/80 py-3.5 px-4 sm:px-6 lg:px-8 shadow-lg">
+      <div className="sticky top-16 sm:top-20 z-30 bg-void-900/95 backdrop-blur-md border-b border-white/8 py-3.5 px-4 sm:px-6 lg:px-8 shadow-lg">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2 rounded-xl bg-surface-elevated text-text-secondary hover:text-text-primary border border-border transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-void-800 text-text-secondary hover:text-text-primary border border-white/8 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -261,12 +261,12 @@ const SeatSelectionPage = () => {
                 <h1 className="text-base sm:text-lg font-black text-text-primary leading-none">
                   {movie.title}
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-surface-elevated text-text-secondary text-[10px] font-bold border border-border">
+                <span className="px-2 py-0.5 rounded-full bg-void-800 text-text-secondary text-[10px] font-bold border border-white/8">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {theatre.name} • <span className="text-gold font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
+                {theatre.name} • <span className="text-brand font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
               </p>
             </div>
           </div>
@@ -281,7 +281,7 @@ const SeatSelectionPage = () => {
             <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
               secondsLeft < 120
                 ? 'bg-primary/15 border-primary text-primary animate-pulse'
-                : 'bg-surface-elevated border-gold/40 text-gold'
+                : 'bg-void-800 border-brand/40 text-brand'
             }`}>
               <Clock className="w-4 h-4" />
               <div className="leading-tight">
@@ -296,11 +296,11 @@ const SeatSelectionPage = () => {
       {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
       {selectedSeats.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3.5 rounded-2xl bg-surface border border-gold/40 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+          <div className="p-3.5 rounded-2xl bg-void-850 border border-brand/30 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
             <div className="flex items-center gap-2.5 text-xs text-text-secondary">
-              <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />
+              <Sparkles className="w-4 h-4 text-brand flex-shrink-0" />
               <span>
-                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-gold font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-gold">{formatTime(secondsLeft)}</strong>.
+                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-brand font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-brand">{formatTime(secondsLeft)}</strong>.
               </span>
             </div>
           </div>
@@ -317,18 +317,18 @@ const SeatSelectionPage = () => {
       </div>
 
       {/* 4. STICKY BOTTOM BOOKING SUMMARY BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-void-900/95 backdrop-blur-md border-t border-white/8 py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Selected Seats summary */}
           <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-gold/15 text-gold border border-gold/30 hidden sm:block">
+            <div className="p-3 rounded-2xl bg-brand/15 text-brand border border-brand/30 hidden sm:block">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-text-muted font-semibold">Selected Seats:</span>
                 {selectedSeats.length > 0 ? (
-                  <span className="font-black text-text-primary bg-surface-elevated px-3 py-0.5 rounded-full border border-gold/40 text-gold">
+                  <span className="font-black bg-void-800 px-3 py-0.5 rounded-full border border-brand/40 text-brand">
                     {selectedSeats.map((s) => s.id).join(', ')}
                   </span>
                 ) : (
@@ -345,7 +345,7 @@ const SeatSelectionPage = () => {
           <div className="flex items-center justify-between sm:justify-end gap-6">
             <div className="text-right">
               <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Total Amount</span>
-              <span className="text-xl sm:text-2xl font-black text-gold">₹{totalAmount}</span>
+              <span className="text-xl sm:text-2xl font-black text-brand">₹{totalAmount}</span>
             </div>
 
             <button
@@ -354,8 +354,8 @@ const SeatSelectionPage = () => {
               disabled={selectedSeats.length === 0}
               className={`px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all duration-200 cursor-pointer ${
                 selectedSeats.length > 0
-                  ? 'bg-gold hover:bg-gold-hover text-background shadow-lg shadow-gold/20 transform hover:-translate-y-0.5 active:translate-y-0'
-                  : 'bg-surface-elevated text-text-muted cursor-not-allowed border border-border'
+                  ? 'bg-brand hover:bg-brand-hover text-void-950 shadow-lg shadow-brand/25 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-98'
+                  : 'bg-void-800 text-text-muted cursor-not-allowed border border-white/8'
               }`}
             >
               <span>Proceed to Pay</span>

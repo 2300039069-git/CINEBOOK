@@ -7,12 +7,12 @@ const SeatGrid = ({
   onToggleSeat
 }) => {
   return (
-    <div className="w-full bg-surface rounded-3xl p-5 sm:p-8 border border-border/80 shadow-2xl space-y-8 backdrop-blur-md">
+    <div className="w-full cine-card p-5 sm:p-8 space-y-8">
       {/* 1. CURVED CINEMA SCREEN AT TOP */}
       <div className="text-center space-y-3 pt-2">
         <div className="relative mx-auto max-w-xl px-6">
           {/* Ambient Screen Glow */}
-          <div className="absolute -top-4 inset-x-8 h-12 bg-gold/15 blur-2xl rounded-full pointer-events-none" />
+          <div className="absolute -top-4 inset-x-8 h-12 bg-brand/15 blur-2xl rounded-full pointer-events-none" />
           
           {/* Curved Screen SVG / Gradient Bar */}
           <svg className="w-full h-8 overflow-visible" viewBox="0 0 400 30" fill="none">
@@ -24,50 +24,50 @@ const SeatGrid = ({
             />
             <defs>
               <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#F5A623" stopOpacity="0.1" />
-                <stop offset="50%" stopColor="#F5A623" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="#F5A623" stopOpacity="0.1" />
+                <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.1" />
+                <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.1" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
         <p className="text-[11px] font-bold uppercase tracking-widest text-text-muted flex items-center justify-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-gold" />
+          <Sparkles className="w-3.5 h-3.5 text-brand" />
           <span>Screen This Way • 4K RGB Laser Silver Screen</span>
         </p>
       </div>
 
-      {/* 2. SEAT STATE LEGEND & EXHIBITOR NOTICE */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-2xl bg-surface-elevated/70 border border-border/80 text-xs">
+      {/* 2. SEAT STATE LEGEND */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-2xl bg-void-800/80 border border-white/8 text-xs">
         {/* State Badges */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-surface border border-border"></div>
+            <div className="w-4 h-4 rounded-md bg-void-800 border border-white/8"></div>
             <span className="text-text-muted font-medium text-xs">Available</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-gold text-background flex items-center justify-center font-bold">
+            <div className="w-4 h-4 rounded-md bg-brand text-void-950 flex items-center justify-center font-black shadow-xs shadow-brand/40">
               <Check className="w-3 h-3 stroke-[3]" />
             </div>
             <span className="text-text-primary font-bold text-xs">Selected</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-surface-elevated border border-dashed border-border opacity-40 flex items-center justify-center text-[10px] text-text-muted">
+            <div className="w-4 h-4 rounded-md bg-brand/15 border border-brand/30 text-brand flex items-center justify-center text-[10px]">
               <Clock className="w-2.5 h-2.5" />
             </div>
-            <span className="text-text-muted font-medium text-xs">Locked / Booked</span>
+            <span className="text-text-muted font-medium text-xs">Locked</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-surface-elevated border border-dashed border-border opacity-40 flex items-center justify-center text-[10px] text-text-muted">
-              <Lock className="w-2.5 h-2.5" />
+            <div className="w-4 h-4 rounded-md bg-void-950/60 border border-white/5 opacity-30 flex items-center justify-center text-[10px] text-text-muted">
+              ✕
             </div>
-            <span className="text-text-muted font-medium text-xs">Counter Quota</span>
+            <span className="text-text-muted font-medium text-xs">Sold Out</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-gold font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+        <div className="flex items-center gap-1.5 text-[11px] text-brand font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5 text-brand flex-shrink-0" />
           <span>Atomic Seat Lock Active</span>
         </div>
       </div>
@@ -78,16 +78,16 @@ const SeatGrid = ({
           {seatLayout.map((tier) => (
             <div key={tier.name} className="space-y-3">
               {/* Tier Header with Price */}
-              <div className="flex items-center justify-between pb-2 border-b border-border/70 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-white/8 text-xs">
                 <span className="font-extrabold text-text-primary uppercase tracking-wider flex items-center gap-2">
                   <span>{tier.label}</span>
                   {tier.name === 'RECLINER' && (
-                    <span className="px-2 py-0.5 rounded-full bg-gold/15 text-gold text-[10px] font-black border border-gold/30">
+                    <span className="px-2 py-0.5 rounded-full bg-brand/15 text-brand text-[10px] font-black border border-brand/30">
                       VIP Recliner
                     </span>
                   )}
                 </span>
-                <span className="text-gold font-black text-sm">
+                <span className="text-brand font-black text-sm">
                   ₹{tier.price} <span className="text-text-muted font-normal text-xs">/ seat</span>
                 </span>
               </div>
@@ -126,18 +126,18 @@ const SeatGrid = ({
                               }
                               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center select-none ${
                                 isSelected
-                                  ? 'bg-gold text-background shadow-lg shadow-gold/25 ring-2 ring-gold scale-105 active:scale-95 cursor-pointer z-10 font-black'
+                                  ? 'bg-brand text-void-950 shadow-lg shadow-brand/35 ring-2 ring-brand scale-105 active:scale-95 cursor-pointer z-10 font-black'
                                   : isLocked
-                                  ? 'bg-gold/10 border border-gold/30 text-gold cursor-not-allowed opacity-60'
+                                  ? 'bg-brand/10 border border-brand/30 text-brand cursor-not-allowed opacity-60'
                                   : isBooked
-                                  ? 'bg-surface-elevated border border-dashed border-border opacity-25 cursor-not-allowed text-text-muted'
-                                  : 'bg-surface-elevated border border-border/80 hover:border-gold hover:text-gold text-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
+                                  ? 'bg-void-950/40 border border-white/5 opacity-20 cursor-not-allowed text-text-muted'
+                                  : 'bg-void-800 border border-white/8 hover:border-brand hover:text-brand text-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
                               }`}
                             >
                               {isSelected ? (
                                 <Check className="w-4 h-4 stroke-[3]" />
                               ) : isLocked ? (
-                                <Clock className="w-3.5 h-3.5 text-gold" />
+                                <Clock className="w-3.5 h-3.5 text-brand" />
                               ) : (
                                 seat.number
                               )}
