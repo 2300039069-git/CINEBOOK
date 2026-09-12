@@ -125,6 +125,8 @@ const SeatSelectionPage = () => {
         const tabId = getTabId();
         const res = await bookingApi.getSeatLayout(show.id, token, tabId);
         if (res && res.tiers && res.tiers.length > 0 && isMounted) {
+          // Self-heal any stale browser cache with server truth
+          seatLockManager.syncWithBackend(currentShowKey, res.tiers);
           setRawLayout(res.tiers);
 
           // Extract real-time backend lock & booked statuses
@@ -165,7 +167,7 @@ const SeatSelectionPage = () => {
           // Ground truth from live database
           setLiveStatuses(backendStatuses);
 
-          // Only alert if a seat was permanently purchased by another customer while this tab had it selected
+          // Only alert if a seat was genuinely confirmed & permanently booked by another customer
           const permanentlyBookedConflicted = currentSelected.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
           if (permanentlyBookedConflicted.length > 0) {
             toast.conflict(`Seat(s) ${permanentlyBookedConflicted.map((s) => s.id).join(', ')} were just purchased by another customer.`);

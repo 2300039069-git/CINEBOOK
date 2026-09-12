@@ -83,39 +83,49 @@ export const getCleanLocksMap = () => {
 export const getBookedSeatsMap = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_BOOKED);
-    const booked = raw ? JSON.parse(raw) : {};
-
-    // Also include seats from confirmed cinebook_bookings in localStorage
-    const userBookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
-    userBookings.forEach((b) => {
-      if (b.status === 'CANCELLED' || b.status === 'REFUNDED') return;
-      const sId = b.show?.id || b.showId || (typeof b.show === 'string' ? b.show : null);
-      const tId = b.theatre?.id || b.theatreId || (typeof b.theatre === 'string' ? b.theatre : null);
-      const mId = b.movie?.id || b.movieId || (typeof b.movie === 'string' ? b.movie : null);
-      const sDate = b.showDate || b.date;
-      if (!sId) return;
-
-      const showKey = getShowKey(sId, tId, mId, sDate);
-      if (!booked[showKey]) booked[showKey] = {};
-      (b.seats || []).forEach((seat) => {
-        const seatId = typeof seat === 'string' ? seat : seat.id;
-        if (seatId) {
-          booked[showKey][seatId] = {
-            status: 'BOOKED',
-            bookingId: b.bookingId,
-            bookedAt: b.bookedAt || Date.now()
-          };
-        }
-      });
-    });
-
-    return booked;
+    return raw ? JSON.parse(raw) : {};
   } catch (err) {
     return {};
   }
 };
 
 export const seatLockManager = {
+  // Synchronize local cache with ground truth from the server layout
+  syncWithBackend: (showKey, tiers) => {
+    try {
+      const locks = getCleanLocksMap();
+      const booked = JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKED) || '{}');
+      let locksChanged = false;
+      let bookedChanged = false;
+
+      (tiers || []).forEach((tier) => {
+        (tier.rows || []).forEach((row) => {
+          (row.seats || []).forEach((seat) => {
+            // If server reports seat as AVAILABLE (not booked on server):
+            if (seat.status === 'AVAILABLE' && !seat.isLockedByOther) {
+              if (booked[showKey]?.[seat.id]) {
+                delete booked[showKey][seat.id];
+                bookedChanged = true;
+              }
+              // If it's marked locked by another session in stale local storage, clear it
+              if (locks[showKey]?.[seat.id] && locks[showKey][seat.id].tabId !== getTabId()) {
+                delete locks[showKey][seat.id];
+                locksChanged = true;
+              }
+            } else if (seat.status === 'BOOKED') {
+              if (!booked[showKey]) booked[showKey] = {};
+              booked[showKey][seat.id] = { status: 'BOOKED', bookedAt: Date.now() };
+              bookedChanged = true;
+            }
+          });
+        });
+      });
+
+      if (locksChanged) localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
+      if (bookedChanged) localStorage.setItem(STORAGE_KEY_BOOKED, JSON.stringify(booked));
+    } catch (e) {}
+  },
+
   // Get live lock & booking statuses for all seats of a show
   getShowSeatStatuses: (showKey) => {
     const locks = getCleanLocksMap();
