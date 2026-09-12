@@ -6,12 +6,12 @@ from app.core.seed_data import SEED_MOVIES
 
 router = APIRouter()
 
-# In-memory store fallback when MongoDB is offline
+# In-memory store fallback when Supabase is offline
 MOVIES_REPO = {m["id"]: m.copy() for m in SEED_MOVIES}
 
 @router.get("", response_model=List[MovieResponse])
 async def get_movies(
-    city: Optional[str] = Query(None, description="Filter movies by city slug (e.g. mumbai, delhi)"),
+    city: Optional[str] = Query(None, description="Filter movies by city slug (e.g. guntur, vijayawada, mumbai)"),
     status: Optional[str] = Query(None, description="NOW_SHOWING or UPCOMING"),
     genre: Optional[str] = Query(None, description="Genre name"),
     language: Optional[str] = Query(None, description="Language name"),
@@ -20,25 +20,34 @@ async def get_movies(
     """List movies with multi-faceted filtering and search"""
     if db_manager.is_connected:
         try:
-            query = {}
+            clauses = ["1=1"]
+            params = []
+
             if status:
-                query["status"] = status
-            if city:
-                query["cities"] = city
+                params.append(status)
+                clauses.append(f"status = ${len(params)}")
+
             if genre and genre != "All":
-                query["genres"] = genre
+                params.append(f"%{genre}%")
+                clauses.append(f"genres::text ILIKE ${len(params)}")
+
             if language and language != "All":
-                query["languages"] = language
+                params.append(f"%{language}%")
+                clauses.append(f"languages::text ILIKE ${len(params)}")
+
+            if city:
+                params.append(f"%{city.lower()}%")
+                clauses.append(f"cities::text ILIKE ${len(params)}")
+
             if search:
-                query["$text"] = {"$search": search}
-            
-            cursor = db_manager.db.movies.find(query).sort("rating", -1)
-            results = []
-            async for doc in cursor:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                results.append(doc)
-            return results
-        except Exception as e:
+                params.append(f"%{search}%")
+                clauses.append(f"(title ILIKE ${len(params)} OR director ILIKE ${len(params)})")
+
+            query = f"SELECT * FROM movies WHERE {' AND '.join(clauses)} ORDER BY rating DESC;"
+            records = await db_manager.fetch_all(query, *params)
+            if records:
+                return [MovieResponse(**r) for r in records]
+        except Exception:
             pass # Fallback to in-memory
 
     # In-memory filtered response
@@ -46,7 +55,7 @@ async def get_movies(
     if status:
         results = [m for m in results if m["status"] == status]
     if city:
-        results = [m for m in results if city in m.get("cities", ["mumbai", "delhi"])]
+        results = [m for m in results if city.lower() in [c.lower() for c in m.get("cities", ["mumbai", "delhi"])]]
     if genre and genre != "All":
         results = [m for m in results if genre in m.get("genres", [])]
     if language and language != "All":
@@ -64,12 +73,9 @@ async def get_featured_movies():
     """Retrieve featured blockbusters for home banner spotlight"""
     if db_manager.is_connected:
         try:
-            cursor = db_manager.db.movies.find({"is_featured": True}).limit(5)
-            results = []
-            async for doc in cursor:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                results.append(doc)
-            return results
+            records = await db_manager.fetch_all("SELECT * FROM movies WHERE is_featured = TRUE ORDER BY rating DESC LIMIT 5;")
+            if records:
+                return [MovieResponse(**r) for r in records]
         except Exception:
             pass
 
@@ -80,12 +86,12 @@ async def get_movie(id_or_slug: str):
     """Get complete movie details by ID or slug"""
     if db_manager.is_connected:
         try:
-            doc = await db_manager.db.movies.find_one({
-                "$or": [{"id": id_or_slug}, {"slug": id_or_slug}]
-            })
-            if doc:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                return doc
+            record = await db_manager.fetch_one(
+                "SELECT * FROM movies WHERE id = $1 OR slug = $1 LIMIT 1;",
+                id_or_slug
+            )
+            if record:
+                return MovieResponse(**record)
         except Exception:
             pass
 
@@ -103,8 +109,32 @@ async def create_movie(movie: MovieCreate):
     
     if db_manager.is_connected:
         try:
-            res = await db_manager.db.movies.insert_one(new_movie)
-            new_movie["id"] = str(res.inserted_id)
+            await db_manager.execute(
+                """
+                INSERT INTO movies (
+                    id, title, slug, tagline, description, genres, languages,
+                    formats, duration, duration_minutes, release_date, rating,
+                    votes, censor_rating, poster_url, backdrop_url, trailer_url,
+                    director, cast_members, status, is_featured, cities
+                ) VALUES (
+                    $1, $2, $3, $4, $5, $6, $7,
+                    $8, $9, $10, $11, $12,
+                    $13, $14, $15, $16, $17,
+                    $18, $19, $20, $21, $22
+                ) ON CONFLICT (id) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    slug = EXCLUDED.slug;
+                """,
+                new_movie["id"], new_movie["title"], new_movie["slug"], new_movie.get("tagline"),
+                new_movie["description"], new_movie.get("genres", []), new_movie.get("languages", []),
+                new_movie.get("formats", ["2D", "3D"]), new_movie["duration"],
+                new_movie.get("duration_minutes", 150), new_movie["release_date"],
+                new_movie.get("rating", 0.0), new_movie.get("votes", "0"),
+                new_movie.get("censor_rating", "UA"), new_movie["poster_url"],
+                new_movie["backdrop_url"], new_movie.get("trailer_url"),
+                new_movie["director"], new_movie.get("cast", []), new_movie.get("status", "NOW_SHOWING"),
+                new_movie.get("is_featured", False), new_movie.get("cities", ["mumbai", "delhi", "bengaluru"])
+            )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 

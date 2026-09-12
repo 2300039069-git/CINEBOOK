@@ -83,9 +83,11 @@ async def get_current_user(
     
     if db_manager.is_connected:
         try:
-            doc = await db_manager.db.users.find_one({"id": user_id})
+            doc = await db_manager.fetch_one(
+                "SELECT * FROM users WHERE id = $1 OR email = $1;",
+                user_id
+            )
             if doc:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
                 return UserResponse(**doc)
         except Exception:
             pass

@@ -9,18 +9,11 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Supabase PostgreSQL Connection
-    SUPABASE_DB_URL: Optional[str] = os.getenv(
+    SUPABASE_DB_URL: str = os.getenv(
         "SUPABASE_DB_URL",
         "postgresql://postgres.jyptmaprxztaxjoapbjs:KancharlaDhanush%402003@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
     )
     SUPABASE_PROJECT_REF: Optional[str] = os.getenv("SUPABASE_PROJECT_REF", "jyptmaprxztaxjoapbjs")
-    
-    # MongoDB Atlas Connection
-    MONGODB_URI: str = Field(
-        default=os.getenv("MONGODB_URI", "mongodb://localhost:27017/cinebook"),
-        description="MongoDB connection string (Local or MongoDB Atlas)"
-    )
-    DATABASE_NAME: str = "cinebook"
     
     # JWT Security
     JWT_SECRET: str = os.getenv("JWT_SECRET", "cinebook-production-super-secret-key-change-in-env-2026")

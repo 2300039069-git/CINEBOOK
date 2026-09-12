@@ -12,6 +12,22 @@ router = APIRouter()
 
 BOOKINGS_STORE = {}
 
+def _format_booking_row(r: dict) -> dict:
+    d = dict(r)
+    if isinstance(d.get("created_at"), datetime):
+        d["created_at"] = d["created_at"].isoformat()
+    elif d.get("created_at") is None:
+        d["created_at"] = datetime.now(timezone.utc).isoformat()
+    if d.get("base_amount") is not None:
+        d["base_amount"] = float(d["base_amount"])
+    if d.get("convenience_fee") is not None:
+        d["convenience_fee"] = float(d["convenience_fee"])
+    if d.get("taxes") is not None:
+        d["taxes"] = float(d["taxes"])
+    if d.get("total_amount") is not None:
+        d["total_amount"] = float(d["total_amount"])
+    return d
+
 @router.post("", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
 async def create_booking_session(
     booking_in: BookingCreate,
@@ -41,6 +57,8 @@ async def create_booking_session(
     # Calculate digital ticket QR payload
     qr_payload = f"https://cinebook.in/verify-ticket?ref={booking_id}&usr={current_user.id}&ts={int(datetime.now(timezone.utc).timestamp())}"
 
+    seats_data = [s.model_dump() for s in booking_in.seats]
+
     booking_dict = {
         "booking_id": booking_id,
         "user_id": current_user.id,
@@ -50,24 +68,45 @@ async def create_booking_session(
         "show_date": booking_in.show_date,
         "show_time": booking_in.show_time,
         "lock_token": booking_in.lock_token,
-        "seats": [s.model_dump() for s in booking_in.seats],
-        "base_amount": booking_in.base_amount,
-        "convenience_fee": booking_in.convenience_fee,
-        "taxes": booking_in.taxes,
-        "total_amount": booking_in.total_amount,
+        "seats": seats_data,
+        "base_amount": float(booking_in.base_amount),
+        "convenience_fee": float(booking_in.convenience_fee),
+        "taxes": float(booking_in.taxes),
+        "total_amount": float(booking_in.total_amount),
         "customer_name": booking_in.customer_name,
         "customer_email": booking_in.customer_email,
         "customer_phone": booking_in.customer_phone,
-        "booking_status": BookingStatus.PENDING,
+        "booking_status": BookingStatus.PENDING.value,
+        "payment_id": None,
         "ticket_qr_payload": qr_payload,
         "created_at": now_str
     }
 
     if db_manager.is_connected:
         try:
-            await db_manager.db.bookings.insert_one(booking_dict)
+            await db_manager.execute("""
+                INSERT INTO bookings (
+                    booking_id, user_id, show_id, movie_id, theatre_id,
+                    show_date, show_time, lock_token, seats,
+                    base_amount, convenience_fee, taxes, total_amount,
+                    customer_name, customer_email, customer_phone,
+                    booking_status, payment_id, ticket_qr_payload, created_at
+                ) VALUES (
+                    $1, $2, $3, $4, $5,
+                    $6, $7, $8, $9,
+                    $10, $11, $12, $13,
+                    $14, $15, $16,
+                    $17, $18, $19, NOW()
+                )
+            """,
+            booking_id, current_user.id, booking_in.show_id, booking_in.movie_id, booking_in.theatre_id,
+            booking_in.show_date, booking_in.show_time, booking_in.lock_token, seats_data,
+            booking_in.base_amount, booking_in.convenience_fee, booking_in.taxes, booking_in.total_amount,
+            booking_in.customer_name, booking_in.customer_email, booking_in.customer_phone,
+            BookingStatus.PENDING.value, None, qr_payload
+            )
         except Exception as e:
-            if "duplicate key" in str(e).lower():
+            if "duplicate key" in str(e).lower() or "unique constraint" in str(e).lower():
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Booking already exists for these seats."
@@ -81,12 +120,13 @@ async def get_my_bookings(current_user: UserResponse = Depends(get_current_activ
     """Retrieve all bookings created by the current user"""
     if db_manager.is_connected:
         try:
-            cursor = db_manager.db.bookings.find({"user_id": current_user.id}).sort("created_at", -1)
-            results = []
-            async for doc in cursor:
-                results.append(BookingResponse(**doc))
-            if results:
-                return results
+            rows = await db_manager.fetch_all("""
+                SELECT * FROM bookings
+                WHERE user_id = $1
+                ORDER BY created_at DESC
+            """, current_user.id)
+            if rows:
+                return [BookingResponse(**_format_booking_row(r)) for r in rows]
         except Exception:
             pass
 
@@ -104,9 +144,9 @@ async def get_booking(
     """Get single booking details and QR payload"""
     if db_manager.is_connected:
         try:
-            doc = await db_manager.db.bookings.find_one({"booking_id": booking_id})
-            if doc:
-                return BookingResponse(**doc)
+            row = await db_manager.fetch_one("SELECT * FROM bookings WHERE booking_id = $1", booking_id)
+            if row:
+                return BookingResponse(**_format_booking_row(row))
         except Exception:
             pass
 
@@ -121,20 +161,24 @@ async def cancel_booking(
     current_user: UserResponse = Depends(get_current_active_user)
 ):
     """Cancel booking and process automated refund"""
+    if db_manager.is_connected:
+        try:
+            row = await db_manager.fetch_one("SELECT * FROM bookings WHERE booking_id = $1", booking_id)
+            if row:
+                await db_manager.execute("""
+                    UPDATE bookings SET booking_status = 'CANCELLED'
+                    WHERE booking_id = $1
+                """, booking_id)
+                updated = dict(row)
+                updated["booking_status"] = BookingStatus.CANCELLED
+                return BookingResponse(**_format_booking_row(updated))
+        except Exception:
+            pass
+
     booking = BOOKINGS_STORE.get(booking_id)
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found.")
 
     booking["booking_status"] = BookingStatus.CANCELLED
-    booking["refund_amount"] = booking["base_amount"]
-
-    if db_manager.is_connected:
-        try:
-            await db_manager.db.bookings.update_one(
-                {"booking_id": booking_id},
-                {"$set": {"booking_status": BookingStatus.CANCELLED}}
-            )
-        except Exception:
-            pass
-
     return BookingResponse(**booking)
+

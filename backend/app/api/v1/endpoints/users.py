@@ -14,12 +14,16 @@ async def update_profile(
     """Update current user profile information"""
     update_data = profile_in.model_dump(exclude_unset=True)
     
-    if db_manager.is_connected:
+    if db_manager.is_connected and update_data:
         try:
-            await db_manager.db.users.update_one(
-                {"id": current_user.id},
-                {"$set": update_data}
-            )
+            set_clauses = []
+            params = []
+            for i, (k, v) in enumerate(update_data.items(), start=1):
+                set_clauses.append(f"{k} = ${i}")
+                params.append(v)
+            params.append(current_user.id)
+            query = f"UPDATE users SET {', '.join(set_clauses)} WHERE id = ${len(params)};"
+            await db_manager.execute(query, *params)
         except Exception:
             pass
 
@@ -38,12 +42,9 @@ async def list_all_users(
     """List all registered users (Super Admin only)"""
     if db_manager.is_connected:
         try:
-            cursor = db_manager.db.users.find({})
-            users = []
-            async for doc in cursor:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                users.append(UserResponse(**doc))
-            return users
+            records = await db_manager.fetch_all("SELECT * FROM users ORDER BY created_at DESC;")
+            if records:
+                return [UserResponse(**doc) for doc in records]
         except Exception:
             pass
 

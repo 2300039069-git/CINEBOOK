@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query, status
 from app.models.show import ShowResponse, ShowCreate
@@ -17,20 +18,23 @@ async def get_shows(
     """Retrieve shows matching movie, theatre, or date query"""
     if db_manager.is_connected:
         try:
-            query = {"is_active": True}
-            if movie_id:
-                query["movie_id"] = movie_id
-            if theatre_id:
-                query["theatre_id"] = theatre_id
-            if show_date:
-                query["show_date"] = show_date
+            clauses = ["is_active = TRUE"]
+            params = []
             
-            cursor = db_manager.db.shows.find(query)
-            results = []
-            async for doc in cursor:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                results.append(doc)
-            return results
+            if movie_id:
+                params.append(movie_id)
+                clauses.append(f"movie_id = ${len(params)}")
+            if theatre_id:
+                params.append(theatre_id)
+                clauses.append(f"theatre_id = ${len(params)}")
+            if show_date:
+                params.append(show_date)
+                clauses.append(f"show_date = ${len(params)}")
+                
+            query_sql = f"SELECT * FROM shows WHERE {' AND '.join(clauses)} ORDER BY show_date, show_time"
+            records = await db_manager.fetch_all(query_sql, *params)
+            if records:
+                return [ShowResponse(**r) for r in records]
         except Exception:
             pass
 
@@ -39,23 +43,24 @@ async def get_shows(
         results = [s for s in results if s["movie_id"] == movie_id]
     if theatre_id:
         results = [s for s in results if s["theatre_id"] == theatre_id]
-    return results
+    if show_date:
+        results = [s for s in results if s["show_date"] == show_date]
+    return [ShowResponse(**s) for s in results]
 
 @router.get("/{show_id}", response_model=ShowResponse)
 async def get_show(show_id: str):
     """Get single show details and tier pricing"""
     if db_manager.is_connected:
         try:
-            doc = await db_manager.db.shows.find_one({"id": show_id})
-            if doc:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                return doc
+            record = await db_manager.fetch_one("SELECT * FROM shows WHERE id = $1", show_id)
+            if record:
+                return ShowResponse(**record)
         except Exception:
             pass
 
     for s in SHOWS_REPO.values():
         if s["id"] == show_id:
-            return s
+            return ShowResponse(**s)
 
     raise HTTPException(status_code=404, detail="Show not found")
 
@@ -63,14 +68,28 @@ async def get_show(show_id: str):
 async def create_show(show: ShowCreate):
     """Schedule a new show (Theatre Admin / Super Admin)"""
     new_show = show.model_dump()
-    new_show["id"] = f"sh-{len(SHOWS_REPO) + 1:03d}"
+    new_show_id = f"sh-{uuid.uuid4().hex[:6]}"
+    new_show["id"] = new_show_id
     
     if db_manager.is_connected:
         try:
-            res = await db_manager.db.shows.insert_one(new_show)
-            new_show["id"] = str(res.inserted_id)
+            await db_manager.execute("""
+                INSERT INTO shows (
+                    id, movie_id, theatre_id, screen_id, theatre_name, screen_name,
+                    format, language, show_date, show_time, tier_price,
+                    convenience_fee_per_ticket, tax_percentage, availability, is_active
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            """,
+            new_show["id"], new_show["movie_id"], new_show["theatre_id"],
+            new_show.get("screen_id", "scr-01"), new_show.get("theatre_name", "Cinema"),
+            new_show.get("screen_name", "Audi 1"), new_show.get("format", "2D"),
+            new_show.get("language", "Telugu"), new_show["show_date"], new_show["show_time"],
+            new_show.get("tier_price", {}), new_show.get("convenience_fee_per_ticket", 25.0),
+            new_show.get("tax_percentage", 18.0), new_show.get("availability", "AVAILABLE"),
+            new_show.get("is_active", True)
+            )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
     SHOWS_REPO[new_show["id"]] = new_show
-    return new_show
+    return ShowResponse(**new_show)

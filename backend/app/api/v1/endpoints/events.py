@@ -16,41 +16,44 @@ async def get_events(
     """List live events, concerts, and comedy shows"""
     if db_manager.is_connected:
         try:
-            query = {"is_active": True}
+            clauses = ["is_active = TRUE"]
+            params = []
+            
             if city:
-                query["city"] = city
+                params.append(city.lower())
+                clauses.append(f"LOWER(city) = ${len(params)}")
             if category and category != "All":
-                query["category"] = category
-            cursor = db_manager.db.events.find(query)
-            results = []
-            async for doc in cursor:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                results.append(doc)
-            return results
+                params.append(category)
+                clauses.append(f"category = ${len(params)}")
+                
+            query_sql = f"SELECT * FROM events WHERE {' AND '.join(clauses)} ORDER BY date, time"
+            records = await db_manager.fetch_all(query_sql, *params)
+            if records:
+                return [EventResponse(**r) for r in records]
         except Exception:
             pass
 
     results = list(EVENTS_REPO.values())
     if city:
-        results = [e for e in results if e["city"] == city]
+        results = [e for e in results if e["city"].lower() == city.lower()]
     if category and category != "All":
         results = [e for e in results if e["category"] == category]
-    return results
+    return [EventResponse(**e) for e in results]
 
 @router.get("/{event_id}", response_model=EventResponse)
 async def get_event(event_id: str):
     """Get single event details"""
     if db_manager.is_connected:
         try:
-            doc = await db_manager.db.events.find_one({"id": event_id})
-            if doc:
-                doc["id"] = str(doc.get("_id", doc.get("id")))
-                return doc
+            record = await db_manager.fetch_one("SELECT * FROM events WHERE id = $1", event_id)
+            if record:
+                return EventResponse(**record)
         except Exception:
             pass
 
     for e in EVENTS_REPO.values():
         if e["id"] == event_id:
-            return e
+            return EventResponse(**e)
 
     raise HTTPException(status_code=404, detail="Event not found")
+

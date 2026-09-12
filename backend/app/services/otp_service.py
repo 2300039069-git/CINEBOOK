@@ -34,23 +34,22 @@ class OTPService:
         delivered = email_result.get("delivered", False)
         delivery_msg = email_result.get("message", "")
 
-        # 2. Store in MongoDB if connected
+        # 2. Store in Supabase if connected
         if db_manager.is_connected:
             try:
-                await db_manager.db.otps.update_one(
-                    {"email": email_clean, "purpose": purpose},
-                    {
-                        "$set": {
-                            "otp": code,
-                            "purpose": purpose,
-                            "created_at": now,
-                            "expires_at": expires_at
-                        }
-                    },
-                    upsert=True
+                await db_manager.execute(
+                    """
+                    INSERT INTO otps (email, purpose, otp, created_at, expires_at)
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (email, purpose) DO UPDATE SET
+                        otp = EXCLUDED.otp,
+                        created_at = EXCLUDED.created_at,
+                        expires_at = EXCLUDED.expires_at;
+                    """,
+                    email_clean, purpose, code, now, expires_at
                 )
             except Exception as e:
-                logger.warning(f"MongoDB OTP insert error: {e}")
+                logger.warning(f"Supabase OTP insert error: {e}")
 
         # 3. Store in Memory
         OTP_STORE[(email_clean, purpose)] = {
@@ -78,22 +77,23 @@ class OTPService:
         code_clean = code.strip()
         now = datetime.now(timezone.utc)
 
-        # 1. Check MongoDB if connected
+        # 1. Check Supabase if connected
         if db_manager.is_connected:
             try:
-                doc = await db_manager.db.otps.find_one({
-                    "email": email_clean,
-                    "purpose": purpose,
-                    "otp": code_clean,
-                    "expires_at": {"$gt": now}
-                })
+                doc = await db_manager.fetch_one(
+                    """
+                    SELECT id FROM otps 
+                    WHERE email = $1 AND purpose = $2 AND otp = $3 AND expires_at > $4;
+                    """,
+                    email_clean, purpose, code_clean, now
+                )
                 if doc:
-                    await db_manager.db.otps.delete_one({"_id": doc["_id"]})
+                    await db_manager.execute("DELETE FROM otps WHERE id = $1;", doc["id"])
                     if (email_clean, purpose) in OTP_STORE:
                         del OTP_STORE[(email_clean, purpose)]
                     return True
             except Exception as e:
-                logger.warning(f"MongoDB OTP verify error: {e}")
+                logger.warning(f"Supabase OTP verify error: {e}")
 
         # 2. Check Memory store
         entry = OTP_STORE.get((email_clean, purpose))

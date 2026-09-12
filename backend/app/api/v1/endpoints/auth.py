@@ -60,7 +60,7 @@ async def send_registration_otp(req: SendOTPRequest):
     
     if db_manager.is_connected:
         try:
-            existing = await db_manager.db.users.find_one({"email": email_clean})
+            existing = await db_manager.fetch_one("SELECT id FROM users WHERE email = $1;", email_clean)
             if existing:
                 raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
         except HTTPException:
@@ -90,7 +90,7 @@ async def send_registration_otp(req: SendOTPRequest):
 
 @router.post("/verify-registration-otp", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def verify_registration_otp(req: VerifyRegistrationOTPRequest):
-    """Validate 6-digit OTP, create user in MongoDB, and issue JWT access token"""
+    """Validate 6-digit OTP, create user in Supabase, and issue JWT access token"""
     email_clean = req.email.lower()
     
     is_valid = await OTPService.verify_otp(email=email_clean, code=req.otp, purpose="REGISTRATION")
@@ -102,6 +102,7 @@ async def verify_registration_otp(req: VerifyRegistrationOTPRequest):
 
     new_user_id = f"usr-{uuid.uuid4().hex[:8]}"
     hashed_pwd = get_password_hash(req.password)
+    now_dt = datetime.now(timezone.utc)
 
     user_dict = {
         "id": new_user_id,
@@ -109,24 +110,113 @@ async def verify_registration_otp(req: VerifyRegistrationOTPRequest):
         "email": email_clean,
         "phone": req.phone,
         "password_hash": hashed_pwd,
-        "role": req.role,
+        "role": req.role.value if hasattr(req.role, "value") else str(req.role),
         "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
         "is_active": True,
         "theatre_ids": [],
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": now_dt
     }
 
     if db_manager.is_connected:
         try:
-            await db_manager.db.users.insert_one(user_dict)
+            await db_manager.execute(
+                """
+                INSERT INTO users (id, name, email, phone, password_hash, role, avatar, is_active, theatre_ids, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (email) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    phone = EXCLUDED.phone,
+                    password_hash = EXCLUDED.password_hash;
+                """,
+                new_user_id, req.name, email_clean, req.phone, hashed_pwd,
+                user_dict["role"], user_dict["avatar"], True, [], now_dt
+            )
+        except Exception as e:
+            logger.warning(f"Supabase user insert error: {e}")
+
+    USERS_DATABASE[email_clean] = user_dict
+    DEFAULT_USERS_STORE[new_user_id] = user_dict
+
+    token_str = create_access_token(subject=new_user_id, role=user_dict["role"])
+    user_response = UserResponse(
+        id=new_user_id,
+        name=req.name,
+        email=email_clean,
+        phone=req.phone,
+        role=req.role,
+        avatar=user_dict["avatar"],
+        is_active=True,
+        theatre_ids=[]
+    )
+
+    return Token(access_token=token_str, user=user_response)
+
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+async def register(req: UserCreate):
+    """Direct user registration into Supabase and token issuance"""
+    email_clean = req.email.lower()
+    
+    if db_manager.is_connected:
+        try:
+            existing = await db_manager.fetch_one("SELECT id FROM users WHERE email = $1;", email_clean)
+            if existing:
+                raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
+    if email_clean in USERS_DATABASE:
+        raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
+
+    new_user_id = f"usr-{uuid.uuid4().hex[:8]}"
+    hashed_pwd = get_password_hash(req.password)
+    now_dt = datetime.now(timezone.utc)
+
+    user_dict = {
+        "id": new_user_id,
+        "name": req.name,
+        "email": email_clean,
+        "phone": req.phone,
+        "password_hash": hashed_pwd,
+        "role": req.role.value if hasattr(req.role, "value") else str(req.role),
+        "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
+        "is_active": True,
+        "theatre_ids": [],
+        "created_at": now_dt
+    }
+
+    if db_manager.is_connected:
+        try:
+            await db_manager.execute(
+                """
+                INSERT INTO users (id, name, email, phone, password_hash, role, avatar, is_active, theatre_ids, created_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (email) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    phone = EXCLUDED.phone,
+                    password_hash = EXCLUDED.password_hash;
+                """,
+                new_user_id, req.name, email_clean, req.phone, hashed_pwd,
+                user_dict["role"], user_dict["avatar"], True, [], now_dt
+            )
         except Exception:
             pass
 
     USERS_DATABASE[email_clean] = user_dict
     DEFAULT_USERS_STORE[new_user_id] = user_dict
 
-    token_str = create_access_token(subject=new_user_id, role=req.role.value)
-    user_response = UserResponse(**user_dict)
+    token_str = create_access_token(subject=new_user_id, role=user_dict["role"])
+    user_response = UserResponse(
+        id=new_user_id,
+        name=req.name,
+        email=email_clean,
+        phone=req.phone,
+        role=req.role,
+        avatar=user_dict["avatar"],
+        is_active=True,
+        theatre_ids=[]
+    )
 
     return Token(access_token=token_str, user=user_response)
 
@@ -156,7 +246,7 @@ async def send_reset_otp(req: SendResetOTPRequest):
 
 @router.post("/verify-reset-otp")
 async def verify_reset_otp(req: ResetPasswordWithOTPRequest):
-    """Verify OTP and update user password in MongoDB"""
+    """Verify OTP and update user password in Supabase"""
     email_clean = req.email.lower()
 
     is_valid = await OTPService.verify_otp(email=email_clean, code=req.otp, purpose="FORGOT_PASSWORD")
@@ -170,12 +260,12 @@ async def verify_reset_otp(req: ResetPasswordWithOTPRequest):
 
     if db_manager.is_connected:
         try:
-            await db_manager.db.users.update_one(
-                {"email": email_clean},
-                {"$set": {"password_hash": new_hash}}
+            await db_manager.execute(
+                "UPDATE users SET password_hash = $1 WHERE email = $2;",
+                new_hash, email_clean
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Supabase password update error: {e}")
 
     if email_clean in USERS_DATABASE:
         USERS_DATABASE[email_clean]["password_hash"] = new_hash
@@ -192,7 +282,7 @@ async def login(credentials: UserLogin):
 
     if db_manager.is_connected:
         try:
-            user_doc = await db_manager.db.users.find_one({"email": email_lower})
+            user_doc = await db_manager.fetch_one("SELECT * FROM users WHERE email = $1;", email_lower)
         except Exception:
             pass
 
@@ -211,18 +301,19 @@ async def login(credentials: UserLogin):
             detail="Incorrect email or password."
         )
 
-    user_id = str(user_doc.get("id", user_doc.get("_id")))
-    role = user_doc.get("role", UserRole.CUSTOMER)
+    user_id = str(user_doc.get("id"))
+    role_val = user_doc.get("role", "CUSTOMER")
     
-    token_str = create_access_token(subject=user_id, role=role if isinstance(role, str) else role.value)
+    token_str = create_access_token(subject=user_id, role=role_val)
     user_response = UserResponse(
         id=user_id,
         name=user_doc.get("name"),
         email=user_doc.get("email"),
         phone=user_doc.get("phone"),
-        role=role,
+        role=UserRole(role_val) if role_val in UserRole.__members__ else UserRole.CUSTOMER,
         avatar=user_doc.get("avatar"),
-        is_active=user_doc.get("is_active", True)
+        is_active=user_doc.get("is_active", True),
+        theatre_ids=user_doc.get("theatre_ids") or []
     )
 
     return Token(access_token=token_str, user=user_response)

@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.core.database import connect_to_mongo, close_mongo_connection, db_manager
+from app.core.database import connect_to_supabase, close_supabase_connection, db_manager
 from app.api.v1.api_router import api_router
 
 # Configure logging
@@ -16,13 +16,13 @@ logger = logging.getLogger("cinebook")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Connect to MongoDB Atlas
-    logger.info("Initializing CineBook backend service...")
-    await connect_to_mongo()
+    # Startup: Connect to Supabase PostgreSQL
+    logger.info("Initializing CineBook backend service with Supabase PostgreSQL...")
+    await connect_to_supabase()
     yield
     # Shutdown: Close connections
     logger.info("Shutting down CineBook backend service...")
-    await close_mongo_connection()
+    await close_supabase_connection()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

@@ -56,14 +56,29 @@ class SeatLockService:
         cls._cleanup_expired_locks()
         now = datetime.now(timezone.utc)
 
-        # Retrieve MongoDB locks if connected
+        # Retrieve Supabase locks if connected
         db_locks = {}
         if db_manager.is_connected:
             try:
-                cursor = db_manager.db.seat_locks.find({"show_id": show_id})
-                async for doc in cursor:
-                    if doc.get("expires_at") > now or doc.get("status") == "BOOKED":
-                        db_locks[doc["seat_id"]] = doc["status"]
+                # 1. Permanently booked seats from booked_seats table
+                booked_rows = await db_manager.fetch_all(
+                    "SELECT seat_id FROM booked_seats WHERE show_id = $1;",
+                    show_id
+                )
+                for r in booked_rows:
+                    db_locks[r["seat_id"]] = "BOOKED"
+
+                # 2. Active temporary locks from seat_locks table
+                lock_rows = await db_manager.fetch_all(
+                    "SELECT seat_id, status, expires_at, is_booked FROM seat_locks WHERE show_id = $1 AND (expires_at > $2 OR status = 'BOOKED' OR is_booked = TRUE);",
+                    show_id,
+                    now
+                )
+                for r in lock_rows:
+                    if r.get("is_booked") or r.get("status") == "BOOKED":
+                        db_locks[r["seat_id"]] = "BOOKED"
+                    else:
+                        db_locks[r["seat_id"]] = "LOCKED"
             except Exception:
                 pass
 
@@ -100,7 +115,7 @@ class SeatLockService:
                         elif mem_entry["status"] == "LOCKED" and mem_entry["expires_at"] > now:
                             seat_status = SeatStatus.LOCKED
 
-                    # 2. Check MongoDB
+                    # 2. Check Supabase
                     if seat_id in db_locks:
                         if db_locks[seat_id] == "BOOKED":
                             seat_status = SeatStatus.BOOKED
@@ -164,73 +179,67 @@ class SeatLockService:
                             detail="Seat already booked"
                         )
                     if mem_entry.get("status") == "LOCKED" and mem_entry.get("expires_at") > now:
-                        if mem_entry.get("lock_token") != lock_token:
+                        if mem_entry.get("lock_token") != lock_token and mem_entry.get("user_id") != user_id:
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
                                 detail="Seat already booked"
                             )
 
-            # 2. MongoDB Atomic reservation with find_one_and_update & isBooked check
+            # 2. Supabase Atomic reservation & conflict checks
             if db_manager.is_connected:
-                locked_in_this_batch = []
+                # Check permanently booked seats
+                booked_recs = await db_manager.fetch_all(
+                    "SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                if booked_recs:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Seat already booked"
+                    )
+
+                # Check active unexpired locks held by another user
+                lock_recs = await db_manager.fetch_all(
+                    """
+                    SELECT seat_id, user_id, lock_token, status, is_booked, expires_at 
+                    FROM seat_locks 
+                    WHERE show_id = $1 AND seat_id = ANY($2) AND (expires_at > $3 OR status = 'BOOKED' OR is_booked = TRUE);
+                    """,
+                    show_id, seat_ids, now
+                )
+                for r in lock_recs:
+                    if r.get("is_booked") or r.get("status") == "BOOKED":
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Seat already booked"
+                        )
+                    if r.get("lock_token") != lock_token and r.get("user_id") != user_id:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Seat already booked"
+                        )
+
+                # Upsert locks atomically in Supabase
                 try:
                     for seat_id in seat_ids:
-                        # Atomic find_one_and_update with isBooked: False
-                        doc = await db_manager.db.seat_locks.find_one_and_update(
-                            {
-                                "show_id": show_id,
-                                "seat_id": seat_id,
-                                "isBooked": {"$ne": True},
-                                "status": {"$ne": "BOOKED"},
-                                "$or": [
-                                    {"expires_at": {"$lte": now}},
-                                    {"lock_token": lock_token},
-                                    {"status": {"$exists": False}}
-                                ]
-                            },
-                            {
-                                "$set": {
-                                    "show_id": show_id,
-                                    "seat_id": seat_id,
-                                    "user_id": user_id,
-                                    "lock_token": lock_token,
-                                    "status": "LOCKED",
-                                    "isBooked": False,
-                                    "locked_at": now,
-                                    "expires_at": expires_at
-                                }
-                            },
-                            upsert=True,
-                            return_document=True
+                        await db_manager.execute(
+                            """
+                            INSERT INTO seat_locks (
+                                show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at
+                            ) VALUES (
+                                $1, $2, $3, $4, 'LOCKED', FALSE, $5, $6
+                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
+                                user_id = EXCLUDED.user_id,
+                                lock_token = EXCLUDED.lock_token,
+                                status = 'LOCKED',
+                                is_booked = FALSE,
+                                locked_at = EXCLUDED.locked_at,
+                                expires_at = EXCLUDED.expires_at;
+                            """,
+                            show_id, seat_id, user_id, lock_token, now, expires_at
                         )
-                        if not doc:
-                            if locked_in_this_batch:
-                                await db_manager.db.seat_locks.delete_many({
-                                    "show_id": show_id,
-                                    "seat_id": {"$in": locked_in_this_batch},
-                                    "lock_token": lock_token
-                                })
-                            raise HTTPException(
-                                status_code=status.HTTP_409_CONFLICT,
-                                detail="Seat already booked"
-                            )
-                        locked_in_this_batch.append(seat_id)
-                except HTTPException:
-                    if locked_in_this_batch:
-                        await db_manager.db.seat_locks.delete_many({
-                            "show_id": show_id,
-                            "seat_id": {"$in": locked_in_this_batch},
-                            "lock_token": lock_token
-                        })
-                    raise
-                except Exception:
-                    # In case of DB conflict or race condition on unique index
-                    if locked_in_this_batch:
-                        await db_manager.db.seat_locks.delete_many({
-                            "show_id": show_id,
-                            "seat_id": {"$in": locked_in_this_batch},
-                            "lock_token": lock_token
-                        })
+                except Exception as e:
+                    logger.error(f"Supabase lock error: {e}")
                     raise HTTPException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Seat already booked"
@@ -263,11 +272,10 @@ class SeatLockService:
         async with LOCK_MUTEX:
             if db_manager.is_connected:
                 try:
-                    await db_manager.db.seat_locks.delete_many({
-                        "show_id": show_id,
-                        "lock_token": lock_token,
-                        "status": "LOCKED"
-                    })
+                    await db_manager.execute(
+                        "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED';",
+                        show_id, lock_token
+                    )
                 except Exception:
                     pass
 
@@ -291,7 +299,7 @@ class SeatLockService:
         """
         Pessimistic concurrency lock validation before booking session creation.
         Ensures:
-        1. None of the seats are permanently BOOKED in database or memory.
+        1. None of the seats are permanently BOOKED in Supabase or memory.
         2. If seats are locked, the active hold belongs to this user/lock_token and is not expired.
         3. Rejects expired or unauthorized hold attempts with HTTP 409 Conflict.
         """
@@ -325,63 +333,65 @@ class SeatLockService:
                                 detail=f"Seat {seat_id} is currently held by another customer."
                             )
 
-                # 2. MongoDB checks if connected
-                if db_manager.is_connected:
-                    # Check permanently booked collection
-                    booked_doc = await db_manager.db.booked_seats.find_one({
-                        "show_id": show_id,
-                        "seat_id": seat_id
-                    })
-                    if booked_doc:
+            # 2. Supabase checks if connected
+            if db_manager.is_connected:
+                # Check permanently booked table
+                booked_recs = await db_manager.fetch_all(
+                    "SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                if booked_recs:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Seat {booked_recs[0]['seat_id']} is already booked."
+                    )
+
+                # Check active seat locks table
+                lock_recs = await db_manager.fetch_all(
+                    "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                for lock_doc in lock_recs:
+                    if lock_doc.get("is_booked") is True or lock_doc.get("status") == "BOOKED":
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Seat {seat_id} is already booked."
+                            detail=f"Seat {lock_doc['seat_id']} is already booked."
                         )
-
-                    # Check active seat locks collection
-                    lock_doc = await db_manager.db.seat_locks.find_one({
-                        "show_id": show_id,
-                        "seat_id": seat_id
-                    })
-                    if lock_doc:
-                        if lock_doc.get("isBooked") is True or lock_doc.get("status") == "BOOKED":
-                            raise HTTPException(
-                                status_code=status.HTTP_409_CONFLICT,
-                                detail=f"Seat {seat_id} is already booked."
-                            )
-                        if lock_doc.get("expires_at") and lock_doc.get("expires_at") <= now:
-                            raise HTTPException(
-                                status_code=status.HTTP_409_CONFLICT,
-                                detail=f"Seat hold for {seat_id} has expired. Please select your seats again."
-                            )
-                        if (
-                            lock_doc.get("user_id")
-                            and lock_doc.get("user_id") != user_id
-                            and (not lock_token or lock_doc.get("lock_token") != lock_token)
-                        ):
-                            raise HTTPException(
-                                status_code=status.HTTP_409_CONFLICT,
-                                detail=f"Seat {seat_id} is currently held by another customer."
-                            )
+                    if lock_doc.get("expires_at") and lock_doc.get("expires_at") <= now:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat hold for {lock_doc['seat_id']} has expired. Please select your seats again."
+                        )
+                    if (
+                        lock_doc.get("user_id")
+                        and lock_doc.get("user_id") != user_id
+                        and (not lock_token or lock_doc.get("lock_token") != lock_token)
+                    ):
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {lock_doc['seat_id']} is currently held by another customer."
+                        )
 
             # Claim / refresh lock for current booking session
             claim_token = lock_token or f"lock_{user_id}_{uuid.uuid4().hex[:6]}"
             if db_manager.is_connected:
                 try:
                     for seat_id in seat_ids:
-                        await db_manager.db.seat_locks.update_one(
-                            {"show_id": show_id, "seat_id": seat_id},
-                            {"$set": {
-                                "show_id": show_id,
-                                "seat_id": seat_id,
-                                "user_id": user_id,
-                                "lock_token": claim_token,
-                                "status": "LOCKED",
-                                "isBooked": False,
-                                "locked_at": now,
-                                "expires_at": expires_at
-                            }},
-                            upsert=True
+                        await db_manager.execute(
+                            """
+                            INSERT INTO seat_locks (
+                                show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at
+                            ) VALUES (
+                                $1, $2, $3, $4, 'LOCKED', FALSE, $5, $6
+                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
+                                user_id = EXCLUDED.user_id,
+                                lock_token = EXCLUDED.lock_token,
+                                status = 'LOCKED',
+                                is_booked = FALSE,
+                                locked_at = EXCLUDED.locked_at,
+                                expires_at = EXCLUDED.expires_at;
+                            """,
+                            show_id, seat_id, user_id, claim_token, now, expires_at
                         )
                 except Exception:
                     pass
@@ -406,39 +416,45 @@ class SeatLockService:
         user_id: str = "confirmed",
         booking_id: str = ""
     ):
-        """Mark seats permanently BOOKED after payment signature is verified"""
+        """Mark seats permanently BOOKED in Supabase after payment signature is verified"""
         async with LOCK_MUTEX:
             now = datetime.now(timezone.utc)
-            max_dt = datetime.max.replace(tzinfo=timezone.utc)
+            max_dt = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
             if db_manager.is_connected:
                 try:
                     for seat_id in seat_ids:
-                        # 1. Insert/upsert into booked_seats collection (enforcing unique compound index)
-                        await db_manager.db.booked_seats.update_one(
-                            {"show_id": show_id, "seat_id": seat_id},
-                            {"$set": {
-                                "show_id": show_id,
-                                "seat_id": seat_id,
-                                "user_id": user_id,
-                                "booking_id": booking_id,
-                                "booked_at": now
-                            }},
-                            upsert=True
+                        # 1. Insert into booked_seats table (enforcing unique constraint)
+                        await db_manager.execute(
+                            """
+                            INSERT INTO booked_seats (
+                                show_id, seat_id, user_id, booking_id, booked_at
+                            ) VALUES (
+                                $1, $2, $3, $4, $5
+                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
+                                user_id = EXCLUDED.user_id,
+                                booking_id = EXCLUDED.booking_id,
+                                booked_at = EXCLUDED.booked_at;
+                            """,
+                            show_id, seat_id, user_id, booking_id, now
                         )
                         # 2. Update seat_locks status
-                        await db_manager.db.seat_locks.find_one_and_update(
-                            {"show_id": show_id, "seat_id": seat_id},
-                            {"$set": {
-                                "status": "BOOKED",
-                                "isBooked": True,
-                                "user_id": user_id,
-                                "booking_id": booking_id,
-                                "expires_at": max_dt
-                            }},
-                            upsert=True
+                        await db_manager.execute(
+                            """
+                            INSERT INTO seat_locks (
+                                show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at
+                            ) VALUES (
+                                $1, $2, $3, $4, 'BOOKED', TRUE, $5, $6
+                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
+                                status = 'BOOKED',
+                                is_booked = TRUE,
+                                user_id = EXCLUDED.user_id,
+                                lock_token = EXCLUDED.lock_token,
+                                expires_at = EXCLUDED.expires_at;
+                            """,
+                            show_id, seat_id, user_id, lock_token, now, max_dt
                         )
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error(f"Error permanently booking seats in Supabase: {e}")
 
             for seat_id in seat_ids:
                 IN_MEMORY_SEAT_STORE[(show_id, seat_id)] = {

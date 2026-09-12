@@ -1,49 +1,44 @@
 """
-CineBook Database Seeder Script
+CineBook Supabase Database Seeder Script
 Usage:
     python scripts/seed_db.py
-Seeds MongoDB with Movies, Theatres, Screens, Shows, and Sample Admin Accounts.
+Seeds Supabase PostgreSQL with Movies, Theatres, Screens, Shows, and Sample Events.
 """
 
 import asyncio
-import os
 import sys
 from pathlib import Path
 
 # Add backend directory to sys.path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from motor.motor_asyncio import AsyncIOMotorClient
-from app.core.config import settings
-from app.core.seed_data import SEED_MOVIES, SEED_THEATRES, SEED_SHOWS, SEED_EVENTS
+from app.core.database import connect_to_supabase, close_supabase_connection, seed_supabase_data_if_empty, db_manager
 
 async def seed_database():
-    print(f"Connecting to MongoDB at: {settings.MONGODB_URI}...")
-    client = AsyncIOMotorClient(settings.MONGODB_URI)
-    db = client[settings.DATABASE_NAME]
+    print("Connecting to Supabase PostgreSQL...")
+    await connect_to_supabase()
+    
+    if not db_manager.is_connected:
+        print("Failed to connect to Supabase. Check SUPABASE_DB_URL in your environment or .env file.")
+        return
 
-    print("\n1. Seeding Movies Collection...")
-    await db.movies.delete_many({})
-    await db.movies.insert_many(SEED_MOVIES)
-    print(f"   Inserted {len(SEED_MOVIES)} movies successfully.")
+    print("Running Supabase schema check and data seeder...")
+    await seed_supabase_data_if_empty()
 
-    print("\n2. Seeding Theatres Collection...")
-    await db.theatres.delete_many({})
-    await db.theatres.insert_many(SEED_THEATRES)
-    print(f"   Inserted {len(SEED_THEATRES)} theatres successfully.")
+    movies_count = await db_manager.fetchval("SELECT COUNT(*) FROM movies;")
+    theatres_count = await db_manager.fetchval("SELECT COUNT(*) FROM theatres;")
+    shows_count = await db_manager.fetchval("SELECT COUNT(*) FROM shows;")
+    events_count = await db_manager.fetchval("SELECT COUNT(*) FROM events;")
 
-    print("\n3. Seeding Shows Collection...")
-    await db.shows.delete_many({})
-    await db.shows.insert_many(SEED_SHOWS)
-    print(f"   Inserted {len(SEED_SHOWS)} shows successfully.")
+    print(f"\n✓ Seeding verified:")
+    print(f"  - Movies: {movies_count}")
+    print(f"  - Theatres: {theatres_count}")
+    print(f"  - Shows: {shows_count}")
+    print(f"  - Events: {events_count}")
 
-    print("\n4. Seeding Events Collection...")
-    await db.events.delete_many({})
-    await db.events.insert_many(SEED_EVENTS)
-    print(f"   Inserted {len(SEED_EVENTS)} events successfully.")
-
-    print("\nDatabase seeding completed successfully!")
-    client.close()
+    await close_supabase_connection()
+    print("\nSupabase database seeding completed successfully!")
 
 if __name__ == "__main__":
     asyncio.run(seed_database())
+
