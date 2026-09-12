@@ -191,21 +191,39 @@ const SeatSelectionPage = () => {
       seats: row.seats.map((seat) => {
         const liveInfo = liveStatuses[seat.id];
         const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
-        let status = 'AVAILABLE';
 
-        if (liveInfo?.status === 'BOOKED' || seat.status === 'BOOKED') {
-          status = 'BOOKED';
-        } else if (
-          (liveInfo?.status === 'LOCKED' && liveInfo?.isLockedByOtherTab && !isSelectedInThisTab) ||
-          (seat.status === 'LOCKED' && !isSelectedInThisTab && liveInfo?.isLockedByOtherTab)
-        ) {
-          status = 'LOCKED';
+        // 1. If selected in this tab, keep available for current user's selection display
+        if (isSelectedInThisTab) {
+          return {
+            ...seat,
+            status: 'AVAILABLE',
+            isLockedByOtherTab: false
+          };
         }
 
+        // 2. If permanently booked in backend or live state
+        if (seat.status === 'BOOKED' || liveInfo?.status === 'BOOKED') {
+          return {
+            ...seat,
+            status: 'BOOKED',
+            isLockedByOtherTab: false
+          };
+        }
+
+        // 3. If locked by another customer in backend or live state
+        if (seat.status === 'LOCKED' || liveInfo?.status === 'LOCKED') {
+          return {
+            ...seat,
+            status: 'LOCKED',
+            isLockedByOtherTab: true
+          };
+        }
+
+        // 4. Clean available
         return {
           ...seat,
-          status,
-          isLockedByOtherTab: (liveInfo?.isLockedByOtherTab && !isSelectedInThisTab) || false
+          status: 'AVAILABLE',
+          isLockedByOtherTab: false
         };
       })
     }))

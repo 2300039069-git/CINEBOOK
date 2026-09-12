@@ -128,7 +128,7 @@ const SeatGrid = ({
                                 isSelected
                                   ? 'bg-brand text-void-950 shadow-lg shadow-brand/35 ring-2 ring-brand scale-105 active:scale-95 cursor-pointer z-10 font-black'
                                   : isLocked
-                                  ? 'bg-brand/10 border border-brand/30 text-brand cursor-not-allowed opacity-60'
+                                  ? 'bg-brand/20 border border-brand/50 text-brand cursor-not-allowed opacity-80 shadow-xs shadow-brand/20'
                                   : isBooked
                                   ? 'bg-void-950/40 border border-white/5 opacity-20 cursor-not-allowed text-text-muted'
                                   : 'bg-void-800 border border-white/8 hover:border-brand hover:text-brand text-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
@@ -137,7 +137,7 @@ const SeatGrid = ({
                               {isSelected ? (
                                 <Check className="w-4 h-4 stroke-[3]" />
                               ) : isLocked ? (
-                                <Clock className="w-3.5 h-3.5 text-brand" />
+                                <Clock className="w-3.5 h-3.5 text-brand animate-pulse" />
                               ) : (
                                 seat.number
                               )}
