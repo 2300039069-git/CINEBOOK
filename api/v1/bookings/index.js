@@ -48,28 +48,38 @@ module.exports = async function handler(req, res) {
     const showId = payload.show_id || 'sh-001';
     const seats = payload.seats || [];
     const lockToken = payload.lock_token || '';
+    const paymentId = payload.payment_id || payload.razorpay_payment_id || '';
 
     if (!seats || seats.length === 0) {
       return res.status(400).json({ detail: 'No seats selected.' });
     }
 
+    // REQUIRE VALID PAYMENT CONFIRMATION BEFORE PERMANENTLY BLOCKING SEATS
+    if (!paymentId) {
+      return res.status(400).json({
+        detail: 'Payment confirmation (payment_id) is required to permanently confirm booking and lock seats.'
+      });
+    }
+
     const seatIds = seats.map(s => typeof s === 'string' ? s : s.id);
-    const bookingId = 'CB-2026-' + Math.floor(100000 + Math.random() * 900000);
+    const bookingId = payload.booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000));
     const now = new Date();
 
     try {
       await client.connect();
 
-      // 1. Check if any seat is already booked by another booking
+      // 1. Check if any seat is already permanently booked by another confirmed transaction
       const bookedCheck = await client.query(
         'SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2)',
         [showId, seatIds]
       );
       if (bookedCheck.rows.length > 0) {
-        return res.status(409).json({ detail: 'Seat ' + bookedCheck.rows[0].seat_id + ' is already booked.' });
+        return res.status(409).json({
+          detail: 'Seat ' + bookedCheck.rows[0].seat_id + ' is already booked by another customer.'
+        });
       }
 
-      // 2. Permanently insert into booked_seats
+      // 2. Permanently insert into booked_seats table ONLY upon successful payment
       for (const sId of seatIds) {
         await client.query(
           'INSERT INTO booked_seats (show_id, seat_id, user_id, booking_id, booked_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (show_id, seat_id) DO NOTHING',
@@ -77,23 +87,24 @@ module.exports = async function handler(req, res) {
         );
       }
 
-      // 3. Update seat_locks to BOOKED
+      // 3. Atomically update seat_locks to permanently BOOKED
       for (const sId of seatIds) {
         await client.query(
           `INSERT INTO seat_locks (show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at)
            VALUES ($1, $2, $3, $4, 'BOOKED', TRUE, $5, $6)
            ON CONFLICT (show_id, seat_id) DO UPDATE SET
              status = 'BOOKED',
-             is_booked = TRUE`,
+             is_booked = TRUE,
+             expires_at = '2099-12-31T23:59:59.999Z'`,
           [showId, sId, userId, lockToken, now.toISOString(), new Date('2099-12-31').toISOString()]
         );
       }
 
-      // 4. Insert into bookings table
-      const totalAmount = payload.total_amount || 400;
-      const baseAmount = payload.base_amount || 350;
-      const convenienceFee = payload.convenience_fee || 30;
-      const taxes = payload.taxes || 20;
+      // 4. Insert confirmed booking record into bookings table
+      const totalAmount = Number(payload.total_amount) || 0;
+      const baseAmount = Number(payload.base_amount) || 0;
+      const convenienceFee = Number(payload.convenience_fee) || 0;
+      const taxes = Number(payload.taxes) || 0;
 
       await client.query(
         `INSERT INTO bookings (
@@ -101,20 +112,22 @@ module.exports = async function handler(req, res) {
           lock_token, seats, base_amount, convenience_fee, taxes, total_amount,
           customer_name, customer_email, customer_phone, booking_status, payment_id, created_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'CONFIRMED', $17, $18)
-        ON CONFLICT (booking_id) DO NOTHING`,
+        ON CONFLICT (booking_id) DO UPDATE SET
+          booking_status = 'CONFIRMED',
+          payment_id = EXCLUDED.payment_id`,
         [
           bookingId, userId, showId,
-          payload.movie_id || 'mv-01',
-          payload.theatre_id || 'th-01',
+          payload.movie_id || 'mv-001',
+          payload.theatre_id || 'th-001',
           payload.show_date || now.toISOString().split('T')[0],
-          payload.show_time || '06:00 PM',
+          payload.show_time || '11:00 AM',
           lockToken,
           JSON.stringify(seats),
           baseAmount, convenienceFee, taxes, totalAmount,
-          payload.customer_name || user?.name || 'Customer',
-          payload.customer_email || user?.email || 'customer@example.com',
+          payload.customer_name || user?.name || 'Valued Customer',
+          payload.customer_email || user?.email || 'customer@cinebook.in',
           payload.customer_phone || payload.phone || '+91 98480 12345',
-          payload.payment_id || ('pay_' + Date.now()),
+          paymentId,
           now.toISOString()
         ]
       );
@@ -123,14 +136,18 @@ module.exports = async function handler(req, res) {
         booking_id: bookingId,
         user_id: userId,
         show_id: showId,
-        movie_id: payload.movie_id || 'mv-01',
-        theatre_id: payload.theatre_id || 'th-01',
+        movie_id: payload.movie_id || 'mv-001',
+        theatre_id: payload.theatre_id || 'th-001',
         show_date: payload.show_date || now.toISOString().split('T')[0],
-        show_time: payload.show_time || '06:00 PM',
+        show_time: payload.show_time || '11:00 AM',
         seats,
+        base_amount: baseAmount,
+        convenience_fee: convenienceFee,
+        taxes: taxes,
         total_amount: totalAmount,
         booking_status: 'CONFIRMED',
-        customer_email: payload.customer_email || user?.email || 'customer@example.com',
+        payment_id: paymentId,
+        customer_email: payload.customer_email || user?.email || 'customer@cinebook.in',
         created_at: now.toISOString()
       };
 

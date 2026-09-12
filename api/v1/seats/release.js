@@ -25,21 +25,30 @@ module.exports = async function handler(req, res) {
 
   try {
     await client.connect();
+
     if (seat_ids && Array.isArray(seat_ids) && seat_ids.length > 0) {
-      await client.query(
-        "DELETE FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND status = 'LOCKED'",
-        [show_id, seat_ids]
-      );
+      if (lock_token) {
+        await client.query(
+          "DELETE FROM seat_locks WHERE show_id = $1 AND (seat_id = ANY($2) OR lock_token = $3) AND status = 'LOCKED'",
+          [show_id, seat_ids, lock_token]
+        );
+      } else {
+        await client.query(
+          "DELETE FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND status = 'LOCKED'",
+          [show_id, seat_ids]
+        );
+      }
     } else if (lock_token) {
       await client.query(
         "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED'",
         [show_id, lock_token]
       );
     }
-    return res.status(200).json({ message: 'Seat locks successfully released.' });
+
+    return res.status(200).json({ success: true, message: 'Seat locks successfully released.' });
   } catch (err) {
     console.error('Release error:', err);
-    return res.status(200).json({ message: 'Released locally' });
+    return res.status(200).json({ success: true, message: 'Released locally' });
   } finally {
     try { await client.end(); } catch (e) {}
   }

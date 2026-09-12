@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
   try {
     await client.connect();
     const rows = await client.query(
-      'SELECT * FROM bookings WHERE user_id =  OR customer_email =  ORDER BY created_at DESC',
+      'SELECT * FROM bookings WHERE user_id = $1 OR customer_email = $2 ORDER BY created_at DESC',
       [user.sub, user.email || '']
     );
     return res.status(200).json(rows.rows);

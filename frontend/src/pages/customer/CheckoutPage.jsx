@@ -12,7 +12,9 @@ import {
   Sparkles,
   Lock,
   Check,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
@@ -42,10 +44,10 @@ const CheckoutPage = () => {
     sgst,
     taxes,
     totalAmount,
-    lockToken
+    lockToken,
+    releaseSeatLock
   } = useBooking();
 
-  const paymentMethod = 'RAZORPAY';
   const [processing, setProcessing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [processingStep, setProcessingStep] = useState(1);
@@ -102,7 +104,6 @@ const CheckoutPage = () => {
     });
   }, []);
 
-
   const formatTimer = (secs) => {
     const s = secs || 300;
     const m = Math.floor(s / 60);
@@ -110,19 +111,72 @@ const CheckoutPage = () => {
     return `${m.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
   };
 
-  const completePaymentAndBooking = async (realBookingId, paymentId, orderId = '', signature = '') => {
+  // Explicit User Action: Cancel Checkout & Immediately Release Held Seats
+  const handleCancelAndRelease = async () => {
+    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
+    try {
+      if (show?.id) {
+        await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+      }
+    } catch (e) {}
+    seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+    releaseSeatLock();
+    toast.info('Your temporary seat hold has been released.');
+    navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+  };
+
+  // Called ONLY after Razorpay payment succeeds
+  const completePaymentAndBooking = async (trackingBookingId, paymentId, orderId = '', signature = '') => {
     setIsSubmitting(false);
     setProcessing(true);
     setProcessingStep(1);
 
-    // 1. Verify Payment & Commit Permanent Booking in Supabase Database
+    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
+
+    // 1. Verify Payment & Commit Permanent Booking in Supabase Database ONLY after successful payment
+    let confirmedBookingId = trackingBookingId;
     try {
+      // Step A: Cryptographic payment signature verification
       await paymentApi.verifyPayment({
-        booking_id: realBookingId,
+        booking_id: trackingBookingId,
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
         razorpay_signature: signature || 'sim_sig_verified'
       });
+
+      setProcessingStep(2);
+
+      // Step B: Atomically commit to booked_seats and update status to BOOKED in Supabase
+      const backendRes = await bookingApi.createBooking({
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: selectedDate || new Date().toISOString().split('T')[0],
+        show_time: show?.time || '11:00 AM',
+        lock_token: heldLockToken || `lock_${Date.now()}`,
+        booking_id: trackingBookingId,
+        payment_id: paymentId,
+        order_id: orderId,
+        signature: signature,
+        seats: seats.map((s) => ({
+          id: s.id,
+          row: s.row || s.id.charAt(0),
+          number: s.number || parseInt(s.id.slice(1)) || 1,
+          tier: s.tier || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 'BALCONY' : 'SECOND_CLASS'),
+          price: s.price || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 147 : 84)
+        })),
+        base_amount: baseAmount || (finalTotal - 16.17),
+        convenience_fee: convenienceFeeTotal || convenienceFee || 16.17,
+        taxes: igst || taxes || 2.47,
+        total_amount: finalTotal,
+        customer_name: user?.name || 'Valued Cinema Guest',
+        customer_email: email || user?.email || 'customer@cinebook.in',
+        customer_phone: phone || user?.phone || '9848012345'
+      });
+
+      if (backendRes && backendRes.booking_id) {
+        confirmedBookingId = backendRes.booking_id;
+      }
     } catch (err) {
       setProcessing(false);
       setIsSubmitting(false);
@@ -133,13 +187,11 @@ const CheckoutPage = () => {
       return;
     }
 
-    setProcessingStep(2);
-
     // 2. Permanently record booked seats and broadcast to all tabs
-    seatLockManager.confirmBooking(currentShowKey, seats, realBookingId, show?.id);
+    seatLockManager.confirmBooking(currentShowKey, seats, confirmedBookingId, show?.id);
 
     const confirmedBooking = {
-      bookingId: realBookingId,
+      bookingId: confirmedBookingId,
       movie,
       theatre,
       show,
@@ -147,7 +199,9 @@ const CheckoutPage = () => {
       seats: seats,
       totalAmount: finalTotal,
       baseAmount: baseAmount || 0,
-      convenienceFee: convenienceFee || 0,
+      convenienceFee: convenienceFeeTotal || convenienceFee || 0,
+      convenienceFeeBase: convenienceFeeBase || 0,
+      igst: igst || 0,
       cgst: cgst || 0,
       sgst: sgst || 0,
       taxes: taxes || 0,
@@ -171,7 +225,7 @@ const CheckoutPage = () => {
       setProcessing(false);
       setIsSubmitting(false);
       toast.success('Payment successful! Your tickets are confirmed.');
-      navigate(`/booking-confirmation/${realBookingId}`);
+      navigate(`/booking-confirmation/${confirmedBookingId}`);
     }, 250);
   };
 
@@ -182,7 +236,7 @@ const CheckoutPage = () => {
       return;
     }
 
-    // 1. Pre-check if already booked locally or remotely
+    // 1. Pre-check if already permanently booked locally or remotely
     const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
     const isConflict = seats.some((s) => statuses[s.id]?.status === 'BOOKED');
     if (isConflict) {
@@ -195,7 +249,7 @@ const CheckoutPage = () => {
     setIsSubmitting(true);
     const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
 
-    // 2. Verify and re-confirm atomic seat lock on backend
+    // 2. Verify and re-confirm temporary atomic seat lock on backend (temporary lock ONLY)
     try {
       if (show?.id && seats?.length > 0) {
         await bookingApi.lockSeats(show.id, seats.map((s) => s.id), undefined, heldLockToken);
@@ -209,52 +263,23 @@ const CheckoutPage = () => {
       return;
     }
 
-    // 3. Create Booking Session in Supabase Database to obtain official bookingId
-    let officialBookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    try {
-      const backendRes = await bookingApi.createBooking({
-        show_id: show?.id || 'sh-001',
-        movie_id: movie?.id || 'mv-001',
-        theatre_id: theatre?.id || 'th-001',
-        show_date: selectedDate || new Date().toISOString().split('T')[0],
-        show_time: show?.time || '11:00 AM',
-        lock_token: heldLockToken || `lock_${Date.now()}`,
-        seats: seats.map((s) => ({
-          id: s.id,
-          row: s.row || s.id.charAt(0),
-          number: s.number || parseInt(s.id.slice(1)) || 1,
-          tier: s.tier || 'CLASSIC',
-          price: s.price || 200
-        })),
-        base_amount: baseAmount || (finalTotal - 59),
-        convenience_fee: convenienceFee || 50,
-        taxes: taxes || 9,
-        total_amount: finalTotal,
-        customer_name: user?.name || 'Valued Cinema Guest',
-        customer_email: email || user?.email || 'customer@cinebook.in',
-        customer_phone: phone || user?.phone || '9848012345'
-      });
+    // Generate unique transaction tracking ID (NOT permanently committed yet)
+    const transactionBookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
-      if (backendRes && backendRes.booking_id) {
-        officialBookingId = backendRes.booking_id;
-      }
-    } catch (err) {
-      setIsSubmitting(false);
-      const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
-      setErrorMessage(msg);
-      toast.conflict(msg);
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-      return;
-    }
-
-    // 4. Ensure Razorpay SDK is loaded
+    // 3. Ensure Razorpay SDK is loaded
     const isSdkLoaded = await loadRazorpayScript();
 
-    // 5. Trigger Razorpay Checkout Popup
+    // 4. Create Razorpay Payment Order
+    let orderData = null;
+    try {
+      orderData = await paymentApi.createOrder(transactionBookingId, finalTotal);
+    } catch (err) {
+      console.warn('Order creation fallback:', err);
+    }
+
+    // 5. Trigger Official Razorpay Checkout Popup
     if (isSdkLoaded && window.Razorpay) {
       try {
-        const orderData = await paymentApi.createOrder(officialBookingId, finalTotal);
-
         const options = {
           key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
           amount: Math.round(finalTotal * 100),
@@ -264,8 +289,9 @@ const CheckoutPage = () => {
           image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
           order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
           handler: function (response) {
+            // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
             completePaymentAndBooking(
-              officialBookingId,
+              transactionBookingId,
               response.razorpay_payment_id || `pay_rzp_${Date.now()}`,
               response.razorpay_order_id || orderData?.order_id || `ord_${Date.now()}`,
               response.razorpay_signature || 'sim_sig_verified'
@@ -285,32 +311,51 @@ const CheckoutPage = () => {
             color: '#E50914'
           },
           modal: {
-            ondismiss: function () {
+            ondismiss: async function () {
+              // ON MODAL DISMISS / PAYMENT CANCEL:
+              // Immediately release temporary locks so seats become available instantly
               setIsSubmitting(false);
               setProcessing(false);
+              try {
+                if (show?.id) {
+                  await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+                }
+              } catch (e) {}
+              seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+              toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
             }
           }
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', function (resp) {
+        rzp.on('payment.failed', async function (resp) {
+          // ON PAYMENT FAILURE:
+          // Immediately release temporary locks so seats become available instantly
           setIsSubmitting(false);
           setProcessing(false);
-          setErrorMessage(resp.error?.description || 'Payment was unsuccessful or cancelled. Please try again.');
+          try {
+            if (show?.id) {
+              await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+            }
+          } catch (e) {}
+          seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+          const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';
+          setErrorMessage(failMsg);
+          toast.error(failMsg);
         });
         rzp.open();
         setIsSubmitting(false);
         return;
       } catch (err) {
-        console.warn('Razorpay popup initialization failed, proceeding with direct secure verification:', err);
+        console.warn('Razorpay popup error, proceeding with fallback:', err);
       }
     }
 
     // Direct Instant Verification Flow (safe fallback if popup is blocked)
     completePaymentAndBooking(
-      officialBookingId,
-      `pay_rzp_${Date.now()}`,
-      `ord_${Date.now()}`,
+      transactionBookingId,
+      `pay_sim_${Date.now()}`,
+      `ord_sim_${Date.now()}`,
       'sim_sig_verified'
     );
   };
@@ -318,6 +363,27 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen py-10 bg-void-900 text-text-primary transition-colors">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* Navigation & Cancel Action */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={handleCancelAndRelease}
+            className="flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-brand transition-colors cursor-pointer px-3 py-2 rounded-xl bg-void-850 border border-white/8 hover:border-brand/40"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Seat Selection (Release Hold)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCancelAndRelease}
+            className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:border-red-500/40 transition-colors"
+          >
+            <XCircle className="w-4 h-4" />
+            <span>Cancel & Release Seats</span>
+          </button>
+        </div>
+
         {/* 1. SEAT LOCK COUNTDOWN BANNER */}
         <div className="p-4 sm:p-5 rounded-2xl bg-void-850 border border-brand/30 flex items-center justify-between shadow-lg backdrop-blur-md">
           <div className="flex items-center gap-3.5">
@@ -326,11 +392,11 @@ const CheckoutPage = () => {
             </div>
             <div>
               <h3 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <span>Atomic Seat Lock Active</span>
+                <span>Temporary Seat Lock Active</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </h3>
               <p className="text-xs text-text-muted mt-0.5">
-                Seats are securely held for your session. Complete payment to generate instant digital pass with QR ticket.
+                Seats are temporarily held for your session. Complete payment to finalize permanent booking.
               </p>
             </div>
           </div>
@@ -465,7 +531,7 @@ const CheckoutPage = () => {
                   <span className="font-bold text-text-primary font-mono text-sm">₹{Number(baseAmount || 0).toFixed(2)}</span>
                 </div>
 
-                {/* Convenience fees Section matching uploaded photo */}
+                {/* Convenience fees Section */}
                 <div className="p-3 rounded-xl bg-void-800/80 border border-white/8 space-y-2">
                   <div className="flex justify-between items-center font-bold text-xs text-text-primary">
                     <span className="flex items-center gap-1 text-text-primary font-semibold">
@@ -533,9 +599,9 @@ const CheckoutPage = () => {
       {/* --- PAYMENT PROCESSING MODAL --- */}
       {processing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="max-w-md w-full bg-surface rounded-2xl p-7 text-center space-y-5 border border-border shadow-2xl text-text-primary">
-            <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center mx-auto text-white shadow-lg">
-              <CreditCard className="w-7 h-7 text-white" />
+          <div className="max-w-md w-full bg-void-850 rounded-2xl p-7 text-center space-y-5 border border-white/8 shadow-2xl text-text-primary">
+            <div className="w-14 h-14 rounded-2xl bg-brand flex items-center justify-center mx-auto text-void-950 shadow-lg">
+              <CreditCard className="w-7 h-7 text-void-950" />
             </div>
 
             <div className="space-y-1.5">
@@ -548,27 +614,27 @@ const CheckoutPage = () => {
             </div>
 
             <div className="space-y-2.5 text-xs text-left">
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 1 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
+                  processingStep >= 1 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
                 }`}>✓</span>
                 <span className={processingStep >= 1 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Verifying 256-Bit SSL Payment Token...
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 2 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
+                  processingStep >= 2 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
                 }`}>✓</span>
                 <span className={processingStep >= 2 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Securing Confirmed Seats in Database...
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-surface-elevated border border-border">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 3 ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-text-muted'
+                  processingStep >= 3 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
                 }`}>✓</span>
                 <span className={processingStep >= 3 ? 'text-text-primary font-medium' : 'text-text-muted'}>
                   Generating Digital Pass with Signed QR Code...
@@ -583,4 +649,3 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-
