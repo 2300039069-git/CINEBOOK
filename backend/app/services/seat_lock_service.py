@@ -416,46 +416,113 @@ class SeatLockService:
         user_id: str = "confirmed",
         booking_id: str = ""
     ):
-        """Mark seats permanently BOOKED in Supabase after payment signature is verified"""
+        """
+        Mark seats permanently BOOKED in Supabase and memory.
+        Strictly verifies ownership: if ANY seat is already booked or held by another
+        customer/token, rejects immediately with HTTP 409 Conflict rather than overwriting.
+        """
         async with LOCK_MUTEX:
             now = datetime.now(timezone.utc)
             max_dt = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
-            if db_manager.is_connected:
-                try:
-                    for seat_id in seat_ids:
-                        # 1. Insert into booked_seats table (enforcing unique constraint)
-                        await db_manager.execute(
-                            """
-                            INSERT INTO booked_seats (
-                                show_id, seat_id, user_id, booking_id, booked_at
-                            ) VALUES (
-                                $1, $2, $3, $4, $5
-                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
-                                user_id = EXCLUDED.user_id,
-                                booking_id = EXCLUDED.booking_id,
-                                booked_at = EXCLUDED.booked_at;
-                            """,
-                            show_id, seat_id, user_id, booking_id, now
-                        )
-                        # 2. Update seat_locks status
-                        await db_manager.execute(
-                            """
-                            INSERT INTO seat_locks (
-                                show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at
-                            ) VALUES (
-                                $1, $2, $3, $4, 'BOOKED', TRUE, $5, $6
-                            ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
-                                status = 'BOOKED',
-                                is_booked = TRUE,
-                                user_id = EXCLUDED.user_id,
-                                lock_token = EXCLUDED.lock_token,
-                                expires_at = EXCLUDED.expires_at;
-                            """,
-                            show_id, seat_id, user_id, lock_token, now, max_dt
-                        )
-                except Exception as e:
-                    logger.error(f"Error permanently booking seats in Supabase: {e}")
 
+            # 1. In-memory validation
+            for seat_id in seat_ids:
+                mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
+                if mem_entry:
+                    if (mem_entry.get("isBooked") is True or mem_entry.get("status") == "BOOKED") and mem_entry.get("booking_id") != booking_id:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {seat_id} is already permanently booked by another customer."
+                        )
+                    if (
+                        mem_entry.get("status") == "LOCKED"
+                        and mem_entry.get("expires_at", now) > now
+                        and mem_entry.get("user_id") != user_id
+                        and (lock_token and mem_entry.get("lock_token") != lock_token)
+                    ):
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {seat_id} is currently held by another customer."
+                        )
+
+            # 2. Supabase DB checks and atomic insert
+            if db_manager.is_connected:
+                # Check booked_seats
+                booked_recs = await db_manager.fetch_all(
+                    "SELECT seat_id, user_id, booking_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                for b_rec in booked_recs:
+                    if b_rec.get("booking_id") != booking_id:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {b_rec['seat_id']} is already permanently booked by another customer."
+                        )
+
+                # Check seat_locks
+                lock_recs = await db_manager.fetch_all(
+                    "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                for l_rec in lock_recs:
+                    if l_rec.get("is_booked") or l_rec.get("status") == "BOOKED":
+                        if l_rec.get("user_id") != user_id and l_rec.get("lock_token") != lock_token:
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat {l_rec['seat_id']} is already booked."
+                            )
+                    elif l_rec.get("status") == "LOCKED" and l_rec.get("expires_at", now) > now:
+                        if l_rec.get("user_id") != user_id and (lock_token and l_rec.get("lock_token") != lock_token):
+                            raise HTTPException(
+                                status_code=status.HTTP_409_CONFLICT,
+                                detail=f"Seat {l_rec['seat_id']} is currently held by another customer."
+                            )
+
+                # Atomic insert into booked_seats with ON CONFLICT DO NOTHING
+                for seat_id in seat_ids:
+                    await db_manager.execute(
+                        """
+                        INSERT INTO booked_seats (
+                            show_id, seat_id, user_id, booking_id, booked_at
+                        ) VALUES (
+                            $1, $2, $3, $4, $5
+                        ) ON CONFLICT (show_id, seat_id) DO NOTHING;
+                        """,
+                        show_id, seat_id, user_id, booking_id, now
+                    )
+
+                # Re-verify that all requested seats were successfully claimed by this booking
+                final_booked = await db_manager.fetch_all(
+                    "SELECT seat_id, booking_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
+                    show_id, seat_ids
+                )
+                final_map = {r["seat_id"]: r["booking_id"] for r in final_booked}
+                for seat_id in seat_ids:
+                    if final_map.get(seat_id) != booking_id:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail=f"Seat {seat_id} was booked by another customer before your payment completed."
+                        )
+
+                # Update seat_locks status to BOOKED
+                for seat_id in seat_ids:
+                    await db_manager.execute(
+                        """
+                        INSERT INTO seat_locks (
+                            show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at
+                        ) VALUES (
+                            $1, $2, $3, $4, 'BOOKED', TRUE, $5, $6
+                        ) ON CONFLICT (show_id, seat_id) DO UPDATE SET
+                            status = 'BOOKED',
+                            is_booked = TRUE,
+                            user_id = EXCLUDED.user_id,
+                            lock_token = EXCLUDED.lock_token,
+                            expires_at = EXCLUDED.expires_at;
+                        """,
+                        show_id, seat_id, user_id, lock_token, now, max_dt
+                    )
+
+            # 3. Store in Memory
             for seat_id in seat_ids:
                 IN_MEMORY_SEAT_STORE[(show_id, seat_id)] = {
                     "lock_token": lock_token,
