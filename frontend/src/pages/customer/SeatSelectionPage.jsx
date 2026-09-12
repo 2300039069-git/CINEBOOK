@@ -175,28 +175,29 @@ const SeatSelectionPage = () => {
     };
   }, [show.id, currentShowKey, selectedSeats.length]);
 
-  // Merge base layout with live atomic locks and bookings
+  // Merge base layout with live atomic locks and bookings from Supabase
   const dynamicLayout = rawLayout.map((tier) => ({
     ...tier,
     rows: tier.rows.map((row) => ({
       ...row,
       seats: row.seats.map((seat) => {
         const liveInfo = liveStatuses[seat.id];
-        let status = seat.status;
+        const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
+        let status = 'AVAILABLE';
 
-        if (liveInfo) {
-          if (liveInfo.status === 'BOOKED') {
-            status = 'BOOKED';
-          } else if (liveInfo.status === 'LOCKED') {
-            // If locked by another tab, mark LOCKED. If locked by this tab, mark AVAILABLE for selection engine
-            status = liveInfo.isLockedByOtherTab ? 'LOCKED' : (seat.status === 'COUNTER_QUOTA' ? 'COUNTER_QUOTA' : 'AVAILABLE');
-          }
+        if (liveInfo?.status === 'BOOKED' || seat.status === 'BOOKED') {
+          status = 'BOOKED';
+        } else if (
+          (liveInfo?.status === 'LOCKED' && liveInfo?.isLockedByOtherTab && !isSelectedInThisTab) ||
+          (seat.status === 'LOCKED' && !isSelectedInThisTab && liveInfo?.isLockedByOtherTab)
+        ) {
+          status = 'LOCKED';
         }
 
         return {
           ...seat,
           status,
-          isLockedByOtherTab: liveInfo?.isLockedByOtherTab || false
+          isLockedByOtherTab: (liveInfo?.isLockedByOtherTab && !isSelectedInThisTab) || false
         };
       })
     }))

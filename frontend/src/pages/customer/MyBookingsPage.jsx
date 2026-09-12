@@ -36,27 +36,7 @@ const MyBookingsPage = () => {
     if (saved && JSON.parse(saved).length > 0) {
       setBookings(JSON.parse(saved));
     } else {
-      const defaultBooking = {
-        bookingId: 'CB-2026-894120',
-        movie: MOVIES[0],
-        theatre: THEATRES[0],
-        show: SAMPLE_SHOWTIMES[0],
-        showDate: '2026-09-02',
-        seats: [
-          { id: 'C5', row: 'C', number: 5, price: 200 },
-          { id: 'C6', row: 'C', number: 6, price: 200 }
-        ],
-        baseAmount: 400,
-        convenienceFee: 50,
-        taxes: 9,
-        totalAmount: 459,
-        paymentId: 'pay_rzp_98412091',
-        paymentMethod: 'UPI',
-        status: 'CONFIRMED',
-        bookedAt: new Date().toISOString()
-      };
-      setBookings([defaultBooking]);
-      localStorage.setItem('cinebook_bookings', JSON.stringify([defaultBooking]));
+      setBookings([]);
     }
   }, []);
 

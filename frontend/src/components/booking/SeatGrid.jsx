@@ -105,10 +105,9 @@ const SeatGrid = ({
                     <div className="flex items-center gap-2">
                       {row.seats.map((seat) => {
                         const isSelected = selectedSeats.some((s) => s.id === seat.id);
-                        const isCounterQuota = seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE';
                         const isBooked = seat.status === 'BOOKED';
                         const isLocked = seat.status === 'LOCKED' && !isSelected;
-                        const isDisabled = isBooked || isLocked || isCounterQuota;
+                        const isDisabled = isBooked || isLocked;
 
                         return (
                           <React.Fragment key={seat.id}>
@@ -123,8 +122,6 @@ const SeatGrid = ({
                                   ? `${seat.id} — Locked by another customer`
                                   : isBooked
                                   ? `${seat.id} — Sold Out`
-                                  : isCounterQuota
-                                  ? `${seat.id} — Held for Box Office Counter`
                                   : `${seat.id} — ₹${seat.price}`
                               }
                               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center select-none ${
@@ -134,8 +131,6 @@ const SeatGrid = ({
                                   ? 'bg-gold/10 border border-gold/30 text-gold cursor-not-allowed opacity-60'
                                   : isBooked
                                   ? 'bg-surface-elevated border border-dashed border-border opacity-25 cursor-not-allowed text-text-muted'
-                                  : isCounterQuota
-                                  ? 'bg-surface-elevated border border-dashed border-border opacity-35 cursor-not-allowed text-text-muted'
                                   : 'bg-surface-elevated border border-border/80 hover:border-gold hover:text-gold text-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
                               }`}
                             >
@@ -143,8 +138,6 @@ const SeatGrid = ({
                                 <Check className="w-4 h-4 stroke-[3]" />
                               ) : isLocked ? (
                                 <Clock className="w-3.5 h-3.5 text-gold" />
-                              ) : isCounterQuota ? (
-                                <Lock className="w-3 h-3 text-text-muted" />
                               ) : (
                                 seat.number
                               )}

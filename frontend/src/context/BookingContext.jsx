@@ -97,8 +97,8 @@ export const BookingProvider = ({ children }) => {
 
   // Toggle seat selection with instant 0ms optimistic UI updates & atomic background lock verification
   const toggleSeatSelection = (seat, overrideShowKey, overrideShowId) => {
-    if (seat.status === 'BOOKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') {
-      toast.warning(`Seat ${seat.id} is already booked.`);
+    if (seat.status === 'BOOKED' || (seat.status === 'LOCKED' && !selectedSeats.some((s) => s.id === seat.id))) {
+      toast.warning(`Seat ${seat.id} is already booked or reserved.`);
       return;
     }
 
