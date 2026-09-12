@@ -22,25 +22,6 @@ from app.models.seat_lock import (
 IN_MEMORY_SEAT_STORE: Dict[Tuple[str, str], dict] = {}
 LOCK_MUTEX = asyncio.Lock()
 
-# Initial pre-booked seats for realism
-DEFAULT_BOOKED = {
-    ("sh-001", "D5"): "BOOKED",
-    ("sh-001", "D6"): "BOOKED",
-    ("sh-001", "D7"): "BOOKED",
-    ("sh-001", "D8"): "BOOKED",
-    ("sh-001", "C6"): "BOOKED",
-    ("sh-001", "C7"): "BOOKED",
-    ("sh-001", "A1"): "BOOKED",
-    ("sh-001", "A2"): "BOOKED",
-}
-for (s_id, seat), st in DEFAULT_BOOKED.items():
-    IN_MEMORY_SEAT_STORE[(s_id, seat)] = {
-        "lock_token": "init_booked",
-        "user_id": "system",
-        "expires_at": datetime.max.replace(tzinfo=timezone.utc),
-        "status": "BOOKED"
-    }
-
 class SeatLockService:
     @staticmethod
     def _cleanup_expired_locks():

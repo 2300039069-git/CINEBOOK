@@ -37,17 +37,6 @@ USERS_DATABASE = {
         "avatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200&auto=format&fit=crop",
         "is_active": True,
         "theatre_ids": []
-    },
-    "aarav.sharma@example.com": {
-        "id": "usr-001",
-        "name": "Aarav Sharma",
-        "email": "aarav.sharma@example.com",
-        "password_hash": get_password_hash("CustomerPass@2026"),
-        "phone": "+91 98765 43210",
-        "role": UserRole.CUSTOMER,
-        "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
-        "is_active": True,
-        "theatre_ids": []
     }
 }
 

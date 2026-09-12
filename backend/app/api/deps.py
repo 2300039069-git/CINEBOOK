@@ -9,31 +9,11 @@ security_bearer = HTTPBearer(auto_error=False)
 
 # In-memory users for quick testing / fallback
 DEFAULT_USERS_STORE = {
-    "usr-001": {
-        "id": "usr-001",
-        "name": "Aarav Sharma",
-        "email": "aarav.sharma@example.com",
-        "phone": "+91 98765 43210",
-        "role": UserRole.CUSTOMER,
-        "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
-        "is_active": True,
-        "theatre_ids": []
-    },
-    "usr-002": {
-        "id": "usr-002",
-        "name": "Rajesh Malhotra",
-        "email": "theatre@phoenixcinemas.com",
-        "phone": "+91 98111 22334",
-        "role": UserRole.THEATRE_ADMIN,
-        "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop",
-        "is_active": True,
-        "theatre_ids": ["th-001"]
-    },
-    "usr-003": {
-        "id": "usr-003",
-        "name": "Super Administrator",
-        "email": "admin@cinebook.in",
-        "phone": "+91 99999 88888",
+    "usr-admin-dhanush": {
+        "id": "usr-admin-dhanush",
+        "name": "Dhanush Kancharla (Super Admin)",
+        "email": "kancharladhanush2003@gmail.com",
+        "phone": "+91 98765 00001",
         "role": UserRole.SUPER_ADMIN,
         "avatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?q=80&w=200&auto=format&fit=crop",
         "is_active": True,
