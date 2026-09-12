@@ -95,8 +95,8 @@ export const BookingProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, [lockExpiresAt, selectedSeats.length, currentShowKey, selectedShow?.id, toast]);
 
-  // Toggle seat selection with atomic cross-tab lock verification
-  const toggleSeatSelection = async (seat, overrideShowKey, overrideShowId) => {
+  // Toggle seat selection with instant 0ms optimistic UI updates & atomic background lock verification
+  const toggleSeatSelection = (seat, overrideShowKey, overrideShowId) => {
     if (seat.status === 'BOOKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') {
       toast.warning(`Seat ${seat.id} is already booked.`);
       return;
@@ -107,13 +107,13 @@ export const BookingProvider = ({ children }) => {
     const exists = selectedSeats.find((s) => s.id === seat.id);
 
     if (exists) {
-      // Unselect and release lock
-      await seatLockManager.unlockSeat(showKey, seat.id, showId);
+      // 1. Instant 0ms UI update for deselecting
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+      seatLockManager.unlockSeat(showKey, seat.id, showId).catch(() => {});
       return;
     }
 
-    // Check maximum 8 seats
+    // Check maximum 8 seats limit
     if (selectedSeats.length >= 8) {
       toast.warning('You can select a maximum of 8 seats per transaction.', 'Limit Reached');
       return;
@@ -121,7 +121,7 @@ export const BookingProvider = ({ children }) => {
 
     // Check if locked by another tab or already booked
     if (seatLockManager.isSeatLockedByOtherTab(showKey, seat.id)) {
-      toast.conflict(`Seat ${seat.id} was just reserved by another customer. Please select another seat.`);
+      toast.conflict(`Seat ${seat.id} is currently held by another customer.`);
       return;
     }
     if (seatLockManager.isSeatBooked(showKey, seat.id)) {
@@ -129,24 +129,31 @@ export const BookingProvider = ({ children }) => {
       return;
     }
 
-    // Lock seat atomically with Supabase database sync
-    const result = await seatLockManager.lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null);
-    if (!result.success) {
-      toast.conflict(result.message || `Seat ${seat.id} is currently held by another customer. Please select another seat.`);
-      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
-      return;
-    }
-
-    // Set lock expiry timer if first seat
-    const expiresAt = result.expiresAt || (Date.now() + LOCK_DURATION_SECONDS * 1000);
-    setLockExpiresAt(expiresAt);
-    sessionStorage.setItem('cinebook_tab_lock_expires_at', expiresAt.toString());
-    if (result.lockToken) {
-      setLockToken(result.lockToken);
-      sessionStorage.setItem('cinebook_tab_lock_token', result.lockToken);
-    }
-
+    // 2. Instant 0ms Optimistic UI Selection
     setSelectedSeats((prev) => [...prev, seat]);
+
+    // 3. Fast background atomic lock synchronization
+    seatLockManager
+      .lockSeat(showKey, seat.id, showId, lockToken !== 'lock_init' ? lockToken : null)
+      .then((result) => {
+        if (!result.success) {
+          // Rollback selection if conflict or already booked
+          setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+          toast.conflict(result.message || `Seat ${seat.id} was just reserved by another customer.`);
+        } else {
+          const expiresAt = result.expiresAt || (Date.now() + LOCK_DURATION_SECONDS * 1000);
+          setLockExpiresAt(expiresAt);
+          sessionStorage.setItem('cinebook_tab_lock_expires_at', expiresAt.toString());
+          if (result.lockToken) {
+            setLockToken(result.lockToken);
+            sessionStorage.setItem('cinebook_tab_lock_token', result.lockToken);
+          }
+        }
+      })
+      .catch((err) => {
+        setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+        toast.conflict(err.message || `Seat ${seat.id} could not be reserved.`);
+      });
   };
 
   const startSeatLock = (overrideShowKey, overrideShowId) => {

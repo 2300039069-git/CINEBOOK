@@ -97,17 +97,20 @@ module.exports = async function handler(req, res) {
           id: seatId,
           number: num,
           row: rLetter,
+          rowLetter: rLetter,
           tier: tc.tier,
           price: tc.price,
           status: seatStatus,
-          is_aisle_after: (num === 3 || num === 11)
+          is_aisle_after: (num === 3 || num === 11),
+          isAisleAfter: (num === 3 || num === 11)
         });
       }
-      tierRows.push({ row_letter: rLetter, seats: seatsInRow });
+      tierRows.push({ row_letter: rLetter, rowLetter: rLetter, seats: seatsInRow });
     }
 
     layoutTiers.push({
       name: tc.tier,
+      tier: tc.tier,
       label: tc.label,
       price: tc.price,
       rows: tierRows

@@ -784,12 +784,12 @@ export const SAMPLE_SHOWTIMES = [
   }
 ];
 
-// Dual-Quota Aware Seat Layout Generator (App Inventory vs Box Office Reserved)
+// Dual-Quota Aware Seat Layout Generator (Real-time Supabase Synchronized)
 export const generateSeatLayout = (showId) => {
   const tiers = [
-    { name: 'RECLINER', label: 'Balcony / Recliner (VIP)', price: 280, rows: ['A', 'B'] },
-    { name: 'PREMIUM', label: 'Premium Executive', price: 190, rows: ['C', 'D', 'E', 'F'] },
-    { name: 'CLASSIC', label: 'Classic First Class', price: 130, rows: ['G', 'H', 'J', 'K'] }
+    { name: 'RECLINER', tier: 'RECLINER', label: 'Balcony / Recliner (VIP)', price: 280, rows: ['A', 'B'] },
+    { name: 'PREMIUM', tier: 'PREMIUM', label: 'Premium Executive', price: 190, rows: ['C', 'D', 'E', 'F'] },
+    { name: 'CLASSIC', tier: 'CLASSIC', label: 'Classic First Class', price: 130, rows: ['G', 'H', 'J', 'K'] }
   ];
 
   const seatsPerRow = 14;
@@ -802,31 +802,20 @@ export const generateSeatLayout = (showId) => {
       for (let i = 1; i <= seatsPerRow; i++) {
         const seatId = `${rowLetter}${i}`;
 
-        // Counter Quota Seats (Held exclusively for Theatre Box Office)
-        const isCounterQuota = (rowLetter === 'A' && (i === 1 || i === 2)) ||
-                               (rowLetter === 'C' && (i === 1 || i === 2 || i === 3)) ||
-                               (rowLetter === 'F' && (i === 1 || i === 2 || i === 3 || i === 4));
-
-        // Online Booked Seats
-        const isBooked = (rowLetter === 'D' && (i === 5 || i === 6 || i === 7 || i === 8)) ||
-                         (rowLetter === 'C' && (i === 6 || i === 7)) ||
-                         (rowLetter === 'H' && (i === 11 || i === 12 || i === 13));
-
-        // Real-time Locked Seats
-        const isLocked = (rowLetter === 'E' && (i === 7 || i === 8));
-
         seats.push({
           id: seatId,
           number: i,
           row: rowLetter,
+          rowLetter: rowLetter,
           tier: tier.name,
           price: tier.price,
-          quota: isCounterQuota ? 'BOX_OFFICE' : 'APP_INVENTORY',
-          status: isCounterQuota ? 'COUNTER_QUOTA' : isBooked ? 'BOOKED' : isLocked ? 'LOCKED' : 'AVAILABLE',
-          isAisleAfter: i === 3 || i === 11
+          quota: 'APP_INVENTORY',
+          status: 'AVAILABLE',
+          isAisleAfter: i === 3 || i === 11,
+          is_aisle_after: i === 3 || i === 11
         });
       }
-      tierRows.push({ rowLetter, seats });
+      tierRows.push({ rowLetter, row_letter: rowLetter, seats });
     });
     layout.push({ ...tier, rows: tierRows });
   });

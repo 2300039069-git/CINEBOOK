@@ -125,11 +125,14 @@ const SeatSelectionPage = () => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
                 if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
-                  const isMine = seat.status === 'LOCKED' && Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
+                  const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
+                  const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
+                  const isMine = isSelectedInThisTab || isLockedByThisTab;
+
                   backendStatuses[seat.id] = {
                     status: seat.status,
-                    isLockedByOtherTab: !isMine,
-                    isLockedByCurrentTab: isMine
+                    isLockedByOtherTab: !isMine && seat.status === 'LOCKED',
+                    isLockedByCurrentTab: isMine && seat.status === 'LOCKED'
                   };
                 }
               });
@@ -140,11 +143,11 @@ const SeatSelectionPage = () => {
           const merged = { ...localStatuses, ...backendStatuses };
           setLiveStatuses(merged);
 
-          // If another account just locked a seat that this tab had highlighted, deselect it and notify user
-          const conflictedSeats = selectedSeats.filter((s) => backendStatuses[s.id]?.isLockedByOtherTab);
-          if (conflictedSeats.length > 0) {
-            toast.conflict(`Seat(s) ${conflictedSeats.map((s) => s.id).join(', ')} were just reserved by another customer.`);
-            conflictedSeats.forEach((s) => toggleSeatSelection(s, currentShowKey, show.id));
+          // Only alert if a seat was permanently purchased by another customer while this tab had it selected
+          const permanentlyBookedConflicted = selectedSeats.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
+          if (permanentlyBookedConflicted.length > 0) {
+            toast.conflict(`Seat(s) ${permanentlyBookedConflicted.map((s) => s.id).join(', ')} were just purchased by another customer.`);
+            permanentlyBookedConflicted.forEach((s) => toggleSeatSelection(s, currentShowKey, show.id));
           }
         }
       } catch (err) {
@@ -155,10 +158,10 @@ const SeatSelectionPage = () => {
     // 1. Initial fetch
     fetchLatestLayout();
 
-    // 2. Real-time fast polling (every 1.5 seconds) for instant cross-device / cross-account lock blocking
-    const pollTimer = setInterval(fetchLatestLayout, 1500);
+    // 2. Real-time fast polling (every 1 second) for responsive cross-device / cross-account seat blocking
+    const pollTimer = setInterval(fetchLatestLayout, 1000);
 
-    // 3. Local cross-tab broadcast listener
+    // 3. Local cross-tab broadcast listener (0ms instant cross-window sync)
     const unsubscribe = seatLockManager.subscribe(() => {
       if (isMounted) {
         setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
