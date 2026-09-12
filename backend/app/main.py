@@ -42,29 +42,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Vercel URL rewrite path-restoration middleware
-@app.middleware("http")
-async def vercel_rewrite_middleware(request: Request, call_next):
-    matched_path = request.headers.get("x-matched-path")
-    invoke_path = request.headers.get("x-invoke-path")
-    forwarded_uri = request.headers.get("x-forwarded-uri")
-    now_route = request.headers.get("x-now-route-matches")
-
-    raw_target = matched_path or invoke_path or forwarded_uri
-    if raw_target and raw_target.startswith("/api"):
-        target_path = raw_target.split("?")[0]
-        request.scope["path"] = target_path
-        request.scope["raw_path"] = target_path.encode("utf-8")
-    elif now_route and "1=" in now_route:
-        part = now_route.split("1=")[-1].split("&")[0]
-        target_path = "/api/" + part.lstrip("/")
-        request.scope["path"] = target_path
-        request.scope["raw_path"] = target_path.encode("utf-8")
-
-    response = await call_next(request)
-    return response
-
-
 # Global Exception Handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
