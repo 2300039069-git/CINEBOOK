@@ -40,9 +40,9 @@ const SeatSelectionModal = ({
 
   const baseAmount = selectedSeats.reduce((acc, s) => acc + Number(s.price || 147), 0);
   const convFee = Number((baseAmount * 0.10).toFixed(2));
-  const cgst = Number((selectedSeats.length * 2.34).toFixed(2));
-  const sgst = Number((selectedSeats.length * 2.34).toFixed(2));
-  const totalAmount = Number((baseAmount + convFee + cgst + sgst).toFixed(2));
+  const subtotal = baseAmount + convFee;
+  const gst18 = Number((subtotal * 0.18).toFixed(2));
+  const totalAmount = Number((subtotal + gst18).toFixed(2));
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {

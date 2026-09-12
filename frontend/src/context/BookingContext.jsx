@@ -193,17 +193,18 @@ export const BookingProvider = ({ children }) => {
   // Convenience Fee: 10% of Base Ticket Price
   const convenienceFee = Number((baseAmount * 0.10).toFixed(2));
 
-  // Central GST (CGST): ₹2.34 per ticket
-  const cgst = Number((selectedSeats.length * 2.34).toFixed(2));
+  // Subtotal subject to GST (Base Amount + Convenience Fee)
+  const taxableAmount = baseAmount + convenienceFee;
 
-  // State GST (SGST): ₹2.34 per ticket
-  const sgst = Number((selectedSeats.length * 2.34).toFixed(2));
+  // Integrated GST (18% of total amount including convenience fee): split 9% CGST + 9% SGST
+  const cgst = Number((taxableAmount * 0.09).toFixed(2));
+  const sgst = Number((taxableAmount * 0.09).toFixed(2));
 
-  // Total Taxes = CGST + SGST (₹4.68 per ticket)
+  // Total GST Taxes (18%)
   const taxes = Number((cgst + sgst).toFixed(2));
 
-  // Total Amount Payable = Base Amount + 10% Convenience Fee + ₹2.34 CGST + ₹2.34 SGST
-  const totalAmount = Number((baseAmount + convenienceFee + cgst + sgst).toFixed(2));
+  // Total Amount Payable = Base Amount + Convenience Fee (10%) + 18% GST
+  const totalAmount = Number((taxableAmount + taxes).toFixed(2));
 
   return (
     <BookingContext.Provider

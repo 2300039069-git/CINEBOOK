@@ -468,13 +468,18 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Integrated Central GST (CGST ₹2.34/seat)</span>
+                  <span className="text-text-muted">Central GST (CGST 9%)</span>
                   <span className="font-semibold text-text-primary font-mono">₹{Number(cgst || 0).toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Integrated State GST (SGST ₹2.34/seat)</span>
+                  <span className="text-text-muted">State GST (SGST 9%)</span>
                   <span className="font-semibold text-text-primary font-mono">₹{Number(sgst || 0).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-[11px] text-text-muted italic bg-void-800/50 px-2 py-1 rounded-lg">
+                  <span>Total GST (18% on Amount + Fee)</span>
+                  <span className="font-semibold text-text-secondary font-mono">₹{Number((cgst || 0) + (sgst || 0)).toFixed(2)}</span>
                 </div>
 
                 <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
