@@ -190,9 +190,10 @@ export const BookingProvider = ({ children }) => {
     return token;
   };
 
-  const releaseSeatLock = () => {
-    const showKey = getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
-    seatLockManager.releaseCurrentTabLocks(showKey, selectedShow?.id);
+  const releaseSeatLock = (overrideShowKey, overrideShowId) => {
+    const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
+    const showId = overrideShowId || selectedShow?.id;
+    seatLockManager.releaseCurrentTabLocks(showKey, showId);
     setSelectedSeats([]);
     sessionStorage.removeItem('cinebook_tab_selected_seats');
     sessionStorage.removeItem('cinebook_tab_lock_expires_at');

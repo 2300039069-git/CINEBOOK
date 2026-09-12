@@ -120,7 +120,7 @@ const CheckoutPage = () => {
       }
     } catch (e) {}
     seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-    releaseSeatLock();
+    releaseSeatLock(currentShowKey, show?.id);
     toast.info('Your temporary seat hold has been released.');
     navigate(`/seat-selection/${show?.id || 'sh-001'}`);
   };
@@ -293,7 +293,7 @@ const CheckoutPage = () => {
         name: 'CINEBOOK',
         description: `Tickets for ${movie.title} (${seats.length} Seats)`,
         image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
-        order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
+        order_id: orderData?.order_id || undefined,
         handler: function (response) {
           // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
           if (response && response.razorpay_payment_id) {
@@ -334,7 +334,7 @@ const CheckoutPage = () => {
               }
             } catch (e) {}
             seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-            releaseSeatLock();
+            releaseSeatLock(currentShowKey, show?.id);
             toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
             navigate(`/seat-selection/${show?.id || 'sh-001'}`);
           }
@@ -353,7 +353,7 @@ const CheckoutPage = () => {
           }
         } catch (e) {}
         seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-        releaseSeatLock();
+        releaseSeatLock(currentShowKey, show?.id);
         const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';
         setErrorMessage(failMsg);
         toast.error(failMsg);
