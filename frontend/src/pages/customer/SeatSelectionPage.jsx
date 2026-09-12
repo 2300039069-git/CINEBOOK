@@ -13,14 +13,19 @@ import {
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
+import { useToast } from '../../context/ToastContext';
 import { seatLockManager, getShowKey, getTabId } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
 import SeatGrid from '../../components/booking/SeatGrid';
+import { LoginModal } from '../../components/auth/LoginModal';
+import { Button } from '../../components/ui/Button';
 
 const SeatSelectionPage = () => {
   const { showId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const {
     selectedMovie,
     setSelectedMovie,
@@ -119,14 +124,13 @@ const SeatSelectionPage = () => {
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
-      alert('Please select at least 1 seat to continue.');
+      toast.warning('Please select at least 1 seat to continue.', 'Selection Required');
       return;
     }
 
     // Strict Login Requirement Check
     if (!user) {
-      startSeatLock(currentShowKey, show.id);
-      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+      setIsLoginModalOpen(true);
       return;
     }
 
@@ -136,12 +140,17 @@ const SeatSelectionPage = () => {
       (s) => statuses[s.id]?.status === 'BOOKED' || statuses[s.id]?.isLockedByOtherTab
     );
     if (conflicted) {
-      alert(`Seat ${conflicted.id} is already booked or locked by another customer. Please select another seat.`);
+      toast.conflict(`Seat ${conflicted.id} was just reserved by another customer. Please select another seat.`);
       setLiveStatuses(statuses);
       return;
     }
 
     // Start atomic 8-minute seat lock
+    startSeatLock(currentShowKey, show.id);
+    navigate('/checkout');
+  };
+
+  const handleLoginSuccess = () => {
     startSeatLock(currentShowKey, show.id);
     navigate('/checkout');
   };
@@ -267,6 +276,14 @@ const SeatSelectionPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Guest Authentication Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={handleLoginSuccess}
+        message="Sign in to confirm your 8-minute seat reservation and proceed to instant checkout"
+      />
     </div>
   );
 };

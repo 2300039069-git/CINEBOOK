@@ -34,6 +34,7 @@ import PartnerCanteenPage from './pages/partner/PartnerCanteenPage';
 import CinematicIntro3D from './components/common/CinematicIntro3D';
 import PrivateAccessGate from './components/common/PrivateAccessGate';
 import CineBotSupportModal from './components/common/CineBotSupportModal';
+import { ToastContainer } from './components/common/ToastContainer';
 
 import { useAuth } from './context/AuthContext';
 
@@ -161,6 +162,9 @@ function App() {
 
         {/* 24/7 Automated CineBot AI Assistant & Instant Refund Widget */}
         <CineBotSupportModal />
+        
+        {/* Global Premium Non-Intrusive Toast System */}
+        <ToastContainer />
       </div>
     </PrivateAccessGate>
   );

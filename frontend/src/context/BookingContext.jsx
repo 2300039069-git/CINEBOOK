@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../data/mockData';
 import { seatLockManager, getShowKey, getTabId } from '../services/seatLockManager';
+import { useToast } from './ToastContext';
 
 const BookingContext = createContext();
 
 const LOCK_DURATION_SECONDS = 480; // 8 minutes atomic seat lock
 
 export const BookingProvider = ({ children }) => {
+  const { toast } = useToast();
   const [selectedMovie, setSelectedMovie] = useState(() => {
     const saved = localStorage.getItem('cinebook_selected_movie');
     return saved ? JSON.parse(saved) : MOVIES[0];
@@ -86,15 +88,19 @@ export const BookingProvider = ({ children }) => {
         setSelectedSeats([]);
         sessionStorage.removeItem('cinebook_tab_selected_seats');
         sessionStorage.removeItem('cinebook_tab_lock_expires_at');
+        toast.warning('Your 8-minute seat lock has expired. Seats released back to audience.', 'Seat Reservation Expired');
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [lockExpiresAt, selectedSeats.length, currentShowKey, selectedShow?.id]);
+  }, [lockExpiresAt, selectedSeats.length, currentShowKey, selectedShow?.id, toast]);
 
   // Toggle seat selection with atomic cross-tab lock verification
   const toggleSeatSelection = async (seat, overrideShowKey, overrideShowId) => {
-    if (seat.status === 'BOOKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') return;
+    if (seat.status === 'BOOKED' || seat.status === 'COUNTER_QUOTA' || seat.quota === 'BOX_OFFICE') {
+      toast.warning(`Seat ${seat.id} is already booked.`);
+      return;
+    }
 
     const showKey = overrideShowKey || getShowKey(selectedShow, selectedTheatre, selectedMovie, selectedDate);
     const showId = overrideShowId || selectedShow?.id;
@@ -109,24 +115,24 @@ export const BookingProvider = ({ children }) => {
 
     // Check maximum 8 seats
     if (selectedSeats.length >= 8) {
-      alert('You can select a maximum of 8 seats per transaction.');
+      toast.warning('You can select a maximum of 8 seats per transaction.', 'Limit Reached');
       return;
     }
 
     // Check if locked by another tab or already booked
     if (seatLockManager.isSeatLockedByOtherTab(showKey, seat.id)) {
-      alert(`Seat ${seat.id} is currently locked by another customer in another session.`);
+      toast.conflict(`Seat ${seat.id} was just reserved by another customer. Please select another seat.`);
       return;
     }
     if (seatLockManager.isSeatBooked(showKey, seat.id)) {
-      alert(`Seat ${seat.id} is already booked.`);
+      toast.conflict(`Seat ${seat.id} is already booked.`);
       return;
     }
 
     // Lock seat atomically
     const result = await seatLockManager.lockSeat(showKey, seat.id, showId);
     if (!result.success) {
-      alert(result.message || `Seat ${seat.id} is already booked. Please select another seat.`);
+      toast.conflict(result.message || `Seat ${seat.id} was just reserved by another customer. Please select another seat.`);
       setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
       return;
     }

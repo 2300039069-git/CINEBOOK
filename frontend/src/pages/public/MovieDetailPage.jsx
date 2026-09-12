@@ -15,6 +15,7 @@ import {
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
 import { useBooking } from '../../context/BookingContext';
+import { useToast } from '../../context/ToastContext';
 import ShowtimeFilter from '../../components/booking/ShowtimeFilter';
 import TrailerModal from '../../components/movies/TrailerModal';
 
@@ -22,6 +23,7 @@ const MovieDetailPage = () => {
   const { slug } = useParams();
   const { selectedCity, setIsCityModalOpen } = useLocation();
   const { setSelectedMovie, setSelectedTheatre, setSelectedShow, setSelectedDate } = useBooking();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [isTrailerOpen, setIsTrailerOpen] = useState(false);
@@ -111,7 +113,7 @@ const MovieDetailPage = () => {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Movie link copied to clipboard!');
+      toast.info('Movie link copied to clipboard!');
     }
   };
 

@@ -27,16 +27,13 @@ export const loadRazorpayScript = () => {
 export const paymentApi = {
   createOrder: async (bookingId, amount) => {
     try {
-      const response = await withTimeout(
-        api.post('/payments/create-order', {
-          booking_id: bookingId,
-          amount: amount
-        }),
-        1200
-      );
+      const response = await api.post('/payments/create-order', {
+        booking_id: bookingId,
+        amount: amount
+      });
       return response.data || response;
     } catch (err) {
-      console.warn('Fast payment order fallback initialized:', err.message);
+      console.warn('Backend payment create-order failed, using test order:', err.message);
       return {
         order_id: `order_${Date.now()}`,
         amount: Math.round(amount * 100),
@@ -49,12 +46,10 @@ export const paymentApi = {
 
   verifyPayment: async (paymentDetails) => {
     try {
-      const response = await withTimeout(
-        api.post('/payments/verify', paymentDetails),
-        1000
-      );
+      const response = await api.post('/payments/verify', paymentDetails);
       return response.data || response;
     } catch (err) {
+      console.warn('Backend payment verification fallback:', err.message);
       return {
         success: true,
         booking_id: paymentDetails.booking_id,

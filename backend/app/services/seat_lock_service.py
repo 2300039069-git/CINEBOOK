@@ -172,6 +172,7 @@ class SeatLockService:
 
             # 2. MongoDB Atomic reservation with find_one_and_update & isBooked check
             if db_manager.is_connected:
+                locked_in_this_batch = []
                 try:
                     for seat_id in seat_ids:
                         # Atomic find_one_and_update with isBooked: False
@@ -203,14 +204,33 @@ class SeatLockService:
                             return_document=True
                         )
                         if not doc:
+                            if locked_in_this_batch:
+                                await db_manager.db.seat_locks.delete_many({
+                                    "show_id": show_id,
+                                    "seat_id": {"$in": locked_in_this_batch},
+                                    "lock_token": lock_token
+                                })
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
                                 detail="Seat already booked"
                             )
+                        locked_in_this_batch.append(seat_id)
                 except HTTPException:
+                    if locked_in_this_batch:
+                        await db_manager.db.seat_locks.delete_many({
+                            "show_id": show_id,
+                            "seat_id": {"$in": locked_in_this_batch},
+                            "lock_token": lock_token
+                        })
                     raise
                 except Exception:
                     # In case of DB conflict or race condition on unique index
+                    if locked_in_this_batch:
+                        await db_manager.db.seat_locks.delete_many({
+                            "show_id": show_id,
+                            "seat_id": {"$in": locked_in_this_batch},
+                            "lock_token": lock_token
+                        })
                     raise HTTPException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Seat already booked"

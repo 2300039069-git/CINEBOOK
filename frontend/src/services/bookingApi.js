@@ -24,13 +24,14 @@ export const bookingApi = {
         conflictErr.response = err.response;
         throw conflictErr;
       }
-      console.warn('Backend seat lock fallback:', err.message);
-      return {
-        success: true,
-        lock_token: `lock_${Date.now()}`,
-        seconds_remaining: 300,
-        seat_ids: seatIds
-      };
+      if (err.status === 401 || err.response?.status === 401) {
+        const authErr = new Error('Authentication required to reserve seats. Please log in.');
+        authErr.status = 401;
+        authErr.response = err.response;
+        throw authErr;
+      }
+      console.warn('Backend seat lock error:', err.message);
+      throw err;
     }
   },
 
@@ -55,11 +56,14 @@ export const bookingApi = {
         conflictErr.response = err.response;
         throw conflictErr;
       }
-      console.warn('Backend booking create fallback:', err.message);
-      return {
-        booking_id: `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`,
-        ...bookingData
-      };
+      if (err.status === 401 || err.response?.status === 401) {
+        const authErr = new Error('Authentication required. Please sign in to book.');
+        authErr.status = 401;
+        authErr.response = err.response;
+        throw authErr;
+      }
+      console.warn('Backend booking error:', err.message);
+      throw err;
     }
   },
 

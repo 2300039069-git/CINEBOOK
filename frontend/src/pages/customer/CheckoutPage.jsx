@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
+import { useToast } from '../../context/ToastContext';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
 import { loadRazorpayScript, paymentApi, RAZORPAY_KEY_ID } from '../../services/paymentApi';
 import { seatLockManager, getShowKey } from '../../services/seatLockManager';
@@ -23,6 +24,7 @@ import { seatLockManager, getShowKey } from '../../services/seatLockManager';
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const {
     selectedMovie,
     selectedTheatre,
@@ -120,7 +122,7 @@ const CheckoutPage = () => {
       setProcessing(false);
       setIsSubmitting(false);
       setErrorMessage('Seat already booked. Another customer completed checkout for these seats before you.');
-      alert('Seat already booked. Another customer completed payment for these seats first.');
+      toast.conflict('Seat already booked. Another customer completed payment for these seats first.');
       navigate(`/seat-selection/${show?.id || 'sh-001'}`);
       return;
     }
@@ -180,7 +182,7 @@ const CheckoutPage = () => {
         setProcessing(false);
         setIsSubmitting(false);
         setErrorMessage('Seat already booked on server.');
-        alert('Seat already booked. Another customer reserved this seat.');
+        toast.conflict('Seat already booked. Another customer reserved this seat.');
         navigate(`/seat-selection/${show?.id || 'sh-001'}`);
         return;
       }
@@ -192,6 +194,7 @@ const CheckoutPage = () => {
 
     setProcessing(false);
     setIsSubmitting(false);
+    toast.success('Payment successful! Your tickets are confirmed.');
     navigate(`/booking-confirmation/${bookingId}`);
   };
 
@@ -206,7 +209,7 @@ const CheckoutPage = () => {
     const isConflict = seats.some((s) => statuses[s.id]?.status === 'BOOKED');
     if (isConflict) {
       setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer. Please go back and select available seats.');
-      alert('Seat already booked. One or more seats were reserved by another customer.');
+      toast.conflict('Seat already booked. One or more seats were reserved by another customer.');
       return;
     }
 
@@ -221,6 +224,7 @@ const CheckoutPage = () => {
     } catch (err) {
       if (err.status === 409 || err.message?.toLowerCase().includes('already booked')) {
         setErrorMessage(err.message || 'Seat already booked. Another customer has reserved this seat.');
+        toast.conflict(err.message || 'Seat already booked. Another customer has reserved this seat.');
         setIsSubmitting(false);
         return;
       }
