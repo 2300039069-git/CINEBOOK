@@ -24,7 +24,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const user = verifyJwt(req.headers.authorization);
+  const user = verifyJwt(req.headers?.authorization);
   if (!user) {
     return res.status(200).json([]);
   }

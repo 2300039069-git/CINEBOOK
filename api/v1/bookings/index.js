@@ -43,7 +43,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'POST') {
     const payload = req.body || {};
-    const user = verifyJwt(req.headers.authorization);
+    const user = verifyJwt(req.headers?.authorization);
     const userId = user?.sub || payload.user_id || 'usr_guest';
     const showId = payload.show_id || 'sh-001';
     const seats = payload.seats || [];

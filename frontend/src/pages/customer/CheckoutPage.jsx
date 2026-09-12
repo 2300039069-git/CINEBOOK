@@ -268,6 +268,13 @@ const CheckoutPage = () => {
 
     // 3. Ensure Razorpay SDK is loaded
     const isSdkLoaded = await loadRazorpayScript();
+    if (!isSdkLoaded || !window.Razorpay) {
+      setIsSubmitting(false);
+      const failMsg = 'Payment gateway could not be loaded. Please disable ad-blockers or check your connection and try again.';
+      setErrorMessage(failMsg);
+      toast.error(failMsg);
+      return;
+    }
 
     // 4. Create Razorpay Payment Order
     let orderData = null;
@@ -278,86 +285,88 @@ const CheckoutPage = () => {
     }
 
     // 5. Trigger Official Razorpay Checkout Popup
-    if (isSdkLoaded && window.Razorpay) {
-      try {
-        const options = {
-          key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
-          amount: Math.round(finalTotal * 100),
-          currency: 'INR',
-          name: 'CINEBOOK',
-          description: `Tickets for ${movie.title} (${seats.length} Seats)`,
-          image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
-          order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
-          handler: function (response) {
-            // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
+    try {
+      const options = {
+        key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
+        amount: Math.round(finalTotal * 100),
+        currency: 'INR',
+        name: 'CINEBOOK',
+        description: `Tickets for ${movie.title} (${seats.length} Seats)`,
+        image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
+        order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
+        handler: function (response) {
+          // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
+          if (response && response.razorpay_payment_id) {
             completePaymentAndBooking(
               transactionBookingId,
-              response.razorpay_payment_id || `pay_rzp_${Date.now()}`,
-              response.razorpay_order_id || orderData?.order_id || `ord_${Date.now()}`,
-              response.razorpay_signature || 'sim_sig_verified'
+              response.razorpay_payment_id,
+              response.razorpay_order_id || orderData?.order_id || '',
+              response.razorpay_signature || ''
             );
-          },
-          prefill: {
-            name: user?.name || 'Cinema Guest',
-            email: email,
-            contact: phone
-          },
-          notes: {
-            movie: movie.title,
-            theatre: theatre.name,
-            seats: seats.map((s) => s.id).join(', ')
-          },
-          theme: {
-            color: '#E50914'
-          },
-          modal: {
-            ondismiss: async function () {
-              // ON MODAL DISMISS / PAYMENT CANCEL:
-              // Immediately release temporary locks so seats become available instantly
-              setIsSubmitting(false);
-              setProcessing(false);
-              try {
-                if (show?.id) {
-                  await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
-                }
-              } catch (e) {}
-              seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-              toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
-            }
+          } else {
+            setIsSubmitting(false);
+            setProcessing(false);
+            toast.error('Payment response was invalid. No seats were charged.');
           }
-        };
+        },
+        prefill: {
+          name: user?.name || 'Cinema Guest',
+          email: email,
+          contact: phone
+        },
+        notes: {
+          movie: movie.title,
+          theatre: theatre.name,
+          seats: seats.map((s) => s.id).join(', ')
+        },
+        theme: {
+          color: '#E50914'
+        },
+        modal: {
+          ondismiss: async function () {
+            // ON MODAL DISMISS / PAYMENT CANCEL:
+            // Immediately release temporary locks so seats become available instantly
+            setIsSubmitting(false);
+            setProcessing(false);
+            try {
+              if (show?.id) {
+                await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+              }
+            } catch (e) {}
+            seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+            releaseSeatLock();
+            toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
+            navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+          }
+        }
+      };
 
-        const rzp = new window.Razorpay(options);
-        rzp.on('payment.failed', async function (resp) {
-          // ON PAYMENT FAILURE:
-          // Immediately release temporary locks so seats become available instantly
-          setIsSubmitting(false);
-          setProcessing(false);
-          try {
-            if (show?.id) {
-              await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
-            }
-          } catch (e) {}
-          seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-          const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';
-          setErrorMessage(failMsg);
-          toast.error(failMsg);
-        });
-        rzp.open();
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', async function (resp) {
+        // ON PAYMENT FAILURE:
+        // Immediately release temporary locks so seats become available instantly
         setIsSubmitting(false);
-        return;
-      } catch (err) {
-        console.warn('Razorpay popup error, proceeding with fallback:', err);
-      }
+        setProcessing(false);
+        try {
+          if (show?.id) {
+            await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+          }
+        } catch (e) {}
+        seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+        releaseSeatLock();
+        const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';
+        setErrorMessage(failMsg);
+        toast.error(failMsg);
+        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      });
+      rzp.open();
+      setIsSubmitting(false);
+    } catch (err) {
+      setIsSubmitting(false);
+      const failMsg = 'Unable to launch payment gateway: ' + (err.message || 'Please try again.');
+      setErrorMessage(failMsg);
+      toast.error(failMsg);
     }
-
-    // Direct Instant Verification Flow (safe fallback if popup is blocked)
-    completePaymentAndBooking(
-      transactionBookingId,
-      `pay_sim_${Date.now()}`,
-      `ord_sim_${Date.now()}`,
-      'sim_sig_verified'
-    );
   };
 
   return (
