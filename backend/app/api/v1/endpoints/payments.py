@@ -60,6 +60,7 @@ async def verify_payment(
         )
 
     # 1. Retrieve booking from Supabase DB or memory
+    await db_manager.ensure_connected()
     booking = None
     if db_manager.is_connected:
         try:

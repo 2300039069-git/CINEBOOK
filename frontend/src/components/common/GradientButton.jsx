@@ -24,14 +24,14 @@ const GradientButton = ({
 
   const variantStyles = {
     crimson:
-      'bg-gradient-to-b from-primary-light to-primary hover:from-primary hover:to-primary-hover text-white shadow-cta hover:shadow-glow-crimson border border-white/20 active:translate-y-[1px]',
+      'bg-gradient-to-b from-[#FB7185] to-[#E63950] hover:from-[#F43F5E] hover:to-[#BE123C] text-white shadow-cta hover:shadow-glow-crimson border border-white/20 active:translate-y-[1px]',
     gold:
-      'bg-gradient-to-b from-[#F5C542] via-[#D4AF37] to-[#B89628] hover:from-[#FAD55C] hover:to-[#D4AF37] text-black font-extrabold shadow-cta-gold hover:shadow-glow-gold border border-white/30 active:translate-y-[1px]',
+      'bg-gradient-to-b from-[#FBBF24] via-[#F5A623] to-[#D97706] hover:from-[#FCD34D] hover:to-[#F5A623] text-black font-extrabold shadow-cta-gold hover:shadow-glow-gold border border-white/30 active:translate-y-[1px]',
     glass:
       'bg-surface-elevated/80 hover:bg-surface-hover/90 text-text-primary border border-white/10 hover:border-white/25 shadow-card hover:shadow-card-hover backdrop-blur-xl active:translate-y-[1px]',
     secondary:
-      'bg-surface-elevated hover:bg-surface border border-border hover:border-gold/50 text-text-primary shadow-sm hover:shadow-md active:translate-y-[1px]'
-  }[variant] || variantStyles.crimson;
+      'bg-surface-elevated hover:bg-surface border border-border hover:border-accent/50 text-text-primary shadow-sm hover:shadow-md active:translate-y-[1px]'
+  }[variant] || variantStyles.gold;
 
   return (
     <button

@@ -77,10 +77,10 @@ const TheatreShowtimesCard = ({
         <button
           type="button"
           onClick={() => onBookTickets?.({ theatreName, time: selectedSlot, priceRange })}
-          className="w-full py-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer active:scale-98"
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-rose-600 hover:from-primary-hover hover:to-rose-700 text-white text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-cta hover:shadow-cta-hover transition-all cursor-pointer active:scale-98"
         >
           <Ticket className="w-4 h-4 text-white" />
-          <span>Select Seats ({selectedSlot})</span>
+          <span>Grab Seats ({selectedSlot})</span>
           <ChevronRight className="w-4 h-4 text-white" />
         </button>
       </div>

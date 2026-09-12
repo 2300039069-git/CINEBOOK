@@ -77,14 +77,17 @@ export const AuthProvider = ({ children }) => {
     } else if (role === 'THEATRE_ADMIN' || email.includes('partner') || email.includes('siva') || email.includes('theatre')) {
       loggedInUser = MOCK_USERS.theatre_admin;
     } else {
+      const emailClean = (email || 'guest@example.com').toLowerCase().trim();
+      const emailHash = btoa(emailClean).replace(/[^a-zA-Z0-9]/g, '').slice(-8).toLowerCase();
       loggedInUser = {
         ...MOCK_USERS.customer,
-        email: email || MOCK_USERS.customer.email,
+        id: `usr-${emailHash}`,
+        email: emailClean,
         name: email ? email.split('@')[0].toUpperCase() : MOCK_USERS.customer.name
       };
     }
 
-    const mockToken = `jwt_${btoa(JSON.stringify({ id: loggedInUser.id, role: loggedInUser.role, exp: Date.now() + 86400000 }))}`;
+    const mockToken = `jwt_${btoa(JSON.stringify({ id: loggedInUser.id, email: loggedInUser.email, role: loggedInUser.role, exp: Date.now() + 86400000 }))}`;
     
     setUser(loggedInUser);
     setToken(mockToken);
@@ -118,10 +121,12 @@ export const AuthProvider = ({ children }) => {
       console.warn('Backend register fallback:', err.message);
     }
 
+    const emailClean = (userData.email || 'guest@example.com').toLowerCase().trim();
+    const emailHash = btoa(emailClean).replace(/[^a-zA-Z0-9]/g, '').slice(-8).toLowerCase();
     const newUser = {
-      id: `usr-${Date.now()}`,
+      id: `usr-${emailHash}`,
       name: userData.name,
-      email: userData.email,
+      email: emailClean,
       phone: userData.phone,
       role: isTheatreAdmin ? 'THEATRE_ADMIN' : 'CUSTOMER',
       theatreName: userData.theatreName || (isTheatreAdmin ? 'Siva Cinemas' : undefined),
@@ -129,7 +134,7 @@ export const AuthProvider = ({ children }) => {
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'
     };
 
-    const mockToken = `jwt_${btoa(JSON.stringify({ id: newUser.id, role: newUser.role, exp: Date.now() + 86400000 }))}`;
+    const mockToken = `jwt_${btoa(JSON.stringify({ id: newUser.id, email: newUser.email, role: newUser.role, exp: Date.now() + 86400000 }))}`;
     setUser(newUser);
     setToken(mockToken);
     localStorage.setItem('cinebook_user', JSON.stringify(newUser));

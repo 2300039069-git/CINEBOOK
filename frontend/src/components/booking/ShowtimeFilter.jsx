@@ -77,7 +77,7 @@ const ShowtimeFilter = ({
   return (
     <div className="space-y-6 text-text-primary">
       {/* 1. HORIZONTAL 7-DAY DATE RIBBON */}
-      <div className="bg-surface py-3.5 px-4 rounded-xl border border-border">
+      <div className="bg-surface py-3.5 px-4 rounded-2xl border border-border shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none">
           {datesList.map((item) => {
             const isSelected = selectedDate === item.dateISO;
@@ -86,19 +86,19 @@ const ShowtimeFilter = ({
                 key={item.dateISO}
                 type="button"
                 onClick={() => onDateChange(item.dateISO)}
-                className={`flex flex-col items-center justify-center min-w-[70px] sm:min-w-[80px] py-2.5 px-2 rounded-xl border transition-all cursor-pointer ${
+                className={`flex flex-col items-center justify-center min-w-[72px] sm:min-w-[84px] py-3 px-2 rounded-xl border transition-all duration-200 cursor-pointer ${
                   isSelected
-                    ? 'bg-accent border-accent text-white font-bold shadow-sm'
-                    : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                    ? 'bg-gold text-background border-gold font-black shadow-md scale-105'
+                    : 'bg-surface-elevated border-border text-text-secondary hover:border-gold/50 hover:text-text-primary'
                 }`}
               >
-                <span className={`text-[10px] font-bold tracking-wider ${isSelected ? 'text-white/90' : 'text-text-muted'}`}>
+                <span className={`text-[10px] font-bold tracking-wider ${isSelected ? 'text-black/80' : 'text-text-muted'}`}>
                   {item.dayName}
                 </span>
-                <span className="text-base sm:text-lg font-extrabold my-0.5">
+                <span className="text-base sm:text-lg font-black my-0.5">
                   {item.dayNumber}
                 </span>
-                <span className={`text-[10px] font-medium ${isSelected ? 'text-white/90' : 'text-text-muted'}`}>
+                <span className={`text-[10px] font-semibold ${isSelected ? 'text-black/80' : 'text-text-muted'}`}>
                   {item.monthName}
                 </span>
               </button>
@@ -108,7 +108,7 @@ const ShowtimeFilter = ({
       </div>
 
       {/* 2. SUB-FILTERS (Language, Format) */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-surface border border-border rounded-xl text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-surface border border-border rounded-2xl text-xs">
         {/* Quick Filter Chips */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           {/* Format filter */}
@@ -119,10 +119,10 @@ const ShowtimeFilter = ({
                 key={fmt}
                 type="button"
                 onClick={() => setSelectedFormat(fmt)}
-                className={`px-2.5 py-1 rounded-lg transition-all border cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-all border text-xs cursor-pointer ${
                   selectedFormat === fmt
-                    ? 'bg-accent border-accent text-white font-bold shadow-sm'
-                    : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                    ? 'bg-gold text-background border-gold font-bold shadow-sm'
+                    : 'bg-surface-elevated border-border text-text-secondary hover:border-gold/50 hover:text-text-primary'
                 }`}
               >
                 {fmt}
@@ -140,10 +140,10 @@ const ShowtimeFilter = ({
                 key={lang}
                 type="button"
                 onClick={() => setSelectedLanguage(lang)}
-                className={`px-2.5 py-1 rounded-lg transition-all border cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-all border text-xs cursor-pointer ${
                   selectedLanguage === lang
-                    ? 'bg-surface-elevated border-amber-500 text-amber-500 font-bold shadow-sm'
-                    : 'bg-surface-elevated border-border text-text-secondary hover:border-accent/50 hover:text-text-primary'
+                    ? 'bg-surface-elevated border-gold text-gold font-bold shadow-sm'
+                    : 'bg-surface-elevated border-border text-text-secondary hover:border-gold/50 hover:text-text-primary'
                 }`}
               >
                 {lang}
@@ -155,13 +155,13 @@ const ShowtimeFilter = ({
         {/* Availability Legend */}
         <div className="flex items-center gap-4 text-[11px] font-semibold text-text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Plenty
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span> Fast Filling
+            <span className="w-2 h-2 rounded-full bg-gold"></span> Filling Fast
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-accent"></span> Almost Full
+            <span className="w-2 h-2 rounded-full bg-primary"></span> Almost Full
           </span>
         </div>
       </div>
@@ -216,28 +216,33 @@ const ShowtimeFilter = ({
                       key={show.id}
                       type="button"
                       onClick={() => onShowSelect(theatre, show)}
-                      className={`group relative flex flex-col items-center justify-center p-3 rounded-lg border transition-all min-w-[125px] text-center cursor-pointer ${
+                      className={`group relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 min-w-[130px] text-center cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0 ${
                         isAlmostFull
-                          ? 'border-accent/50 bg-accent/10 hover:border-accent'
+                          ? 'border-primary/50 bg-primary/10 hover:border-primary shadow-sm'
                           : isFillingFast
-                          ? 'border-amber-500/50 bg-amber-500/10 hover:border-amber-500'
-                          : 'bg-surface-elevated border-border hover:border-accent/50'
+                          ? 'border-gold/50 bg-gold/10 hover:border-gold shadow-sm'
+                          : 'bg-surface-elevated border-border hover:border-gold/60 hover:bg-surface-hover shadow-sm'
                       }`}
                     >
-                      <span className="text-sm font-extrabold text-text-primary group-hover:text-accent transition-colors">
+                      <span className="text-sm font-black text-text-primary group-hover:text-gold transition-colors">
                         {show.time}
                       </span>
-                      <span className="text-[10px] font-semibold text-text-muted uppercase mt-0.5">
+                      <span className="text-[10px] font-bold text-text-muted uppercase mt-0.5">
                         {show.format} • {show.language}
                       </span>
-                      <span className="text-[10px] text-text-secondary mt-0.5 font-medium">
+                      <span className="text-[10px] text-text-secondary mt-0.5 font-semibold">
                         ₹{show.price?.CLASSIC || 120} - ₹{show.price?.RECLINER || 280}
                       </span>
 
                       {/* Fast Tag */}
                       {isFillingFast && (
-                        <span className="absolute -top-2 -right-1 px-1.5 py-0.2 rounded-full bg-amber-500 text-black text-[8px] font-bold uppercase">
+                        <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full bg-gold text-background text-[8px] font-black uppercase shadow-xs">
                           Fast
+                        </span>
+                      )}
+                      {isAlmostFull && (
+                        <span className="absolute -top-2 -right-1 px-1.5 py-0.5 rounded-full bg-primary text-white text-[8px] font-black uppercase shadow-xs">
+                          Filling
                         </span>
                       )}
                     </button>

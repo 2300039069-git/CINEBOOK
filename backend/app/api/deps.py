@@ -61,9 +61,25 @@ async def get_current_user(
             try:
                 import base64, json
                 mock_data = json.loads(base64.b64decode(token[4:]).decode())
-                user_id = mock_data.get("id", "usr-001")
+                user_id = mock_data.get("id") or "usr-001"
                 if user_id in DEFAULT_USERS_STORE:
                     return UserResponse(**DEFAULT_USERS_STORE[user_id])
+                
+                email = mock_data.get("email") or f"{user_id}@cinebook.in"
+                name = mock_data.get("name") or "CineBook User"
+                role_val = mock_data.get("role", "CUSTOMER")
+                user_role = UserRole(role_val) if role_val in UserRole.__members__ else UserRole.CUSTOMER
+                user_resp = UserResponse(
+                    id=user_id,
+                    name=name,
+                    email=email,
+                    role=user_role,
+                    avatar="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop",
+                    is_active=True,
+                    theatre_ids=[]
+                )
+                DEFAULT_USERS_STORE[user_id] = user_resp.model_dump()
+                return user_resp
             except Exception:
                 pass
 

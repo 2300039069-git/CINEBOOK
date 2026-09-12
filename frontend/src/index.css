@@ -5,47 +5,47 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #05070B;
-    --theme-surface: #0D111A;
-    --theme-card: #0F1420;
-    --theme-elevated: #131926;
-    --theme-hover: #1A2234;
-    --theme-subtle: #080A10;
-    --theme-border: #1B2336;
-    --theme-border-subtle: #121826;
-    --theme-border-hover: #D4AF37;
-    --theme-primary: #E50914;
-    --theme-primary-hover: #FF1E2B;
-    --theme-accent: #D4AF37;
-    --theme-crimson: #E50914;
-    --theme-gold: #D4AF37;
+    --theme-bg: #0E0E12;
+    --theme-surface: #16161F;
+    --theme-card: #161622;
+    --theme-elevated: #1E1E2A;
+    --theme-hover: #262638;
+    --theme-subtle: #121218;
+    --theme-border: rgba(255, 255, 255, 0.08);
+    --theme-border-subtle: rgba(255, 255, 255, 0.05);
+    --theme-border-hover: #F5A623;
+    --theme-primary: #E63950;
+    --theme-primary-hover: #F43F5E;
+    --theme-accent: #F5A623;
+    --theme-crimson: #E63950;
+    --theme-gold: #F5A623;
     --theme-cyan: #06B6D4;
-    --theme-text: #F8FAFC;
-    --theme-text-primary: #F8FAFC;
-    --theme-text-secondary: #94A3B8;
-    --theme-text-muted: #64748B;
+    --theme-text: #F4F4F5;
+    --theme-text-primary: #F4F4F5;
+    --theme-text-secondary: #9CA3AF;
+    --theme-text-muted: #6B7280;
   }
 
   .light {
-    --theme-bg: #F4F6FB;
+    --theme-bg: #F5F5F7;
     --theme-surface: #FFFFFF;
     --theme-card: #FFFFFF;
-    --theme-elevated: #E8EDF5;
-    --theme-hover: #DEE5F0;
-    --theme-subtle: #F8FAFD;
-    --theme-border: #D8E0EC;
-    --theme-border-subtle: #E8EEF5;
-    --theme-border-hover: #D4AF37;
-    --theme-primary: #E50914;
-    --theme-primary-hover: #CC0812;
-    --theme-accent: #B45309;
-    --theme-crimson: #E50914;
-    --theme-gold: #B45309;
+    --theme-elevated: #EDECEF;
+    --theme-hover: #E3E2E6;
+    --theme-subtle: #F9F9FA;
+    --theme-border: #E0DFE5;
+    --theme-border-subtle: #ECEBF0;
+    --theme-border-hover: #D97706;
+    --theme-primary: #E63950;
+    --theme-primary-hover: #D1293F;
+    --theme-accent: #D97706;
+    --theme-crimson: #E63950;
+    --theme-gold: #D97706;
     --theme-cyan: #0284C7;
-    --theme-text: #090D16;
-    --theme-text-primary: #090D16;
-    --theme-text-secondary: #334155;
-    --theme-text-muted: #64748B;
+    --theme-text: #111115;
+    --theme-text-primary: #111115;
+    --theme-text-secondary: #4B5563;
+    --theme-text-muted: #6B7280;
   }
 
   body {
@@ -118,6 +118,36 @@
   /* 3D Specular Highlight Bevel */
   .specular-bevel {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  /* Curved Screen Indicator */
+  .cinema-screen-curve {
+    border-top: 3px solid #F5A623;
+    border-radius: 50% 50% 0 0 / 25px 25px 0 0;
+    box-shadow: 0 -8px 25px -4px rgba(245, 166, 35, 0.45);
+  }
+
+  /* Perforated Ticket Stub Separator */
+  .ticket-notch-left {
+    position: absolute;
+    left: -12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--theme-bg, #0E0E12);
+  }
+
+  .ticket-notch-right {
+    position: absolute;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: var(--theme-bg, #0E0E12);
+  }
+
+  .ticket-tear-line {
+    border-top: 2px dashed rgba(255, 255, 255, 0.15);
   }
 
   /* Luxury Cinema Badges */

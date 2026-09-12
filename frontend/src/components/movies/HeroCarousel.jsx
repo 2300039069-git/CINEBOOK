@@ -122,8 +122,8 @@ const HeroCarousel = ({ onWatchTrailer }) => {
             {/* Action CTAs */}
             <div className="flex flex-wrap items-center gap-3.5 pt-3">
               <Link to={`/movie/${currentMovie.slug || currentMovie.id}`}>
-                <GradientButton variant="crimson" size="md" icon={Ticket}>
-                  Book Tickets
+                <GradientButton variant="gold" size="md" icon={Ticket}>
+                  Grab your seats
                 </GradientButton>
               </Link>
 
@@ -134,7 +134,7 @@ const HeroCarousel = ({ onWatchTrailer }) => {
                   icon={Play}
                   onClick={() => onWatchTrailer(currentMovie)}
                 >
-                  Watch 4K Trailer
+                  Watch Trailer
                 </GradientButton>
               )}
             </div>

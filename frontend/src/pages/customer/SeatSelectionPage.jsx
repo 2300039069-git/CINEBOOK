@@ -119,12 +119,13 @@ const SeatSelectionPage = () => {
           setRawLayout(res.tiers);
 
           // Extract real-time backend lock & booked statuses
+          const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
           const backendStatuses = {};
           res.tiers.forEach((tier) => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
                 if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
-                  const isMine = selectedSeats.some((s) => s.id === seat.id);
+                  const isMine = seat.status === 'LOCKED' && Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
                   backendStatuses[seat.id] = {
                     status: seat.status,
                     isLockedByOtherTab: !isMine,
@@ -136,7 +137,6 @@ const SeatSelectionPage = () => {
           });
 
           // Merge local and backend statuses
-          const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
           const merged = { ...localStatuses, ...backendStatuses };
           setLiveStatuses(merged);
 
@@ -242,27 +242,27 @@ const SeatSelectionPage = () => {
   return (
     <div className="min-h-screen bg-background text-text-primary pb-36 transition-colors">
       {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-20 z-30 bg-surface border-b border-border py-3.5 px-4 sm:px-6 lg:px-8 shadow-md">
+      <div className="sticky top-16 sm:top-20 z-30 bg-surface/95 backdrop-blur-md border-b border-border/80 py-3.5 px-4 sm:px-6 lg:px-8 shadow-lg">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg bg-surface-elevated text-text-secondary hover:text-text-primary border border-border transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-surface-elevated text-text-secondary hover:text-text-primary border border-border transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold text-text-primary leading-none">
+                <h1 className="text-base sm:text-lg font-black text-text-primary leading-none">
                   {movie.title}
                 </h1>
-                <span className="px-2 py-0.5 rounded bg-surface-elevated text-text-secondary text-[10px] font-bold border border-border">
+                <span className="px-2 py-0.5 rounded-full bg-surface-elevated text-text-secondary text-[10px] font-bold border border-border">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </div>
               <p className="text-xs text-text-muted mt-1">
-                {theatre.name} • <span className="text-amber-500 font-semibold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
+                {theatre.name} • <span className="text-gold font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
               </p>
             </div>
           </div>
@@ -274,15 +274,15 @@ const SeatSelectionPage = () => {
             </div>
 
             {/* 8-Minute Countdown Timer Widget */}
-            <div className={`px-3 py-1.5 rounded-lg flex items-center gap-2 border transition-all ${
+            <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
               secondsLeft < 120
-                ? 'bg-red-500/10 border-red-500/50 text-red-500 animate-pulse'
-                : 'bg-surface-elevated border-border text-amber-500'
+                ? 'bg-primary/15 border-primary text-primary animate-pulse'
+                : 'bg-surface-elevated border-gold/40 text-gold'
             }`}>
-              <Clock className="w-3.5 h-3.5" />
+              <Clock className="w-4 h-4" />
               <div className="leading-tight">
-                <span className="text-[9px] uppercase font-bold block tracking-wider opacity-80">Seat Lock</span>
-                <span className="text-xs font-mono font-bold">{formatTime(secondsLeft)}</span>
+                <span className="text-[9px] uppercase font-black block tracking-wider opacity-80">Seat Lock</span>
+                <span className="text-xs font-mono font-black">{formatTime(secondsLeft)}</span>
               </div>
             </div>
           </div>
@@ -292,11 +292,11 @@ const SeatSelectionPage = () => {
       {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
       {selectedSeats.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3 rounded-xl bg-surface border border-border flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-text-secondary">
-              <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-surface border border-gold/40 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2.5 text-xs text-text-secondary">
+              <Sparkles className="w-4 h-4 text-gold flex-shrink-0" />
               <span>
-                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats {selectedSeats.map(s => s.id).join(', ')} held exclusively for you. Complete payment within <strong className="text-amber-500">{formatTime(secondsLeft)}</strong>.
+                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-gold font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-gold">{formatTime(secondsLeft)}</strong>.
               </span>
             </div>
           </div>
@@ -313,26 +313,26 @@ const SeatSelectionPage = () => {
       </div>
 
       {/* 4. STICKY BOTTOM BOOKING SUMMARY BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border py-3.5 px-4 sm:px-6 lg:px-8 shadow-2xl">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md border-t border-border py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Selected Seats summary */}
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-surface-elevated text-accent border border-border hidden sm:block">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-gold/15 text-gold border border-gold/30 hidden sm:block">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-text-muted font-semibold">Selected Seats:</span>
                 {selectedSeats.length > 0 ? (
-                  <span className="font-bold text-text-primary bg-surface-elevated px-2.5 py-0.5 rounded border border-border">
+                  <span className="font-black text-text-primary bg-surface-elevated px-3 py-0.5 rounded-full border border-gold/40 text-gold">
                     {selectedSeats.map((s) => s.id).join(', ')}
                   </span>
                 ) : (
                   <span className="text-text-muted italic">Click on seat layout above</span>
                 )}
               </div>
-              <p className="text-xs text-text-muted mt-0.5">
-                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base Amount: <strong className="text-text-primary">₹{baseAmount}</strong>
+              <p className="text-xs text-text-muted mt-1">
+                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base Amount: <strong className="text-text-primary font-bold">₹{baseAmount}</strong>
               </p>
             </div>
           </div>
@@ -341,16 +341,16 @@ const SeatSelectionPage = () => {
           <div className="flex items-center justify-between sm:justify-end gap-6">
             <div className="text-right">
               <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Total Amount</span>
-              <span className="text-xl sm:text-2xl font-extrabold text-amber-500">₹{totalAmount}</span>
+              <span className="text-xl sm:text-2xl font-black text-gold">₹{totalAmount}</span>
             </div>
 
             <button
               type="button"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`px-7 py-3 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+              className={`px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all duration-200 cursor-pointer ${
                 selectedSeats.length > 0
-                  ? 'bg-accent hover:bg-accent-hover text-white shadow-sm'
+                  ? 'bg-gold hover:bg-gold-hover text-background shadow-lg shadow-gold/20 transform hover:-translate-y-0.5 active:translate-y-0'
                   : 'bg-surface-elevated text-text-muted cursor-not-allowed border border-border'
               }`}
             >

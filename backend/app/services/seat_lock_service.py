@@ -1,10 +1,13 @@
 import asyncio
 import uuid
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Tuple, Optional
 from fastapi import HTTPException, status
 from app.core.config import settings
 from app.core.database import db_manager
+
+logger = logging.getLogger("cinebook.seat_lock")
 from app.models.seat_lock import (
     SeatStatus,
     SeatTier,
@@ -53,6 +56,7 @@ class SeatLockService:
     @classmethod
     async def get_show_layout(cls, show_id: str) -> SeatLayoutResponse:
         """Generate full cinema seat map with real-time dynamic statuses"""
+        await db_manager.ensure_connected()
         cls._cleanup_expired_locks()
         now = datetime.now(timezone.utc)
 
@@ -163,6 +167,7 @@ class SeatLockService:
         Enforces strict race condition protection: if ANY seat is occupied, fails immediately with HTTP 409 Conflict.
         """
         async with LOCK_MUTEX:
+            await db_manager.ensure_connected()
             cls._cleanup_expired_locks()
             now = datetime.now(timezone.utc)
             expires_at = now + timedelta(seconds=settings.SEAT_LOCK_DURATION_SECONDS)
@@ -179,7 +184,7 @@ class SeatLockService:
                             detail="Seat already booked"
                         )
                     if mem_entry.get("status") == "LOCKED" and mem_entry.get("expires_at") > now:
-                        if mem_entry.get("lock_token") != lock_token and mem_entry.get("user_id") != user_id:
+                        if mem_entry.get("lock_token") != lock_token or (mem_entry.get("user_id") and mem_entry.get("user_id") != user_id):
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
                                 detail="Seat already booked"
@@ -213,7 +218,7 @@ class SeatLockService:
                             status_code=status.HTTP_409_CONFLICT,
                             detail="Seat already booked"
                         )
-                    if r.get("lock_token") != lock_token and r.get("user_id") != user_id:
+                    if r.get("lock_token") != lock_token or (r.get("user_id") and r.get("user_id") != user_id):
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
                             detail="Seat already booked"
@@ -270,6 +275,7 @@ class SeatLockService:
     async def release_seats(cls, show_id: str, lock_token: str) -> bool:
         """Release temporary lock when customer cancels checkout or navigates away"""
         async with LOCK_MUTEX:
+            await db_manager.ensure_connected()
             if db_manager.is_connected:
                 try:
                     await db_manager.execute(
@@ -304,6 +310,7 @@ class SeatLockService:
         3. Rejects expired or unauthorized hold attempts with HTTP 409 Conflict.
         """
         async with LOCK_MUTEX:
+            await db_manager.ensure_connected()
             cls._cleanup_expired_locks()
             now = datetime.now(timezone.utc)
             expires_at = now + timedelta(seconds=settings.SEAT_LOCK_DURATION_SECONDS)
@@ -324,9 +331,8 @@ class SeatLockService:
                                 detail=f"Seat hold for {seat_id} has expired. Please select your seats again."
                             )
                         if (
-                            mem_entry.get("user_id")
-                            and mem_entry.get("user_id") != user_id
-                            and (not lock_token or mem_entry.get("lock_token") != lock_token)
+                            (lock_token and mem_entry.get("lock_token") and mem_entry.get("lock_token") != lock_token)
+                            or (mem_entry.get("user_id") and mem_entry.get("user_id") != user_id and mem_entry.get("lock_token") != lock_token)
                         ):
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
@@ -363,9 +369,8 @@ class SeatLockService:
                             detail=f"Seat hold for {lock_doc['seat_id']} has expired. Please select your seats again."
                         )
                     if (
-                        lock_doc.get("user_id")
-                        and lock_doc.get("user_id") != user_id
-                        and (not lock_token or lock_doc.get("lock_token") != lock_token)
+                        (lock_token and lock_doc.get("lock_token") and lock_doc.get("lock_token") != lock_token)
+                        or (lock_doc.get("user_id") and lock_doc.get("user_id") != user_id and lock_doc.get("lock_token") != lock_token)
                     ):
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
@@ -422,6 +427,7 @@ class SeatLockService:
         customer/token, rejects immediately with HTTP 409 Conflict rather than overwriting.
         """
         async with LOCK_MUTEX:
+            await db_manager.ensure_connected()
             now = datetime.now(timezone.utc)
             max_dt = datetime(2099, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
 
@@ -437,8 +443,10 @@ class SeatLockService:
                     if (
                         mem_entry.get("status") == "LOCKED"
                         and mem_entry.get("expires_at", now) > now
-                        and mem_entry.get("user_id") != user_id
-                        and (lock_token and mem_entry.get("lock_token") != lock_token)
+                        and (
+                            (lock_token and mem_entry.get("lock_token") and mem_entry.get("lock_token") != lock_token)
+                            or (mem_entry.get("user_id") and mem_entry.get("user_id") != user_id and mem_entry.get("lock_token") != lock_token)
+                        )
                     ):
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
@@ -466,13 +474,16 @@ class SeatLockService:
                 )
                 for l_rec in lock_recs:
                     if l_rec.get("is_booked") or l_rec.get("status") == "BOOKED":
-                        if l_rec.get("user_id") != user_id and l_rec.get("lock_token") != lock_token:
+                        if l_rec.get("booking_id") != booking_id and (l_rec.get("user_id") != user_id or l_rec.get("lock_token") != lock_token):
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
                                 detail=f"Seat {l_rec['seat_id']} is already booked."
                             )
                     elif l_rec.get("status") == "LOCKED" and l_rec.get("expires_at", now) > now:
-                        if l_rec.get("user_id") != user_id and (lock_token and l_rec.get("lock_token") != lock_token):
+                        if (
+                            (lock_token and l_rec.get("lock_token") and l_rec.get("lock_token") != lock_token)
+                            or (l_rec.get("user_id") and l_rec.get("user_id") != user_id and l_rec.get("lock_token") != lock_token)
+                        ):
                             raise HTTPException(
                                 status_code=status.HTTP_409_CONFLICT,
                                 detail=f"Seat {l_rec['seat_id']} is currently held by another customer."

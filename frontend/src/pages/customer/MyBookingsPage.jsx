@@ -107,13 +107,13 @@ const MyBookingsPage = () => {
   return (
     <div className="min-h-screen py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 bg-background text-text-primary transition-colors">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border/80">
         <div>
-          <span className="text-xs font-bold text-accent uppercase tracking-wider flex items-center gap-1">
-            <Sparkles className="w-3.5 h-3.5" /> Cinema History & Digital Passes
+          <span className="text-xs font-black text-gold uppercase tracking-wider flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-gold" /> Cinema History & Passes
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight mt-1">
-            My Bookings & Tickets
+          <h1 className="text-2xl sm:text-4xl font-black text-text-primary tracking-tight mt-1">
+            My Bookings & Passes
           </h1>
           <p className="text-xs text-text-muted mt-0.5">
             Instant 1-click ticket cancellation with direct automated bank account refund
@@ -121,15 +121,15 @@ const MyBookingsPage = () => {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-1 p-1 bg-surface border border-border rounded-xl">
+        <div className="flex items-center gap-1.5 p-1.5 bg-surface border border-border/80 rounded-2xl shadow-sm">
           {['ALL', 'CONFIRMED', 'CANCELLED'].map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setFilter(tab)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
                 filter === tab
-                  ? 'bg-accent text-white shadow-sm'
+                  ? 'bg-gold text-background shadow-md'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
@@ -141,15 +141,15 @@ const MyBookingsPage = () => {
 
       {/* Bookings List */}
       {filtered.length === 0 ? (
-        <div className="py-20 text-center bg-surface border border-border rounded-xl space-y-3">
+        <div className="py-20 text-center bg-surface border border-border/80 rounded-3xl space-y-3 shadow-md">
           <Ticket className="w-12 h-12 text-text-muted mx-auto opacity-40" />
           <h3 className="text-base font-bold text-text-primary">No Bookings Found</h3>
           <p className="text-xs text-text-muted">Explore movies currently playing and reserve your seats</p>
           <Link
             to="/movies"
-            className="inline-block mt-2 px-5 py-2.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs font-bold shadow-sm"
+            className="inline-block mt-2 px-6 py-2.5 rounded-xl bg-gold hover:bg-gold-hover text-background text-xs font-black uppercase tracking-wider shadow-md"
           >
-            Browse Movies
+            Browse Blockbusters
           </Link>
         </div>
       ) : (
@@ -159,52 +159,54 @@ const MyBookingsPage = () => {
             return (
               <div
                 key={b.bookingId}
-                className={`p-5 sm:p-6 rounded-xl bg-surface border border-border transition-all ${
-                  isCancelled ? 'opacity-80 border-red-500/20' : 'hover:border-accent/40'
+                className={`p-6 sm:p-7 rounded-3xl bg-surface border border-border/80 transition-all duration-200 shadow-md ${
+                  isCancelled ? 'opacity-80 border-red-500/20' : 'hover:border-gold/50 hover:shadow-xl'
                 }`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                   {/* Left: Movie & Cinema info */}
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 sm:gap-5">
                     <img
                       src={b.movie?.posterUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop'}
                       alt={b.movie?.title}
-                      className="w-16 h-22 rounded-lg object-cover border border-border flex-shrink-0"
+                      className="w-18 sm:w-20 h-24 sm:h-28 rounded-2xl object-cover border border-border/80 flex-shrink-0 shadow-sm"
                     />
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                           isCancelled
-                            ? 'bg-red-500/10 text-red-500 border border-red-500/30'
-                            : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                            ? 'bg-red-500/15 text-red-500 border border-red-500/30'
+                            : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                         }`}>
                           {b.status}
                         </span>
-                        <span className="text-xs font-mono font-medium text-text-muted">Ref: {b.bookingId}</span>
+                        <span className="text-xs font-mono font-bold text-text-muted">Ref: {b.bookingId}</span>
                       </div>
 
-                      <h3 className="text-base sm:text-lg font-bold text-text-primary">{b.movie?.title}</h3>
-                      <p className="text-xs text-text-muted flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-text-muted" />
-                        <span>{b.theatre?.name}</span>
+                      <h3 className="text-base sm:text-xl font-black text-text-primary leading-tight">{b.movie?.title}</h3>
+                      <p className="text-xs text-text-muted flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-gold" />
+                        <span className="font-medium text-text-secondary">{b.theatre?.name}</span>
                       </p>
 
                       <div className="flex flex-wrap items-center gap-2.5 text-xs text-text-muted pt-1">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-accent" /> {b.showDate}
+                        <span className="flex items-center gap-1 font-semibold text-text-secondary">
+                          <Calendar className="w-3.5 h-3.5 text-gold" /> {b.showDate}
                         </span>
                         <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-amber-500" /> {b.show?.time || '11:00 AM'}
+                        <span className="flex items-center gap-1 font-semibold text-text-secondary">
+                          <Clock className="w-3.5 h-3.5 text-gold" /> {b.show?.time || '11:00 AM'}
                         </span>
                         <span>•</span>
-                        <span className="font-bold text-text-primary">Seats: {b.seats?.map((s) => (typeof s === 'string' ? s : s.id)).join(', ')}</span>
+                        <span className="font-black text-gold bg-surface-elevated px-2.5 py-0.5 rounded-full border border-gold/30">
+                          Seats: {b.seats?.map((s) => (typeof s === 'string' ? s : s.id)).join(', ')}
+                        </span>
                       </div>
 
                       {/* Refund UTR Details badge if cancelled */}
                       {isCancelled && b.refundUtr && (
                         <div className="pt-2">
-                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/20">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>Direct Bank Refund: ₹{b.refundAmount || b.baseAmount}.00 (Ref: {b.refundUtr})</span>
                           </span>
@@ -214,10 +216,10 @@ const MyBookingsPage = () => {
                   </div>
 
                   {/* Right: Actions */}
-                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-3 border-t md:border-t-0 pt-4 md:pt-0 border-border">
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-3 border-t md:border-t-0 pt-4 md:pt-0 border-border/80">
                     <div className="text-left md:text-right">
-                      <span className="text-[10px] uppercase font-bold text-text-muted block">Paid Amount</span>
-                      <span className="text-base font-extrabold text-amber-500">₹{b.totalAmount}</span>
+                      <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Paid Amount</span>
+                      <span className="text-lg sm:text-xl font-black text-gold">₹{b.totalAmount}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -225,9 +227,9 @@ const MyBookingsPage = () => {
                         <>
                           <Link
                             to={`/booking-confirmation/${b.bookingId}`}
-                            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-elevated hover:bg-surface border border-border text-text-primary text-xs font-semibold transition-all"
+                            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-text-primary text-xs font-bold transition-all shadow-sm"
                           >
-                            <Eye className="w-3.5 h-3.5 text-accent" />
+                            <Eye className="w-3.5 h-3.5 text-gold" />
                             <span>View Pass</span>
                           </Link>
 
@@ -237,14 +239,14 @@ const MyBookingsPage = () => {
                               setSelectedBookingForCancel(b);
                               setRefundReceipt(null);
                             }}
-                            className="px-3.5 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5"
+                            className="px-4 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
                             <span>Cancel & Refund</span>
                           </button>
                         </>
                       ) : (
-                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                           <CheckCircle2 className="w-4 h-4" /> 100% Refunded to Bank
                         </span>
                       )}

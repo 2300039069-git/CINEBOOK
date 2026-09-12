@@ -20,6 +20,7 @@ import { useToast } from '../../context/ToastContext';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
 import { loadRazorpayScript, paymentApi, RAZORPAY_KEY_ID } from '../../services/paymentApi';
 import { seatLockManager, getShowKey } from '../../services/seatLockManager';
+import { bookingApi } from '../../services/bookingApi';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
@@ -96,18 +97,6 @@ const CheckoutPage = () => {
     });
   }, []);
 
-  // Safe Watchdog: If processing modal is active for > 3.5s, guarantee completion
-  useEffect(() => {
-    let timeoutId;
-    if (processing) {
-      timeoutId = setTimeout(() => {
-        finalizeBooking(`pay_rzp_${Date.now()}`, `ord_${Date.now()}`, 'RAZORPAY');
-      }, 3500);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [processing]);
 
   const formatTimer = (secs) => {
     const s = secs || 300;
@@ -116,23 +105,36 @@ const CheckoutPage = () => {
     return `${m.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
   };
 
-  const finalizeBooking = async (paymentId, orderId = '', gateway = 'RAZORPAY') => {
-    // 1. Verify seat is not already booked in local / global registry
-    const isConflict = seats.some((s) => seatLockManager.isSeatBooked(currentShowKey, s.id));
-    if (isConflict) {
+  const completePaymentAndBooking = async (realBookingId, paymentId, orderId = '', signature = '') => {
+    setIsSubmitting(false);
+    setProcessing(true);
+    setProcessingStep(1);
+
+    // 1. Verify Payment & Commit Permanent Booking in Supabase Database
+    try {
+      await paymentApi.verifyPayment({
+        booking_id: realBookingId,
+        razorpay_order_id: orderId,
+        razorpay_payment_id: paymentId,
+        razorpay_signature: signature || 'sim_sig_verified'
+      });
+    } catch (err) {
       setProcessing(false);
       setIsSubmitting(false);
-      setErrorMessage('Seat already booked. Another customer completed checkout for these seats before you.');
-      toast.conflict('Seat already booked. Another customer completed payment for these seats first.');
+      const msg = err.message || 'Seat already booked. Another customer completed payment for these seats first.';
+      setErrorMessage(msg);
+      toast.conflict(msg);
       navigate(`/seat-selection/${show?.id || 'sh-001'}`);
       return;
     }
 
-    const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
+    setProcessingStep(2);
+
+    // 2. Permanently record booked seats and broadcast to all tabs
+    seatLockManager.confirmBooking(currentShowKey, seats, realBookingId, show?.id);
 
     const confirmedBooking = {
-      bookingId,
+      bookingId: realBookingId,
       movie,
       theatre,
       show,
@@ -144,7 +146,7 @@ const CheckoutPage = () => {
       baseAmount: baseAmount || (finalTotal - 59),
       paymentId: paymentId || `pay_rzp_${Date.now()}`,
       orderId: orderId,
-      paymentMethod: gateway,
+      paymentMethod: 'RAZORPAY',
       customerName: user?.name || 'Valued Cinema Guest',
       customerEmail: email || user?.email || 'customer@cinebook.in',
       customerPhone: phone || user?.phone || '9848012345',
@@ -152,55 +154,18 @@ const CheckoutPage = () => {
       bookedAt: new Date().toISOString()
     };
 
-    // 2. Strict Backend Booking Creation & Supabase Concurrency Validation
-    try {
-      const backendRes = await bookingApi.createBooking({
-        show_id: show?.id || 'sh-001',
-        movie_id: movie?.id || 'mv-001',
-        theatre_id: theatre?.id || 'th-001',
-        show_date: selectedDate || new Date().toISOString().split('T')[0],
-        show_time: show?.time || '11:00 AM',
-        lock_token: heldLockToken || confirmedBooking.paymentId,
-        seats: seats.map((s) => ({
-          id: s.id,
-          row: s.row || s.id.charAt(0),
-          number: s.number || parseInt(s.id.slice(1)) || 1,
-          tier: s.tier || 'CLASSIC',
-          price: s.price || 200
-        })),
-        base_amount: confirmedBooking.baseAmount,
-        convenience_fee: confirmedBooking.convenienceFee,
-        taxes: confirmedBooking.taxes,
-        total_amount: confirmedBooking.totalAmount,
-        customer_name: confirmedBooking.customerName,
-        customer_email: confirmedBooking.customerEmail,
-        customer_phone: confirmedBooking.customerPhone
-      });
-
-      if (backendRes && backendRes.booking_id) {
-        confirmedBooking.bookingId = backendRes.booking_id;
-      }
-    } catch (err) {
-      setProcessing(false);
-      setIsSubmitting(false);
-      const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
-      setErrorMessage(msg);
-      toast.conflict(msg);
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-      return;
-    }
-
-    // 3. Permanently book seats and broadcast to all open tabs
-    seatLockManager.confirmBooking(currentShowKey, seats, confirmedBooking.bookingId, show?.id);
-
     const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));
     localStorage.setItem('cinebook_latest_booking', JSON.stringify(confirmedBooking));
 
-    setProcessing(false);
-    setIsSubmitting(false);
-    toast.success('Payment successful! Your tickets are confirmed.');
-    navigate(`/booking-confirmation/${confirmedBooking.bookingId}`);
+    setProcessingStep(3);
+
+    setTimeout(() => {
+      setProcessing(false);
+      setIsSubmitting(false);
+      toast.success('Payment successful! Your tickets are confirmed.');
+      navigate(`/booking-confirmation/${realBookingId}`);
+    }, 250);
   };
 
   const handlePayNow = async () => {
@@ -210,20 +175,20 @@ const CheckoutPage = () => {
       return;
     }
 
+    // 1. Pre-check if already booked locally or remotely
     const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
     const isConflict = seats.some((s) => statuses[s.id]?.status === 'BOOKED');
     if (isConflict) {
-      setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer. Please go back and select available seats.');
+      setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer.');
       toast.conflict('Seat already booked. One or more seats were reserved by another customer.');
       navigate(`/seat-selection/${show?.id || 'sh-001'}`);
       return;
     }
 
     setIsSubmitting(true);
-    const bookingTempId = `TEMP-${Date.now()}`;
     const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
 
-    // Verify atomic seat availability prior to payment initialization
+    // 2. Verify and re-confirm atomic seat lock on backend
     try {
       if (show?.id && seats?.length > 0) {
         await bookingApi.lockSeats(show.id, seats.map((s) => s.id), undefined, heldLockToken);
@@ -237,14 +202,51 @@ const CheckoutPage = () => {
       return;
     }
 
-    // Ensure Razorpay SDK is loaded
+    // 3. Create Booking Session in Supabase Database to obtain official bookingId
+    let officialBookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+    try {
+      const backendRes = await bookingApi.createBooking({
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: selectedDate || new Date().toISOString().split('T')[0],
+        show_time: show?.time || '11:00 AM',
+        lock_token: heldLockToken || `lock_${Date.now()}`,
+        seats: seats.map((s) => ({
+          id: s.id,
+          row: s.row || s.id.charAt(0),
+          number: s.number || parseInt(s.id.slice(1)) || 1,
+          tier: s.tier || 'CLASSIC',
+          price: s.price || 200
+        })),
+        base_amount: baseAmount || (finalTotal - 59),
+        convenience_fee: convenienceFee || 50,
+        taxes: taxes || 9,
+        total_amount: finalTotal,
+        customer_name: user?.name || 'Valued Cinema Guest',
+        customer_email: email || user?.email || 'customer@cinebook.in',
+        customer_phone: phone || user?.phone || '9848012345'
+      });
+
+      if (backendRes && backendRes.booking_id) {
+        officialBookingId = backendRes.booking_id;
+      }
+    } catch (err) {
+      setIsSubmitting(false);
+      const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
+      setErrorMessage(msg);
+      toast.conflict(msg);
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      return;
+    }
+
+    // 4. Ensure Razorpay SDK is loaded
     const isSdkLoaded = await loadRazorpayScript();
 
-    // Trigger official Razorpay checkout popup modal
+    // 5. Trigger Razorpay Checkout Popup
     if (isSdkLoaded && window.Razorpay) {
       try {
-        // 1. Create order entity
-        const orderData = await paymentApi.createOrder(bookingTempId, finalTotal);
+        const orderData = await paymentApi.createOrder(officialBookingId, finalTotal);
 
         const options = {
           key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
@@ -255,28 +257,12 @@ const CheckoutPage = () => {
           image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
           order_id: (orderData?.order_id && !orderData.order_id.startsWith('order_')) ? orderData.order_id : undefined,
           handler: function (response) {
-            // Once user authorizes payment in Razorpay popup, show confirmation progress and navigate fast
-            setIsSubmitting(false);
-            setProcessing(true);
-            setProcessingStep(1);
-
-            // Fire verification in background
-            paymentApi.verifyPayment({
-              booking_id: bookingTempId,
-              razorpay_order_id: response.razorpay_order_id || orderData?.order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature || 'sim_sig_verified'
-            }).catch(() => {});
-
-            setTimeout(() => {
-              setProcessingStep(2);
-              setTimeout(() => {
-                setProcessingStep(3);
-                setTimeout(() => {
-                  finalizeBooking(response.razorpay_payment_id, response.razorpay_order_id, 'RAZORPAY');
-                }, 200);
-              }, 200);
-            }, 180);
+            completePaymentAndBooking(
+              officialBookingId,
+              response.razorpay_payment_id || `pay_rzp_${Date.now()}`,
+              response.razorpay_order_id || orderData?.order_id || `ord_${Date.now()}`,
+              response.razorpay_signature || 'sim_sig_verified'
+            );
           },
           prefill: {
             name: user?.name || 'Cinema Guest',
@@ -286,7 +272,7 @@ const CheckoutPage = () => {
           notes: {
             movie: movie.title,
             theatre: theatre.name,
-            seats: seats.map(s => s.id).join(', ')
+            seats: seats.map((s) => s.id).join(', ')
           },
           theme: {
             color: '#E50914'
@@ -314,50 +300,44 @@ const CheckoutPage = () => {
     }
 
     // Direct Instant Verification Flow (safe fallback if popup is blocked)
-    setIsSubmitting(false);
-    setProcessing(true);
-    setProcessingStep(1);
-
-    setTimeout(() => {
-      setProcessingStep(2);
-      setTimeout(() => {
-        setProcessingStep(3);
-        setTimeout(() => {
-          finalizeBooking(`pay_rzp_${Date.now()}`, `ord_${Date.now()}`, 'RAZORPAY');
-        }, 200);
-      }, 200);
-    }, 200);
+    completePaymentAndBooking(
+      officialBookingId,
+      `pay_rzp_${Date.now()}`,
+      `ord_${Date.now()}`,
+      'sim_sig_verified'
+    );
   };
 
   return (
     <div className="min-h-screen py-10 bg-background text-text-primary transition-colors">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 1. SEAT LOCK COUNTDOWN BANNER */}
-        <div className="p-4 sm:p-5 rounded-xl bg-surface border border-border flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-accent/10 text-accent">
+        <div className="p-4 sm:p-5 rounded-2xl bg-surface border border-gold/40 flex items-center justify-between shadow-lg backdrop-blur-md">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-xl bg-gold/15 text-gold border border-gold/30">
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
-                Atomic Seat Lock Active
+              <h3 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <span>Atomic Seat Lock Active</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </h3>
               <p className="text-xs text-text-muted mt-0.5">
-                Seats are securely locked for your session. Complete payment to generate instant digital pass with QR ticket.
+                Seats are securely held for your session. Complete payment to generate instant digital pass with QR ticket.
               </p>
             </div>
           </div>
 
           <div className="text-right flex-shrink-0">
             <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Time Remaining</span>
-            <span className="text-lg sm:text-xl font-mono font-extrabold text-accent">
+            <span className="text-lg sm:text-xl font-mono font-black text-gold">
               {formatTimer(secondsLeft)}
             </span>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-2">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -368,66 +348,66 @@ const CheckoutPage = () => {
           {/* Left 2 Cols: Contact & Payment Gateway Selection */}
           <div className="lg:col-span-2 space-y-6">
             {/* Contact Details */}
-            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 border border-border">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Ticket Delivery Details
+            <div className="p-6 bg-surface rounded-2xl space-y-4 border border-border/80 shadow-md">
+              <h2 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-gold" /> Ticket Delivery Details
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-text-muted block mb-1">Email Address (E-Ticket & QR)</label>
+                  <label className="text-xs font-semibold text-text-muted block mb-1.5">Email Address (E-Ticket & QR)</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-surface-elevated border border-border rounded-lg text-xs text-text-primary font-medium focus:outline-none focus:border-accent"
+                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-gold transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-text-muted block mb-1">Mobile Number (SMS WhatsApp Pass)</label>
+                  <label className="text-xs font-semibold text-text-muted block mb-1.5">Mobile Number (SMS WhatsApp Pass)</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-surface-elevated border border-border rounded-lg text-xs text-text-primary font-medium focus:outline-none focus:border-accent"
+                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-gold transition-colors"
                   />
                 </div>
               </div>
             </div>
 
             {/* Payment Gateway - Exclusively Razorpay */}
-            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 border border-border">
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+            <div className="p-6 bg-surface rounded-2xl space-y-4 border border-border/80 shadow-md">
+              <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gold/15 flex items-center justify-center text-gold border border-gold/30">
                     <ShieldCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                    <h2 className="text-xs font-black uppercase tracking-wider text-text-primary">
                       Payment Gateway
                     </h2>
                     <p className="text-[11px] text-text-muted">Direct Official Integration</p>
                   </div>
                 </div>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span>256-Bit SSL Encrypted</span>
                 </span>
               </div>
 
               {/* Single Dedicated Razorpay Card */}
-              <div className="p-5 rounded-xl bg-surface-elevated border border-accent/40 space-y-3">
+              <div className="p-5 rounded-2xl bg-surface-elevated border border-gold/40 space-y-3 shadow-inner">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="px-2.5 py-1 rounded bg-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
+                    <div className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
                       Razorpay
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-text-primary">Razorpay Official Gateway</h3>
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Verified & Active</p>
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">Verified & Active</p>
                     </div>
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-accent/10 text-accent flex items-center justify-center">
-                    <Check className="w-4 h-4" />
+                  <div className="w-6 h-6 rounded-full bg-gold/20 text-gold flex items-center justify-center">
+                    <Check className="w-4 h-4 stroke-[3]" />
                   </div>
                 </div>
 
@@ -447,28 +427,30 @@ const CheckoutPage = () => {
 
           {/* Right: Booking Summary Card */}
           <div className="space-y-4">
-            <div className="p-5 sm:p-6 bg-surface rounded-xl space-y-4 h-fit border border-border shadow-sm">
+            <div className="p-6 bg-surface rounded-2xl space-y-5 h-fit border border-border/80 shadow-xl">
               {/* Mini Movie Header */}
-              <div className="flex items-start gap-3 pb-3.5 border-b border-border">
+              <div className="flex items-start gap-3.5 pb-4 border-b border-border/80">
                 <img
                   src={movie.posterUrl}
                   alt={movie.title}
-                  className="w-14 h-20 rounded-lg object-cover border border-border flex-shrink-0"
+                  className="w-16 h-24 rounded-xl object-cover border border-border/80 flex-shrink-0 shadow-sm"
                 />
                 <div>
-                  <h3 className="text-sm font-bold text-text-primary leading-tight">{movie.title}</h3>
-                  <p className="text-xs text-amber-500 font-semibold mt-0.5">{theatre.name}</p>
-                  <span className="inline-block mt-1 px-2 py-0.5 rounded bg-surface-elevated border border-border text-[10px] font-medium text-text-secondary">
+                  <h3 className="text-sm font-black text-text-primary leading-tight">{movie.title}</h3>
+                  <p className="text-xs text-gold font-bold mt-1">{theatre.name}</p>
+                  <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-surface-elevated border border-border text-[10px] font-semibold text-text-secondary">
                     {show.format || '2D Dolby Atmos'} • {show.time || '11:00 AM'}
                   </span>
                 </div>
               </div>
 
               {/* Itemized Bill */}
-              <div className="space-y-2 text-xs text-text-secondary">
-                <div className="flex justify-between">
+              <div className="space-y-2.5 text-xs text-text-secondary">
+                <div className="flex justify-between items-center">
                   <span className="text-text-muted">Seats ({seats.length})</span>
-                  <span className="font-mono font-bold text-accent">{seats.map((s) => s.id).join(', ')}</span>
+                  <span className="font-mono font-black text-gold bg-surface-elevated px-2 py-0.5 rounded-md border border-gold/30">
+                    {seats.map((s) => s.id).join(', ')}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-muted">Ticket Base Price</span>
@@ -483,9 +465,9 @@ const CheckoutPage = () => {
                   <span className="font-semibold text-text-primary">₹{taxes || 9}</span>
                 </div>
 
-                <div className="pt-3 border-t border-border flex justify-between items-center text-sm font-bold">
+                <div className="pt-3 border-t border-border flex justify-between items-center text-sm font-black">
                   <span className="text-text-primary">Total Payable</span>
-                  <span className="text-xl text-amber-500 font-extrabold">₹{finalTotal}</span>
+                  <span className="text-2xl text-gold font-black">₹{finalTotal}</span>
                 </div>
               </div>
 
@@ -494,16 +476,16 @@ const CheckoutPage = () => {
                 type="button"
                 onClick={handlePayNow}
                 disabled={processing || isSubmitting}
-                className="w-full py-3.5 rounded-lg bg-accent hover:bg-accent-hover text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-sm"
+                className="w-full py-4 rounded-2xl bg-gold hover:bg-gold-hover text-background text-xs sm:text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-lg shadow-gold/20 transform hover:-translate-y-0.5"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
                     <span>Connecting to Razorpay...</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4 text-white" />
+                    <Lock className="w-4 h-4 text-background" />
                     <span>Pay ₹{finalTotal} with Razorpay</span>
                   </>
                 )}

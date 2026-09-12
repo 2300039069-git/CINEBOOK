@@ -50,14 +50,14 @@ const BookingConfirmationPage = () => {
     <div className="min-h-screen py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 bg-background text-text-primary transition-colors">
       {/* 1. CELEBRATION HEADER (Hidden in Print) */}
       <div className="text-center space-y-2 animate-fade-in no-print">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex items-center justify-center mx-auto shadow-md">
-          <CheckCircle2 className="w-8 h-8" />
+        <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-lg">
+          <CheckCircle2 className="w-9 h-9" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary tracking-tight">
+        <h1 className="text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
           Booking Confirmed!
         </h1>
-        <p className="text-xs text-text-muted">
-          Your payment was verified via 256-Bit SSL. Present your verified QR pass below at the cinema gate.
+        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto">
+          Your payment is complete. Present your digital QR pass below at the cinema turnstile for instant admission.
         </p>
       </div>
 
@@ -70,15 +70,15 @@ const BookingConfirmationPage = () => {
         <button
           type="button"
           onClick={handlePrintThermal}
-          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-amber-500 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer active:scale-95"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-gold/40 text-gold text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
         >
-          <ReceiptText className="w-4 h-4 text-amber-500" />
-          <span>80mm POS Thermal Slip</span>
+          <ReceiptText className="w-4 h-4 text-gold" />
+          <span>80mm POS Slip</span>
         </button>
 
         <Link
           to="/my-bookings"
-          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-semibold transition-all"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-bold transition-all shadow-sm"
         >
           <Ticket className="w-4 h-4 text-primary" />
           <span>My Bookings</span>
@@ -86,7 +86,7 @@ const BookingConfirmationPage = () => {
 
         <Link
           to="/"
-          className="flex items-center gap-2 px-5 py-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-semibold transition-all"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gold hover:bg-gold-hover text-background text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-gold/20"
         >
           <Home className="w-4 h-4" />
           <span>Explore More</span>
