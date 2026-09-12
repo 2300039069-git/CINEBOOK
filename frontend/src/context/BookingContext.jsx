@@ -7,6 +7,18 @@ const BookingContext = createContext();
 
 const LOCK_DURATION_SECONDS = 480; // 8 minutes atomic seat lock
 
+export const getSeatTier = (seat) => {
+  if (!seat) return 'BALCONY';
+  const row = (seat.row || seat.rowLetter || (typeof seat.id === 'string' ? seat.id[0] : 'A')).toUpperCase();
+  return ['A', 'B', 'C', 'D'].includes(row) || seat.tier === 'BALCONY' ? 'BALCONY' : 'SECOND_CLASS';
+};
+
+export const getSeatPrice = (seat) => {
+  if (!seat) return 147;
+  const tier = getSeatTier(seat);
+  return tier === 'BALCONY' ? 147 : 84;
+};
+
 export const BookingProvider = ({ children }) => {
   const { toast } = useToast();
   const [selectedMovie, setSelectedMovie] = useState(() => {
@@ -32,7 +44,14 @@ export const BookingProvider = ({ children }) => {
   const [selectedSeats, setSelectedSeats] = useState(() => {
     try {
       const saved = sessionStorage.getItem('cinebook_tab_selected_seats');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map((s) => ({
+        ...s,
+        tier: getSeatTier(s),
+        price: getSeatPrice(s)
+      }));
     } catch (e) {
       return [];
     }
@@ -129,8 +148,13 @@ export const BookingProvider = ({ children }) => {
       return;
     }
 
-    // 2. Instant 0ms Optimistic UI Selection
-    setSelectedSeats((prev) => [...prev, seat]);
+    // 2. Instant 0ms Optimistic UI Selection with guaranteed canonical price
+    const sanitizedSeat = {
+      ...seat,
+      tier: getSeatTier(seat),
+      price: getSeatPrice(seat)
+    };
+    setSelectedSeats((prev) => [...prev, sanitizedSeat]);
 
     // 3. Fast background atomic lock synchronization
     seatLockManager
@@ -188,7 +212,7 @@ export const BookingProvider = ({ children }) => {
 
   // Pricing calculations
   // Base Ticket Price: sum of seat prices (Balcony: ₹147, Second Class: ₹84)
-  const baseAmount = selectedSeats.reduce((sum, seat) => sum + Number(seat.price || 147), 0);
+  const baseAmount = selectedSeats.reduce((sum, seat) => sum + getSeatPrice(seat), 0);
 
   // Convenience Fee Base: 10% of Ticket Price
   const convenienceFeeBase = Number((baseAmount * 0.10).toFixed(2));
