@@ -10,9 +10,11 @@ for path in [backend_dir, root_dir]:
     if os.path.exists(path) and path not in sys.path:
         sys.path.insert(0, path)
 
+import traceback
+
 try:
     from app.main import app
 except Exception as e:
-    logging.error(f"Failed to import app.main in Vercel handler: {e}", exc_info=True)
+    logging.error(f"Failed to import app.main in Vercel handler: {e}\n{traceback.format_exc()}")
     raise e
 

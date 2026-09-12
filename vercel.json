@@ -4,8 +4,7 @@
   "framework": null,
   "functions": {
     "api/index.py": {
-      "includeFiles": "backend/**",
-      "maxDuration": 30
+      "includeFiles": "backend/**"
     }
   },
   "rewrites": [
