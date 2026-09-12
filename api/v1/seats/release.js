@@ -6,12 +6,15 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
-  const { show_id, lock_token } = req.body || {};
-  if (!show_id || !lock_token) {
+  const { show_id, lock_token, seat_ids } = req.body || {};
+  if (!show_id) {
     return res.status(200).json({ message: 'Released' });
   }
 
@@ -22,12 +25,20 @@ module.exports = async function handler(req, res) {
 
   try {
     await client.connect();
-    await client.query(
-      "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED'",
-      [show_id, lock_token]
-    );
+    if (seat_ids && Array.isArray(seat_ids) && seat_ids.length > 0) {
+      await client.query(
+        "DELETE FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND status = 'LOCKED'",
+        [show_id, seat_ids]
+      );
+    } else if (lock_token) {
+      await client.query(
+        "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED'",
+        [show_id, lock_token]
+      );
+    }
     return res.status(200).json({ message: 'Seat locks successfully released.' });
   } catch (err) {
+    console.error('Release error:', err);
     return res.status(200).json({ message: 'Released locally' });
   } finally {
     try { await client.end(); } catch (e) {}

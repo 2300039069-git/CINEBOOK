@@ -124,24 +124,29 @@ const SeatSelectionPage = () => {
           res.tiers.forEach((tier) => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
-                if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
-                  const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
-                  const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
-                  const isMine = isSelectedInThisTab || isLockedByThisTab;
+                const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
+                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab);
+                const isMine = isSelectedInThisTab || isLockedByThisTab;
 
+                if (seat.status === 'LOCKED' || seat.status === 'BOOKED') {
                   backendStatuses[seat.id] = {
                     status: seat.status,
                     isLockedByOtherTab: !isMine && seat.status === 'LOCKED',
                     isLockedByCurrentTab: isMine && seat.status === 'LOCKED'
+                  };
+                } else {
+                  backendStatuses[seat.id] = {
+                    status: 'AVAILABLE',
+                    isLockedByOtherTab: false,
+                    isLockedByCurrentTab: isMine
                   };
                 }
               });
             });
           });
 
-          // Merge local and backend statuses
-          const merged = { ...localStatuses, ...backendStatuses };
-          setLiveStatuses(merged);
+          // Ground truth from live database
+          setLiveStatuses(backendStatuses);
 
           // Only alert if a seat was permanently purchased by another customer while this tab had it selected
           const permanentlyBookedConflicted = selectedSeats.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
@@ -158,13 +163,16 @@ const SeatSelectionPage = () => {
     // 1. Initial fetch
     fetchLatestLayout();
 
-    // 2. Real-time fast polling (every 1 second) for responsive cross-device / cross-account seat blocking
-    const pollTimer = setInterval(fetchLatestLayout, 1000);
+    // 2. High-speed real-time polling (every 600ms) for instantaneous cross-account / cross-browser seat sync
+    const pollTimer = setInterval(fetchLatestLayout, 600);
 
     // 3. Local cross-tab broadcast listener (0ms instant cross-window sync)
-    const unsubscribe = seatLockManager.subscribe(() => {
+    const unsubscribe = seatLockManager.subscribe((event) => {
       if (isMounted) {
         setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
+        if (event && event.action) {
+          fetchLatestLayout();
+        }
       }
     });
 

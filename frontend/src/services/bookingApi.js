@@ -4,7 +4,7 @@ import { generateSeatLayout } from '../data/mockData';
 export const bookingApi = {
   getSeatLayout: async (showId) => {
     try {
-      return await api.get(`/seats/${showId}/layout`);
+      return await api.get(`/seats/${showId}/layout?_t=${Date.now()}`);
     } catch (err) {
       console.warn('Backend seats layout fallback:', err.message);
       return { tiers: generateSeatLayout(showId) };
@@ -28,11 +28,12 @@ export const bookingApi = {
     }
   },
 
-  releaseSeats: async (showId, lockToken) => {
+  releaseSeats: async (showId, lockToken, seatIds) => {
     try {
       return await api.post('/seats/release', {
         show_id: showId,
-        lock_token: lockToken
+        lock_token: lockToken,
+        seat_ids: Array.isArray(seatIds) ? seatIds : (seatIds ? [seatIds] : null)
       });
     } catch (err) {
       return { message: 'Released locally' };

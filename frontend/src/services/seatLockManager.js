@@ -252,20 +252,22 @@ export const seatLockManager = {
     const currentTabId = getTabId();
     const locks = getCleanLocksMap();
 
+    let lockToken = null;
     if (locks[showKey]?.[seatId]) {
       const lock = locks[showKey][seatId];
-      // Only unlock if owned by this tab or expired
       if (lock.tabId === currentTabId || lock.expiresAt <= Date.now()) {
-        const lockToken = lock.lockToken;
+        lockToken = lock.lockToken;
         delete locks[showKey][seatId];
         localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
-
-        seatLockManager.broadcastChange(showKey, { action: 'UNLOCK', seatId, tabId: currentTabId });
-
-        if (showId && lockToken) {
-          bookingApi.releaseSeats(showId, lockToken).catch(() => {});
-        }
       }
+    }
+
+    // Broadcast change immediately across tabs
+    seatLockManager.broadcastChange(showKey, { action: 'UNLOCK', seatId, tabId: currentTabId });
+
+    // Release seat lock in database immediately
+    if (showId) {
+      bookingApi.releaseSeats(showId, lockToken, [seatId]).catch(() => {});
     }
 
     return { success: true };
