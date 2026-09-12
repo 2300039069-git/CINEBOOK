@@ -35,7 +35,8 @@ const CheckoutPage = () => {
     baseAmount,
     convenienceFee,
     taxes,
-    totalAmount
+    totalAmount,
+    lockToken
   } = useBooking();
 
   const paymentMethod = 'RAZORPAY';
@@ -128,6 +129,7 @@ const CheckoutPage = () => {
     }
 
     const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
 
     const confirmedBooking = {
       bookingId,
@@ -150,18 +152,15 @@ const CheckoutPage = () => {
       bookedAt: new Date().toISOString()
     };
 
-    // Permanently book seats and broadcast to all open tabs
-    seatLockManager.confirmBooking(currentShowKey, seats, bookingId, show?.id);
-
-    // Sync to backend booking API
+    // 2. Strict Backend Booking Creation & Supabase Concurrency Validation
     try {
-      await bookingApi.createBooking({
+      const backendRes = await bookingApi.createBooking({
         show_id: show?.id || 'sh-001',
         movie_id: movie?.id || 'mv-001',
         theatre_id: theatre?.id || 'th-001',
         show_date: selectedDate || new Date().toISOString().split('T')[0],
         show_time: show?.time || '11:00 AM',
-        lock_token: confirmedBooking.paymentId,
+        lock_token: heldLockToken || confirmedBooking.paymentId,
         seats: seats.map((s) => ({
           id: s.id,
           row: s.row || s.id.charAt(0),
@@ -177,17 +176,22 @@ const CheckoutPage = () => {
         customer_email: confirmedBooking.customerEmail,
         customer_phone: confirmedBooking.customerPhone
       });
-    } catch (err) {
-      if (err.status === 409 || err.message?.toLowerCase().includes('already booked') || err.message?.toLowerCase().includes('conflict') || err.message?.toLowerCase().includes('held by another') || err.message?.toLowerCase().includes('expired')) {
-        setProcessing(false);
-        setIsSubmitting(false);
-        const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
-        setErrorMessage(msg);
-        toast.conflict(msg);
-        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-        return;
+
+      if (backendRes && backendRes.booking_id) {
+        confirmedBooking.bookingId = backendRes.booking_id;
       }
+    } catch (err) {
+      setProcessing(false);
+      setIsSubmitting(false);
+      const msg = err.message || 'Seat already booked or hold expired on server. Please choose a different seat.';
+      setErrorMessage(msg);
+      toast.conflict(msg);
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      return;
     }
+
+    // 3. Permanently book seats and broadcast to all open tabs
+    seatLockManager.confirmBooking(currentShowKey, seats, confirmedBooking.bookingId, show?.id);
 
     const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
     localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));
@@ -196,7 +200,7 @@ const CheckoutPage = () => {
     setProcessing(false);
     setIsSubmitting(false);
     toast.success('Payment successful! Your tickets are confirmed.');
-    navigate(`/booking-confirmation/${bookingId}`);
+    navigate(`/booking-confirmation/${confirmedBooking.bookingId}`);
   };
 
   const handlePayNow = async () => {
@@ -217,21 +221,20 @@ const CheckoutPage = () => {
 
     setIsSubmitting(true);
     const bookingTempId = `TEMP-${Date.now()}`;
+    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
 
     // Verify atomic seat availability prior to payment initialization
     try {
       if (show?.id && seats?.length > 0) {
-        await bookingApi.lockSeats(show.id, seats.map((s) => s.id));
+        await bookingApi.lockSeats(show.id, seats.map((s) => s.id), undefined, heldLockToken);
       }
     } catch (err) {
-      if (err.status === 409 || err.message?.toLowerCase().includes('already booked') || err.message?.toLowerCase().includes('conflict') || err.message?.toLowerCase().includes('held by another') || err.message?.toLowerCase().includes('expired')) {
-        const msg = err.message || 'Seat already booked. Another customer has reserved this seat.';
-        setErrorMessage(msg);
-        toast.conflict(msg);
-        setIsSubmitting(false);
-        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-        return;
-      }
+      const msg = err.message || 'Seat already booked. Another customer has reserved this seat.';
+      setErrorMessage(msg);
+      toast.conflict(msg);
+      setIsSubmitting(false);
+      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      return;
     }
 
     // Ensure Razorpay SDK is loaded

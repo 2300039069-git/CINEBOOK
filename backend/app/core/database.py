@@ -26,8 +26,13 @@ class Database:
     pool: Optional[asyncpg.Pool] = None
     is_connected: bool = False
 
+    async def ensure_connected(self):
+        if not self.pool or getattr(self.pool, '_closed', False):
+            await connect_to_supabase()
+
     async def fetch_all(self, query: str, *args) -> List[Dict[str, Any]]:
         """Execute a SELECT query and return results as a list of dicts"""
+        await self.ensure_connected()
         if not self.pool:
             return []
         async with self.pool.acquire() as conn:
@@ -36,6 +41,7 @@ class Database:
 
     async def fetch_one(self, query: str, *args) -> Optional[Dict[str, Any]]:
         """Execute a SELECT query and return a single dict or None"""
+        await self.ensure_connected()
         if not self.pool:
             return None
         async with self.pool.acquire() as conn:
@@ -44,6 +50,7 @@ class Database:
 
     async def fetchval(self, query: str, *args) -> Any:
         """Execute a query and return a single scalar value"""
+        await self.ensure_connected()
         if not self.pool:
             return None
         async with self.pool.acquire() as conn:
@@ -51,6 +58,7 @@ class Database:
 
     async def execute(self, query: str, *args) -> str:
         """Execute an INSERT, UPDATE, DELETE, or DDL command"""
+        await self.ensure_connected()
         if not self.pool:
             return ""
         async with self.pool.acquire() as conn:

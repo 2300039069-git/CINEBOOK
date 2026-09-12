@@ -152,6 +152,19 @@ export const seatLockManager = {
     return Boolean(booked[showKey]?.[seatId]);
   },
 
+  // Get active lock token held by current tab for a show
+  getHeldToken: (showKey) => {
+    const locks = getCleanLocksMap();
+    const showLocks = locks[showKey] || {};
+    const currentTabId = getTabId();
+    for (const seatId of Object.keys(showLocks)) {
+      if (showLocks[seatId].tabId === currentTabId && showLocks[seatId].lockToken) {
+        return showLocks[seatId].lockToken;
+      }
+    }
+    return null;
+  },
+
   // Attempt to atomically lock a seat for current tab
   lockSeat: async (showKey, seatId, showId, existingLockToken) => {
     const currentTabId = getTabId();
