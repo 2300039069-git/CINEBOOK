@@ -9,6 +9,41 @@ const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
 
 const CASHFREE_HOST = CASHFREE_ENV === 'production' ? 'api.cashfree.com' : 'sandbox.cashfree.com';
 
+function sanitizeCustomerPhone(raw) {
+  let cleaned = String(raw || '').replace(/\D/g, '');
+  if (cleaned.length > 10 && cleaned.startsWith('91')) {
+    cleaned = cleaned.slice(-10);
+  }
+  if (cleaned.length > 10) {
+    cleaned = cleaned.slice(-10);
+  }
+  if (cleaned.length !== 10) {
+    cleaned = '9848012345';
+  }
+  return cleaned;
+}
+
+function sanitizeCustomerEmail(raw) {
+  const email = String(raw || '').trim();
+  if (email.includes('@') && email.includes('.')) {
+    return email;
+  }
+  return 'customer@cinebook.in';
+}
+
+function sanitizeCustomerId(raw) {
+  let cleaned = String(raw || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  if (cleaned.length < 3) {
+    cleaned = 'usr_' + crypto.randomBytes(4).toString('hex');
+  }
+  return cleaned.slice(0, 45);
+}
+
+function sanitizeCustomerName(raw) {
+  let name = String(raw || '').trim();
+  return name.length >= 2 ? name.slice(0, 50) : 'Cinema Guest';
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -19,13 +54,14 @@ module.exports = async function handler(req, res) {
 
   const { booking_id, amount, customer_details } = req.body || {};
   const orderAmount = Number(parseFloat(amount || 100).toFixed(2));
-  const orderId = booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000));
+  const rawOrderId = String(booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000)));
+  const orderId = rawOrderId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 45);
 
   const custDetails = {
-    customer_id: customer_details?.customer_id || ('usr_' + crypto.randomBytes(4).toString('hex')),
-    customer_name: customer_details?.customer_name || 'Cinema Guest',
-    customer_email: customer_details?.customer_email || 'customer@cinebook.in',
-    customer_phone: customer_details?.customer_phone || '9848012345'
+    customer_id: sanitizeCustomerId(customer_details?.customer_id),
+    customer_name: sanitizeCustomerName(customer_details?.customer_name),
+    customer_email: sanitizeCustomerEmail(customer_details?.customer_email),
+    customer_phone: sanitizeCustomerPhone(customer_details?.customer_phone)
   };
 
   // 1. Call Cashfree PG Orders API

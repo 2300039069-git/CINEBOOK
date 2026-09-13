@@ -308,20 +308,29 @@ const CheckoutPage = () => {
     // 5. Create Cashfree Payment Order
     let orderData = null;
     try {
+      const cleanPhone = (phone || user?.phone || '9848012345').replace(/\D/g, '').slice(-10) || '9848012345';
+      const cleanEmail = (email || user?.email || 'customer@cinebook.in').trim();
+
       orderData = await paymentApi.createOrder(transactionBookingId, finalTotal, {
-        customer_id: user?.id || `usr_${Date.now().toString(36)}`,
+        customer_id: user?.id ? String(user.id).replace(/[^a-zA-Z0-9_-]/g, '') : `usr_${Date.now().toString(36)}`,
         customer_name: user?.name || 'Cinema Guest',
-        customer_email: email,
-        customer_phone: phone || '9848012345'
+        customer_email: cleanEmail,
+        customer_phone: cleanPhone
       });
     } catch (err) {
-      console.warn('Cashfree order creation fallback:', err);
+      setIsSubmitting(false);
+      const failMsg = err.message || 'Unable to connect to Cashfree payment gateway. Please try again.';
+      setErrorMessage(failMsg);
+      toast.error(failMsg);
+      return;
     }
 
     const paymentSessionId = orderData?.payment_session_id;
     if (!paymentSessionId) {
       setIsSubmitting(false);
-      toast.error('Unable to initialize payment session. Please try again.');
+      const failMsg = 'Unable to initialize Cashfree payment session. Please try again.';
+      setErrorMessage(failMsg);
+      toast.error(failMsg);
       return;
     }
 
@@ -333,9 +342,9 @@ const CheckoutPage = () => {
       };
 
       cashfree.checkout(checkoutOptions).then(async (result) => {
-        if (result.error) {
+        setIsSubmitting(false);
+        if (result && result.error) {
           // ON MODAL DISMISS / PAYMENT CANCEL / FAILURE:
-          setIsSubmitting(false);
           setProcessing(false);
           try {
             if (show?.id) {
@@ -352,7 +361,7 @@ const CheckoutPage = () => {
           return;
         }
 
-        if (result.paymentDetails || result.redirect) {
+        if (result && (result.paymentDetails || result.redirect)) {
           // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
           completePaymentAndBooking(
             transactionBookingId,
@@ -360,11 +369,18 @@ const CheckoutPage = () => {
             result.paymentDetails?.paymentMessage || ''
           );
         }
+      }).catch(async (err) => {
+        setIsSubmitting(false);
+        setProcessing(false);
+        const failMsg = err?.message || 'Payment modal could not be displayed.';
+        setErrorMessage(failMsg);
+        toast.error(failMsg);
       });
+
       setIsSubmitting(false);
     } catch (err) {
       setIsSubmitting(false);
-      const failMsg = 'Unable to launch payment gateway: ' + (err.message || 'Please try again.');
+      const failMsg = 'Unable to launch Cashfree payment gateway: ' + (err.message || 'Please try again.');
       setErrorMessage(failMsg);
       toast.error(failMsg);
     }

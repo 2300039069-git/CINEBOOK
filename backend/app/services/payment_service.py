@@ -26,13 +26,33 @@ class PaymentService:
         Returns payment_session_id for Cashfree Web/JS Checkout SDK.
         """
         order_amount = round(float(amount_in_inr), 2)
-        order_id = booking_id or f"CB-2026-{uuid.uuid4().hex[:8].upper()}"
+        raw_order_id = str(booking_id or f"CB-2026-{uuid.uuid4().hex[:8].upper()}")
+        import re
+        order_id = re.sub(r'[^a-zA-Z0-9_-]', '', raw_order_id)[:45]
 
         cust = customer_details or {}
-        cust_id = cust.get("customer_id") or f"usr_{uuid.uuid4().hex[:8]}"
-        cust_name = cust.get("customer_name") or "Cinema Guest"
-        cust_email = cust.get("customer_email") or "customer@cinebook.in"
-        cust_phone = cust.get("customer_phone") or "9848012345"
+        raw_phone = str(cust.get("customer_phone") or "9848012345")
+        phone_digits = re.sub(r'\D', '', raw_phone)
+        if len(phone_digits) > 10 and phone_digits.startswith("91"):
+            phone_digits = phone_digits[-10:]
+        elif len(phone_digits) > 10:
+            phone_digits = phone_digits[-10:]
+        if len(phone_digits) != 10:
+            phone_digits = "9848012345"
+
+        raw_email = str(cust.get("customer_email") or "customer@cinebook.in").strip()
+        email_clean = raw_email if ("@" in raw_email and "." in raw_email) else "customer@cinebook.in"
+
+        raw_id = str(cust.get("customer_id") or f"usr_{uuid.uuid4().hex[:8]}")
+        cust_id = re.sub(r'[^a-zA-Z0-9_-]', '', raw_id)[:45]
+        if len(cust_id) < 3:
+            cust_id = f"usr_{uuid.uuid4().hex[:8]}"
+
+        raw_name = str(cust.get("customer_name") or "Cinema Guest").strip()
+        cust_name = raw_name[:50] if len(raw_name) >= 2 else "Cinema Guest"
+
+        cust_email = email_clean
+        cust_phone = phone_digits
 
         base_url = cls._get_base_url()
         headers = {

@@ -44,15 +44,12 @@ export const paymentApi = {
       });
       return response.data || response;
     } catch (err) {
-      console.warn('Backend Cashfree create-order failed, using fallback:', err.message);
-      return {
-        order_id: `CF_${bookingId || Date.now()}`,
-        payment_session_id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        order_amount: Number(amount),
-        order_currency: 'INR',
-        environment: CASHFREE_ENV,
-        booking_id: bookingId
-      };
+      const errMsg = err.response?.data?.detail || err.message || 'Failed to initialize Cashfree payment session.';
+      console.error('Cashfree create-order error:', errMsg);
+      const customErr = new Error(errMsg);
+      customErr.response = err.response;
+      customErr.status = err.response?.status;
+      throw customErr;
     }
   },
 
