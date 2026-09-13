@@ -38,6 +38,12 @@ module.exports = async function handler(req, res) {
   try {
     await client.connect();
 
+    // 0. Purge expired temporary locks
+    await client.query(
+      "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED'",
+      [now.toISOString()]
+    );
+
     // 1. Check permanently booked seats in Supabase
     const bookedCheck = await client.query(
       'SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2)',
@@ -49,7 +55,7 @@ module.exports = async function handler(req, res) {
 
     // 2. Check active temporary locks held by ANOTHER session (allow same user / session / lock_token)
     const lockCheck = await client.query(
-      "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND (expires_at > $3 OR status = 'BOOKED' OR is_booked = TRUE)",
+      "SELECT seat_id, user_id, lock_token, status, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND expires_at > $3 AND status = 'LOCKED'",
       [show_id, seat_ids, now.toISOString()]
     );
 

@@ -41,6 +41,12 @@ module.exports = async function handler(req, res) {
   try {
     await client.connect();
 
+    // 0. Purge expired temporary locks on query time
+    await client.query(
+      "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED'",
+      [now]
+    );
+
     // 1. Permanently booked seats
     const bookedRes = await client.query(
       'SELECT seat_id FROM booked_seats WHERE show_id = $1',

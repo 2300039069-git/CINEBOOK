@@ -45,6 +45,12 @@ class SeatLockService:
         db_locks = {}
         if db_manager.is_connected:
             try:
+                # 0. Purge expired locks in database on query time
+                await db_manager.execute(
+                    "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED';",
+                    now
+                )
+
                 # 1. Permanently booked seats from booked_seats table
                 booked_rows = await db_manager.fetch_all(
                     "SELECT seat_id FROM booked_seats WHERE show_id = $1;",
