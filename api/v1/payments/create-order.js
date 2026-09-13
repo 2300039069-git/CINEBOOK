@@ -1,8 +1,12 @@
 const crypto = require('crypto');
 const https = require('https');
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'tq5lsYt2iMAA06rPWQPklkBp';
+const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || 'TEST10321287959089069d5118742b8278212301';
+const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || 'cfsk_ma_test_d3c34a36a7b7a10be3a10515152b1b36_c07e050f';
+const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || '2023-08-01';
+const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
+
+const CASHFREE_HOST = CASHFREE_ENV === 'production' ? 'api.cashfree.com' : 'sandbox.cashfree.com';
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,45 +16,55 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
-  const { booking_id, amount } = req.body || {};
-  const amountInPaise = Math.round((Number(amount) || 100) * 100);
-  const bookingRef = booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000));
+  const { booking_id, amount, customer_details } = req.body || {};
+  const orderAmount = Number(parseFloat(amount || 100).toFixed(2));
+  const orderId = booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000));
 
-  // If Razorpay live/test credentials are configured, attempt official order creation
-  if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET && !RAZORPAY_KEY_ID.includes('dummy')) {
+  const custDetails = {
+    customer_id: customer_details?.customer_id || ('usr_' + crypto.randomBytes(4).toString('hex')),
+    customer_name: customer_details?.customer_name || 'Cinema Guest',
+    customer_email: customer_details?.customer_email || 'customer@cinebook.in',
+    customer_phone: customer_details?.customer_phone || '9848012345'
+  };
+
+  // 1. Call Cashfree PG Orders API
+  if (CASHFREE_APP_ID && CASHFREE_SECRET_KEY && !CASHFREE_APP_ID.includes('dummy')) {
     try {
-      const auth = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');
       const postData = JSON.stringify({
-        amount: amountInPaise,
-        currency: 'INR',
-        receipt: bookingRef,
-        notes: {
-          booking_id: bookingRef
-        }
+        order_id: orderId,
+        order_amount: orderAmount,
+        order_currency: 'INR',
+        customer_details: custDetails,
+        order_meta: {
+          return_url: 'https://cinebook.in/checkout?order_id={order_id}'
+        },
+        order_note: `Tickets for booking ${orderId}`
       });
 
-      const rzpOrder = await new Promise((resolve, reject) => {
-        const reqRzp = https.request({
-          hostname: 'api.razorpay.com',
+      const cfOrder = await new Promise((resolve, reject) => {
+        const reqCf = https.request({
+          hostname: CASHFREE_HOST,
           port: 443,
-          path: '/v1/orders',
+          path: '/pg/orders',
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${auth}`,
+            'x-client-id': CASHFREE_APP_ID,
+            'x-client-secret': CASHFREE_SECRET_KEY,
+            'x-api-version': CASHFREE_API_VERSION,
             'Content-Length': Buffer.byteLength(postData)
           },
-          timeout: 4000
-        }, (resRzp) => {
+          timeout: 5000
+        }, (resCf) => {
           let data = '';
-          resRzp.on('data', (chunk) => { data += chunk; });
-          resRzp.on('end', () => {
+          resCf.on('data', (chunk) => { data += chunk; });
+          resCf.on('end', () => {
             try {
               const json = JSON.parse(data);
-              if (resRzp.statusCode >= 200 && resRzp.statusCode < 300 && json.id) {
+              if (resCf.statusCode >= 200 && resCf.statusCode < 300 && (json.payment_session_id || json.order_id)) {
                 resolve(json);
               } else {
-                reject(new Error(json.error?.description || 'Razorpay API returned error'));
+                reject(new Error(json.message || json.error_message || 'Cashfree API returned error'));
               }
             } catch (e) {
               reject(e);
@@ -58,34 +72,37 @@ module.exports = async function handler(req, res) {
           });
         });
 
-        reqRzp.on('error', reject);
-        reqRzp.on('timeout', () => {
-          reqRzp.destroy();
-          reject(new Error('Razorpay API timeout'));
+        reqCf.on('error', reject);
+        reqCf.on('timeout', () => {
+          reqCf.destroy();
+          reject(new Error('Cashfree API timeout'));
         });
-        reqRzp.write(postData);
-        reqRzp.end();
+        reqCf.write(postData);
+        reqCf.end();
       });
 
       return res.status(200).json({
-        order_id: rzpOrder.id,
-        amount: rzpOrder.amount,
-        currency: rzpOrder.currency,
-        key_id: RAZORPAY_KEY_ID,
-        booking_id: bookingRef
+        order_id: cfOrder.order_id || orderId,
+        cf_order_id: cfOrder.cf_order_id,
+        payment_session_id: cfOrder.payment_session_id,
+        order_amount: cfOrder.order_amount || orderAmount,
+        order_currency: cfOrder.order_currency || 'INR',
+        environment: CASHFREE_ENV,
+        booking_id: orderId
       });
     } catch (err) {
-      console.warn('Razorpay order creation fallback:', err.message);
+      console.warn('Cashfree order creation fallback:', err.message);
     }
   }
 
-  // Graceful simulated order response for testing or network fallbacks
-  const simulatedOrderId = 'order_' + crypto.randomBytes(7).toString('hex');
+  // Graceful fallback for test or offline simulation
+  const simulatedSessionId = 'session_' + crypto.randomBytes(16).toString('hex');
   return res.status(200).json({
-    order_id: simulatedOrderId,
-    amount: amountInPaise,
-    currency: 'INR',
-    key_id: RAZORPAY_KEY_ID,
-    booking_id: bookingRef
+    order_id: orderId,
+    payment_session_id: simulatedSessionId,
+    order_amount: orderAmount,
+    order_currency: 'INR',
+    environment: CASHFREE_ENV,
+    booking_id: orderId
   });
 };

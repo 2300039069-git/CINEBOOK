@@ -1,9 +1,13 @@
-const crypto = require('crypto');
+const https = require('https');
 const { Client } = require('pg');
 
 const DB_URL = process.env.SUPABASE_DB_URL || 'postgresql://postgres.jyptmaprxztaxjoapbjs:KancharlaDhanush%402003@aws-0-ap-south-1.pooler.supabase.com:6543/postgres';
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'tq5lsYt2iMAA06rPWQPklkBp';
+const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || 'TEST10321287959089069d5118742b8278212301';
+const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || 'cfsk_ma_test_d3c34a36a7b7a10be3a10515152b1b36_c07e050f';
+const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || '2023-08-01';
+const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
+
+const CASHFREE_HOST = CASHFREE_ENV === 'production' ? 'api.cashfree.com' : 'sandbox.cashfree.com';
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,10 +17,11 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
-  const { booking_id, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
+  const { booking_id, order_id, payment_id } = req.body || {};
+  const targetOrderId = order_id || booking_id;
 
-  if (!razorpay_payment_id) {
-    return res.status(400).json({ detail: 'razorpay_payment_id is required' });
+  if (!targetOrderId && !booking_id) {
+    return res.status(400).json({ detail: 'order_id or booking_id is required for verification' });
   }
 
   const client = new Client({
@@ -29,24 +34,69 @@ module.exports = async function handler(req, res) {
 
     // 1. Retrieve booking from bookings table
     let booking = null;
-    if (booking_id) {
-      const bRes = await client.query('SELECT * FROM bookings WHERE booking_id = $1', [booking_id]);
+    if (booking_id || targetOrderId) {
+      const bRes = await client.query(
+        'SELECT * FROM bookings WHERE booking_id = $1 OR booking_id = $2 LIMIT 1',
+        [booking_id || '', targetOrderId || '']
+      );
       if (bRes.rows.length > 0) {
         booking = bRes.rows[0];
       }
     }
 
-    // 2. Cryptographic HMAC-SHA256 signature verification
+    // 2. Cashfree Payment Status Verification via API
     let isValid = false;
-    if (razorpay_signature && razorpay_order_id && RAZORPAY_KEY_SECRET) {
-      const generated = crypto
-        .createHmac('sha256', RAZORPAY_KEY_SECRET)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest('hex');
-      isValid = (generated === razorpay_signature);
+    let verifiedPaymentId = payment_id || null;
+
+    if (CASHFREE_APP_ID && CASHFREE_SECRET_KEY && !CASHFREE_APP_ID.includes('dummy') && targetOrderId) {
+      try {
+        const orderData = await new Promise((resolve, reject) => {
+          const reqCf = https.request({
+            hostname: CASHFREE_HOST,
+            port: 443,
+            path: `/pg/orders/${encodeURIComponent(targetOrderId)}`,
+            method: 'GET',
+            headers: {
+              'x-client-id': CASHFREE_APP_ID,
+              'x-client-secret': CASHFREE_SECRET_KEY,
+              'x-api-version': CASHFREE_API_VERSION
+            },
+            timeout: 5000
+          }, (resCf) => {
+            let data = '';
+            resCf.on('data', (chunk) => { data += chunk; });
+            resCf.on('end', () => {
+              try {
+                const json = JSON.parse(data);
+                if (resCf.statusCode >= 200 && resCf.statusCode < 300 && json.order_status) {
+                  resolve(json);
+                } else {
+                  reject(new Error(json.message || 'Order lookup returned non-200'));
+                }
+              } catch (e) {
+                reject(e);
+              }
+            });
+          });
+
+          reqCf.on('error', reject);
+          reqCf.on('timeout', () => {
+            reqCf.destroy();
+            reject(new Error('Cashfree verify timeout'));
+          });
+          reqCf.end();
+        });
+
+        if (orderData && orderData.order_status === 'PAID') {
+          isValid = true;
+          verifiedPaymentId = verifiedPaymentId || orderData.cf_order_id || `cf_${targetOrderId}`;
+        }
+      } catch (err) {
+        console.warn('Cashfree API verification lookup warning:', err.message);
+      }
     }
 
-    // 3. If payment signature verification fails, explicitly release locks and mark booking FAILED
+    // 3. If payment signature / order verification fails, explicitly release locks and mark booking CANCELLED
     if (!isValid) {
       if (booking) {
         const seats = typeof booking.seats === 'string' ? JSON.parse(booking.seats) : (booking.seats || []);
@@ -57,12 +107,12 @@ module.exports = async function handler(req, res) {
             [booking.show_id, booking.lock_token || '', seatIds]
           );
         }
-        await client.query("UPDATE bookings SET booking_status = 'CANCELLED' WHERE booking_id = $1", [booking_id]);
+        await client.query("UPDATE bookings SET booking_status = 'CANCELLED' WHERE booking_id = $1", [booking.booking_id]);
       }
 
       return res.status(400).json({
         success: false,
-        detail: 'Payment signature verification failed. Held seats have been released.'
+        detail: 'Cashfree payment verification failed or is not PAID. Held seats have been released.'
       });
     }
 
@@ -73,13 +123,14 @@ module.exports = async function handler(req, res) {
       const showId = booking.show_id;
       const userId = booking.user_id || 'usr_guest';
       const now = new Date();
+      const confirmedPaymentId = verifiedPaymentId || `cf_pay_${Date.now()}`;
 
       // Check if already booked by another customer
       const bookedCheck = await client.query(
         'SELECT seat_id, booking_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2)',
         [showId, seatIds]
       );
-      const otherBooked = bookedCheck.rows.filter(r => r.booking_id !== booking_id);
+      const otherBooked = bookedCheck.rows.filter(r => r.booking_id !== booking.booking_id);
       if (otherBooked.length > 0) {
         return res.status(409).json({
           detail: 'Seat ' + otherBooked[0].seat_id + ' was already permanently booked by another customer.'
@@ -90,7 +141,7 @@ module.exports = async function handler(req, res) {
       for (const sId of seatIds) {
         await client.query(
           'INSERT INTO booked_seats (show_id, seat_id, user_id, booking_id, booked_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (show_id, seat_id) DO NOTHING',
-          [showId, sId, userId, booking_id, now.toISOString()]
+          [showId, sId, userId, booking.booking_id, now.toISOString()]
         );
       }
 
@@ -110,26 +161,44 @@ module.exports = async function handler(req, res) {
       // Update bookings status to CONFIRMED
       await client.query(
         `UPDATE bookings SET booking_status = 'CONFIRMED', payment_id = $1 WHERE booking_id = $2`,
-        [razorpay_payment_id, booking_id]
+        [confirmedPaymentId, booking.booking_id]
       );
-    }
 
-    // 5. Record in payments table
-    try {
-      await client.query(
-        `INSERT INTO payments (razorpay_order_id, razorpay_payment_id, booking_id, status, created_at)
-         VALUES ($1, $2, $3, 'PAID', NOW())
-         ON CONFLICT DO NOTHING`,
-        [razorpay_order_id || 'ord_sim', razorpay_payment_id, booking_id || 'CB-UNKNOWN']
-      );
-    } catch (e) {}
+      // Record in payments table
+      try {
+        await client.query(
+          `INSERT INTO payments (order_id, payment_id, booking_id, amount, currency, status, created_at)
+           VALUES ($1, $2, $3, $4, 'INR', 'SUCCESS', NOW())
+           ON CONFLICT DO NOTHING`,
+          [targetOrderId, confirmedPaymentId, booking.booking_id, Number(booking.total_amount || 0)]
+        );
+      } catch (e) {
+        try {
+          await client.query(
+            `INSERT INTO payments (razorpay_order_id, payment_id, booking_id, amount, currency, status, created_at)
+             VALUES ($1, $2, $3, $4, 'INR', 'SUCCESS', NOW())
+             ON CONFLICT DO NOTHING`,
+            [targetOrderId, confirmedPaymentId, booking.booking_id, Number(booking.total_amount || 0)]
+          );
+        } catch (innerErr) {}
+      }
+
+      return res.status(200).json({
+        success: true,
+        booking_id: booking.booking_id,
+        order_id: targetOrderId,
+        payment_id: confirmedPaymentId,
+        status: 'PAID',
+        message: 'Cashfree payment verified successfully. Booking permanently confirmed.'
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      booking_id,
-      payment_id: razorpay_payment_id,
+      order_id: targetOrderId,
+      payment_id: verifiedPaymentId,
       status: 'PAID',
-      message: 'Payment verified successfully. Booking permanently confirmed.'
+      message: 'Cashfree payment verified successfully.'
     });
   } catch (err) {
     console.error('Verify payment error:', err);

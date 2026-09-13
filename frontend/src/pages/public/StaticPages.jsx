@@ -161,7 +161,7 @@ export const CancellationPolicyPage = () => (
 
       <h2 className="text-base font-bold text-text-primary pt-2">3. Refund Processing Timeline</h2>
       <p className="text-text-secondary">
-        Upon cancelling your booking in the "My Bookings" dashboard or through CineBot AI, our system triggers an automated Razorpay reverse webhook. The refund is credited back to your original source with an instant UTR reference.
+        Upon cancelling your booking in the "My Bookings" dashboard or through CineBot AI, our system triggers an automated Cashfree reverse webhook. The refund is credited back to your original source with an instant UTR reference.
       </p>
     </div>
   </div>
@@ -186,7 +186,7 @@ export const PrivacyPage = () => (
     <div className="p-8 rounded-3xl bg-surface border border-border space-y-4 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-xl">
       <p>Your privacy is paramount. CineBook does not sell or distribute your personal contact details to third-party advertisers.</p>
       <h3 className="text-text-primary font-bold text-base">Data Security & Payment Integrity</h3>
-      <p className="text-text-secondary">Payment transactions are processed through Razorpay's PCI-DSS Level 1 compliant gateway. We do not store sensitive credit/debit card numbers or CVVs on our servers.</p>
+      <p className="text-text-secondary">Payment transactions are processed through Cashfree Payments' PCI-DSS Level 1 compliant gateway. We do not store sensitive credit/debit card numbers or CVVs on our servers.</p>
     </div>
   </div>
 );

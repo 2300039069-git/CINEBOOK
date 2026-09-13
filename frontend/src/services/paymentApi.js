@@ -1,22 +1,22 @@
 import api from './api';
 
-export const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4';
+export const CASHFREE_ENV = import.meta.env.VITE_CASHFREE_ENV || 'sandbox';
 
-const withTimeout = (promise, ms = 1200) => {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-  ]);
-};
+let cashfreeInstance = null;
 
-export const loadRazorpayScript = () => {
+export const loadCashfreeScript = () => {
   return new Promise((resolve) => {
-    if (window.Razorpay) {
+    if (window.Cashfree) {
       resolve(true);
       return;
     }
+    const existing = document.querySelector('script[src*="cashfree.com"]');
+    if (existing) {
+      existing.onload = () => resolve(true);
+      return;
+    }
     const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
     script.async = true;
     script.onload = () => resolve(true);
     script.onerror = () => resolve(false);
@@ -24,21 +24,33 @@ export const loadRazorpayScript = () => {
   });
 };
 
+export const getCashfreeInstance = async () => {
+  await loadCashfreeScript();
+  if (window.Cashfree && !cashfreeInstance) {
+    cashfreeInstance = window.Cashfree({
+      mode: CASHFREE_ENV === 'production' ? 'production' : 'sandbox'
+    });
+  }
+  return cashfreeInstance;
+};
+
 export const paymentApi = {
-  createOrder: async (bookingId, amount) => {
+  createOrder: async (bookingId, amount, customerDetails = {}) => {
     try {
       const response = await api.post('/payments/create-order', {
         booking_id: bookingId,
-        amount: amount
+        amount: Number(amount),
+        customer_details: customerDetails
       });
       return response.data || response;
     } catch (err) {
-      console.warn('Backend payment create-order failed, using test order:', err.message);
+      console.warn('Backend Cashfree create-order failed, using fallback:', err.message);
       return {
-        order_id: `order_${Date.now()}`,
-        amount: Math.round(amount * 100),
-        currency: 'INR',
-        key_id: RAZORPAY_KEY_ID,
+        order_id: `CF_${bookingId || Date.now()}`,
+        payment_session_id: `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        order_amount: Number(amount),
+        order_currency: 'INR',
+        environment: CASHFREE_ENV,
         booking_id: bookingId
       };
     }
@@ -57,6 +69,7 @@ export const paymentApi = {
     }
   }
 };
+
 
 
 

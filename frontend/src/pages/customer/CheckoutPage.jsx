@@ -19,8 +19,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { useToast } from '../../context/ToastContext';
-import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
-import { loadRazorpayScript, paymentApi, RAZORPAY_KEY_ID } from '../../services/paymentApi';
+import { loadCashfreeScript, getCashfreeInstance, paymentApi, CASHFREE_ENV } from '../../services/paymentApi';
 import { seatLockManager, getShowKey } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
 
@@ -53,7 +52,7 @@ const CheckoutPage = () => {
   const [processingStep, setProcessingStep] = useState(1);
   const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
-  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [cashfreeLoaded, setCashfreeLoaded] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   // Fallback metadata references
@@ -99,8 +98,8 @@ const CheckoutPage = () => {
   }, [currentShowKey, seats]);
 
   useEffect(() => {
-    loadRazorpayScript().then((loaded) => {
-      setRazorpayLoaded(loaded);
+    loadCashfreeScript().then((loaded) => {
+      setCashfreeLoaded(loaded);
     });
   }, []);
 
@@ -126,8 +125,8 @@ const CheckoutPage = () => {
     navigate(`/seat-selection/${show?.id || 'sh-001'}`);
   };
 
-  // Called ONLY after Razorpay payment succeeds
-  const completePaymentAndBooking = async (trackingBookingId, paymentId, orderId = '', signature = '') => {
+  // Called ONLY after Cashfree payment succeeds
+  const completePaymentAndBooking = async (trackingBookingId, orderId, paymentId = '') => {
     setIsSubmitting(false);
     setProcessing(true);
     setProcessingStep(1);
@@ -137,12 +136,11 @@ const CheckoutPage = () => {
     // 1. Verify Payment & Commit Permanent Booking in Supabase Database ONLY after successful payment
     let confirmedBookingId = trackingBookingId;
     try {
-      // Step A: Cryptographic payment signature verification (finalizes booked_seats & updates status to CONFIRMED)
+      // Step A: Payment verification with Cashfree (finalizes booked_seats & updates status to CONFIRMED)
       const verifyRes = await paymentApi.verifyPayment({
         booking_id: trackingBookingId,
-        razorpay_order_id: orderId,
-        razorpay_payment_id: paymentId,
-        razorpay_signature: signature || ''
+        order_id: orderId,
+        payment_id: paymentId
       });
 
       setProcessingStep(2);
@@ -156,9 +154,8 @@ const CheckoutPage = () => {
         show_time: show?.time || '11:00 AM',
         lock_token: heldLockToken || `lock_${Date.now()}`,
         booking_id: trackingBookingId,
-        payment_id: paymentId,
+        payment_id: verifyRes?.payment_id || paymentId || `cf_pay_${Date.now()}`,
         order_id: orderId,
-        signature: signature,
         booking_status: 'CONFIRMED',
         seats: seats.map((s) => ({
           id: s.id,
@@ -207,9 +204,9 @@ const CheckoutPage = () => {
       cgst: cgst || 0,
       sgst: sgst || 0,
       taxes: taxes || 0,
-      paymentId: paymentId || `pay_rzp_${Date.now()}`,
+      paymentId: paymentId || `cf_pay_${Date.now()}`,
       orderId: orderId,
-      paymentMethod: 'RAZORPAY',
+      paymentMethod: 'CASHFREE',
       customerName: user?.name || 'Valued Cinema Guest',
       customerEmail: email || user?.email || 'customer@cinebook.in',
       customerPhone: phone || user?.phone || '9848012345',
@@ -298,9 +295,9 @@ const CheckoutPage = () => {
       console.warn('Booking session init fallback:', err.message);
     }
 
-    // 4. Ensure Razorpay SDK is loaded
-    const isSdkLoaded = await loadRazorpayScript();
-    if (!isSdkLoaded || !window.Razorpay) {
+    // 4. Ensure Cashfree SDK is loaded
+    const cashfree = await getCashfreeInstance();
+    if (!cashfree) {
       setIsSubmitting(false);
       const failMsg = 'Payment gateway could not be loaded. Please disable ad-blockers or check your connection and try again.';
       setErrorMessage(failMsg);
@@ -308,92 +305,62 @@ const CheckoutPage = () => {
       return;
     }
 
-    // 5. Create Razorpay Payment Order
+    // 5. Create Cashfree Payment Order
     let orderData = null;
     try {
-      orderData = await paymentApi.createOrder(transactionBookingId, finalTotal);
+      orderData = await paymentApi.createOrder(transactionBookingId, finalTotal, {
+        customer_id: user?.id || `usr_${Date.now().toString(36)}`,
+        customer_name: user?.name || 'Cinema Guest',
+        customer_email: email,
+        customer_phone: phone || '9848012345'
+      });
     } catch (err) {
-      console.warn('Order creation fallback:', err);
+      console.warn('Cashfree order creation fallback:', err);
     }
 
-    // 6. Trigger Official Razorpay Checkout Popup
+    const paymentSessionId = orderData?.payment_session_id;
+    if (!paymentSessionId) {
+      setIsSubmitting(false);
+      toast.error('Unable to initialize payment session. Please try again.');
+      return;
+    }
+
+    // 6. Trigger Official Cashfree Checkout Modal
     try {
-      const options = {
-        key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
-        amount: Math.round(finalTotal * 100),
-        currency: 'INR',
-        name: 'CINEBOOK',
-        description: `Tickets for ${movie.title} (${seats.length} Seats)`,
-        image: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=100&auto=format&fit=crop&q=80',
-        order_id: orderData?.order_id || undefined,
-        handler: function (response) {
-          // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
-          if (response && response.razorpay_payment_id) {
-            completePaymentAndBooking(
-              transactionBookingId,
-              response.razorpay_payment_id,
-              response.razorpay_order_id || orderData?.order_id || '',
-              response.razorpay_signature || ''
-            );
-          } else {
-            setIsSubmitting(false);
-            setProcessing(false);
-            toast.error('Payment response was invalid. No seats were charged.');
-          }
-        },
-        prefill: {
-          name: user?.name || 'Cinema Guest',
-          email: email,
-          contact: phone
-        },
-        notes: {
-          movie: movie.title,
-          theatre: theatre.name,
-          seats: seats.map((s) => s.id).join(', ')
-        },
-        theme: {
-          color: '#E50914'
-        },
-        modal: {
-          ondismiss: async function () {
-            // ON MODAL DISMISS / PAYMENT CANCEL:
-            // Immediately release temporary locks so seats become available instantly
-            setIsSubmitting(false);
-            setProcessing(false);
-            try {
-              if (show?.id) {
-                await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
-              }
-            } catch (e) {}
-            await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
-            seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-            releaseSeatLock(currentShowKey, show?.id);
-            toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
-            navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-          }
-        }
+      const checkoutOptions = {
+        paymentSessionId: paymentSessionId,
+        redirectTarget: '_modal'
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', async function (resp) {
-        // ON PAYMENT FAILURE:
-        // Immediately release temporary locks so seats become available instantly
-        setIsSubmitting(false);
-        setProcessing(false);
-        try {
-          if (show?.id) {
-            await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
-          }
-        } catch (e) {}
-        await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
-        seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-        releaseSeatLock(currentShowKey, show?.id);
-        const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';
-        setErrorMessage(failMsg);
-        toast.error(failMsg);
-        navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+      cashfree.checkout(checkoutOptions).then(async (result) => {
+        if (result.error) {
+          // ON MODAL DISMISS / PAYMENT CANCEL / FAILURE:
+          setIsSubmitting(false);
+          setProcessing(false);
+          try {
+            if (show?.id) {
+              await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+            }
+          } catch (e) {}
+          await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
+          seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
+          releaseSeatLock(currentShowKey, show?.id);
+          const failMsg = result.error.message || 'Payment was cancelled. Your temporary seat hold has been released.';
+          setErrorMessage(failMsg);
+          toast.warning(failMsg);
+          navigate(`/seat-selection/${show?.id || 'sh-001'}`);
+          return;
+        }
+
+        if (result.paymentDetails || result.redirect) {
+          // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
+          completePaymentAndBooking(
+            transactionBookingId,
+            orderData?.order_id || transactionBookingId,
+            result.paymentDetails?.paymentMessage || ''
+          );
+        }
       });
-      rzp.open();
       setIsSubmitting(false);
     } catch (err) {
       setIsSubmitting(false);
@@ -490,7 +457,7 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Payment Gateway - Exclusively Razorpay */}
+            {/* Payment Gateway - Cashfree Payments */}
             <div className="p-6 bg-void-850 rounded-2xl space-y-4 border border-white/8 shadow-md">
               <div className="flex items-center justify-between pb-3 border-b border-white/8">
                 <div className="flex items-center gap-2.5">
@@ -510,15 +477,15 @@ const CheckoutPage = () => {
                 </span>
               </div>
 
-              {/* Single Dedicated Razorpay Card */}
+              {/* Single Dedicated Cashfree Card */}
               <div className="p-5 rounded-2xl bg-void-800 border border-brand/30 space-y-3 shadow-inner">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
-                      Razorpay
+                    <div className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
+                      Cashfree
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-text-primary">Razorpay Official Gateway</h3>
+                      <h3 className="text-sm font-bold text-text-primary">Cashfree Official Gateway</h3>
                       <p className="text-[11px] text-emerald-400 font-semibold">Verified & Active</p>
                     </div>
                   </div>
@@ -528,7 +495,7 @@ const CheckoutPage = () => {
                 </div>
 
                 <p className="text-xs text-text-secondary leading-relaxed pt-1">
-                  Your payment is securely processed exclusively by <strong>Razorpay</strong>. Click the button below to open the Razorpay checkout and authorize your transaction.
+                  Your payment is securely processed by <strong>Cashfree Payments</strong> (UPI, Credit/Debit Cards, NetBanking, Wallets). Click the button below to open the secure checkout and authorize your transaction.
                 </p>
 
                 <div className="pt-2 border-t border-white/8 flex items-center justify-between text-[11px] text-text-muted">
@@ -560,41 +527,28 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              {/* Itemized Bill */}
-              <div className="space-y-3 text-xs text-text-secondary">
+              {/* Order Breakdown */}
+              <div className="space-y-2.5 text-xs text-text-secondary">
                 <div className="flex justify-between items-center">
-                  <span className="text-text-muted">Selected Seats ({seats.length})</span>
-                  <span className="font-mono font-black text-brand bg-void-800 px-2 py-0.5 rounded-md border border-brand/30">
-                    {seats.map((s) => `${s.id} (${s.tier === 'BALCONY' ? 'Balcony ₹147' : '2nd Class ₹84'})`).join(', ')}
+                  <span>Selected Seats ({seats.length})</span>
+                  <span className="font-mono font-bold text-text-primary">
+                    {seats.map((s) => s.id).join(', ')}
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center pt-2 border-t border-white/8 text-xs sm:text-sm">
-                  <span className="text-text-primary font-medium">Ticket(s) price</span>
-                  <span className="font-bold text-text-primary font-mono text-sm">₹{Number(baseAmount || 0).toFixed(2)}</span>
+                <div className="flex justify-between items-center">
+                  <span>Base Ticket Price</span>
+                  <span className="font-mono text-text-primary">₹{(baseAmount || 0).toFixed(2)}</span>
                 </div>
 
-                {/* Convenience fees Section */}
-                <div className="p-3 rounded-xl bg-void-800/80 border border-white/8 space-y-2">
-                  <div className="flex justify-between items-center font-bold text-xs text-text-primary">
-                    <span className="flex items-center gap-1 text-text-primary font-semibold">
-                      <span>Convenience fees</span>
-                      <span className="text-[10px] text-brand">^</span>
-                    </span>
-                    <span className="font-mono text-brand font-bold">₹{Number(convenienceFeeTotal || convenienceFee || 0).toFixed(2)}</span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span>Convenience Fee</span>
+                  <span className="font-mono text-text-primary">₹{(convenienceFeeTotal || convenienceFee || 0).toFixed(2)}</span>
+                </div>
 
-                  <div className="pl-3 border-l-2 border-brand/40 space-y-1.5 text-[11px] text-text-muted">
-                    <div className="flex justify-between items-center">
-                      <span>Base Amount</span>
-                      <span className="font-mono text-text-secondary">₹{Number(convenienceFeeBase || (baseAmount * 0.1) || 0).toFixed(2)}</span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span>Integrated GST (IGST) @ 18%</span>
-                      <span className="font-mono text-text-secondary">₹{Number(igst || taxes || 0).toFixed(2)}</span>
-                    </div>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span>Taxes (GST 18%)</span>
+                  <span className="font-mono text-text-primary">₹{(igst || taxes || 0).toFixed(2)}</span>
                 </div>
 
                 <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
@@ -616,12 +570,12 @@ const CheckoutPage = () => {
                 {isSubmitting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-void-950 border-t-transparent rounded-full animate-spin" />
-                    <span>Connecting to Razorpay...</span>
+                    <span>Connecting to Cashfree...</span>
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4 text-void-950" />
-                    <span>Pay ₹{finalTotal} with Razorpay</span>
+                    <span>Pay ₹{finalTotal} with Cashfree</span>
                   </>
                 )}
               </button>
@@ -652,7 +606,7 @@ const CheckoutPage = () => {
                 Processing Secure Payment
               </h3>
               <p className="text-xs text-text-muted">
-                Confirming with Razorpay & Bank Payment Gateways...
+                Confirming with Cashfree & Bank Payment Gateways...
               </p>
             </div>
 

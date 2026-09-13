@@ -325,7 +325,8 @@ async def init_supabase_schema():
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS payments (
                     id SERIAL PRIMARY KEY,
-                    razorpay_order_id TEXT UNIQUE,
+                    order_id TEXT UNIQUE,
+                    razorpay_order_id TEXT,
                     payment_id TEXT,
                     booking_id TEXT NOT NULL,
                     amount NUMERIC(10,2) NOT NULL,
@@ -333,6 +334,9 @@ async def init_supabase_schema():
                     status TEXT NOT NULL DEFAULT 'CREATED',
                     created_at TIMESTAMPTZ DEFAULT NOW()
                 );
+                ALTER TABLE payments ADD COLUMN IF NOT EXISTS order_id TEXT;
+                ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_session_id TEXT;
+                ALTER TABLE payments ADD COLUMN IF NOT EXISTS cf_payment_id TEXT;
             """)
 
         logger.info("Supabase PostgreSQL tables and indexes verified successfully.")

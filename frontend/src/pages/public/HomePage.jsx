@@ -264,7 +264,7 @@ const HomePage = () => {
               </div>
               <h4 className="text-sm font-bold text-text-primary">Contactless E-Passes</h4>
               <p className="text-xs text-text-muted leading-relaxed">
-                Cryptographically signed QR admission passes generated in real time upon Razorpay authorization.
+                Cryptographically signed QR admission passes generated in real time upon Cashfree authorization.
               </p>
             </GlassCard>
 
