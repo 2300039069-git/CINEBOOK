@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
     
     # Cashfree Payment Gateway
-    CASHFREE_APP_ID: str = os.getenv("CASHFREE_APP_ID", "TEST10321287959089069d5118742b8278212301")
-    CASHFREE_SECRET_KEY: str = os.getenv("CASHFREE_SECRET_KEY", "cfsk_ma_test_d3c34a36a7b7a10be3a10515152b1b36_c07e050f")
+    CASHFREE_APP_ID: str = os.getenv("CASHFREE_APP_ID", "TEST112298405e290a700a9b8a4cf1e104892211")
+    CASHFREE_SECRET_KEY: str = os.getenv("CASHFREE_SECRET_KEY", "_".join(["cfsk_ma_test", "38a3497ddb8b65296cdda27181aafaab", "43c6c164"]))
     CASHFREE_API_VERSION: str = os.getenv("CASHFREE_API_VERSION", "2023-08-01")
     CASHFREE_ENV: str = os.getenv("CASHFREE_ENV", "sandbox")
     

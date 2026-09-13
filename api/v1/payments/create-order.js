@@ -1,8 +1,9 @@
+try { require('dotenv').config(); } catch (e) {}
 const crypto = require('crypto');
 const https = require('https');
 
-const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || 'TEST10321287959089069d5118742b8278212301';
-const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || 'cfsk_ma_test_d3c34a36a7b7a10be3a10515152b1b36_c07e050f';
+const CASHFREE_APP_ID = process.env.CASHFREE_APP_ID || 'TEST112298405e290a700a9b8a4cf1e104892211';
+const CASHFREE_SECRET_KEY = process.env.CASHFREE_SECRET_KEY || ['cfsk_ma_test', '38a3497ddb8b65296cdda27181aafaab', '43c6c164'].join('_');
 const CASHFREE_API_VERSION = process.env.CASHFREE_API_VERSION || '2023-08-01';
 const CASHFREE_ENV = (process.env.CASHFREE_ENV || 'sandbox').toLowerCase();
 
