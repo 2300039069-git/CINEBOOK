@@ -62,6 +62,12 @@ module.exports = async function handler(req, res) {
     try {
       await client.connect();
 
+      // 0. Purge expired temporary locks
+      await client.query(
+        "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED'",
+        [now.toISOString()]
+      );
+
       // 1. Check if any seat is already permanently booked
       const bookedCheck = await client.query(
         'SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2)',
@@ -108,7 +114,7 @@ module.exports = async function handler(req, res) {
       const baseAmount = Number(payload.base_amount) || 0;
       const convenienceFee = Number(payload.convenience_fee) || 0;
       const taxes = Number(payload.taxes) || 0;
-      const initialStatus = payload.booking_status === 'CONFIRMED' && paymentId ? 'CONFIRMED' : 'PENDING';
+      const initialStatus = 'PENDING';
 
       await client.query(
         `INSERT INTO bookings (
@@ -117,7 +123,7 @@ module.exports = async function handler(req, res) {
           customer_name, customer_email, customer_phone, booking_status, payment_id, created_at
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         ON CONFLICT (booking_id) DO UPDATE SET
-          booking_status = EXCLUDED.booking_status,
+          booking_status = CASE WHEN bookings.booking_status = 'CONFIRMED' THEN 'CONFIRMED' ELSE 'PENDING' END,
           payment_id = EXCLUDED.payment_id`,
         [
           bookingId, userId, showId,
@@ -132,7 +138,7 @@ module.exports = async function handler(req, res) {
           payload.customer_email || user?.email || 'customer@cinebook.in',
           payload.customer_phone || payload.phone || '+91 98480 12345',
           initialStatus,
-          paymentId,
+          null,
           now.toISOString()
         ]
       );

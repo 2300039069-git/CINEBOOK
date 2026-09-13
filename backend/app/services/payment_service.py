@@ -52,9 +52,6 @@ class PaymentService:
         if not signature or not payment_id or not order_id:
             return False
 
-        if settings.RAZORPAY_KEY_ID == "rzp_test_cinebook_dummy_key":
-            return True
-
         msg = f"{order_id}|{payment_id}".encode('utf-8')
         secret = settings.RAZORPAY_KEY_SECRET.encode('utf-8')
         generated_signature = hmac.new(secret, msg, hashlib.sha256).hexdigest()

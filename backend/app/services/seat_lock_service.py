@@ -174,8 +174,12 @@ class SeatLockService:
                                 detail="Seat already booked"
                             )
 
-            # 2. Supabase Atomic reservation & conflict checks
-            if db_manager.is_connected:
+                # 0. Purge expired locks in database
+                await db_manager.execute(
+                    "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED';",
+                    now
+                )
+
                 # Check permanently booked seats
                 booked_recs = await db_manager.fetch_all(
                     "SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
@@ -192,16 +196,11 @@ class SeatLockService:
                     """
                     SELECT seat_id, user_id, lock_token, status, is_booked, expires_at 
                     FROM seat_locks 
-                    WHERE show_id = $1 AND seat_id = ANY($2) AND (expires_at > $3 OR status = 'BOOKED' OR is_booked = TRUE);
+                    WHERE show_id = $1 AND seat_id = ANY($2) AND expires_at > $3 AND status = 'LOCKED';
                     """,
                     show_id, seat_ids, now
                 )
                 for r in lock_recs:
-                    if r.get("is_booked") or r.get("status") == "BOOKED":
-                        raise HTTPException(
-                            status_code=status.HTTP_409_CONFLICT,
-                            detail="Seat already booked"
-                        )
                     if r.get("lock_token") != lock_token or (r.get("user_id") and r.get("user_id") != user_id):
                         raise HTTPException(
                             status_code=status.HTTP_409_CONFLICT,
@@ -325,6 +324,15 @@ class SeatLockService:
 
             # 2. Supabase checks if connected
             if db_manager.is_connected:
+                # 0. Purge expired locks in database
+                try:
+                    await db_manager.execute(
+                        "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED';",
+                        now
+                    )
+                except Exception:
+                    pass
+
                 # Check permanently booked table
                 booked_recs = await db_manager.fetch_all(
                     "SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2);",
@@ -336,22 +344,12 @@ class SeatLockService:
                         detail=f"Seat {booked_recs[0]['seat_id']} is already booked."
                     )
 
-                # Check active seat locks table
+                # Check active seat locks table (strictly unexpired)
                 lock_recs = await db_manager.fetch_all(
-                    "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2);",
-                    show_id, seat_ids
+                    "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND expires_at > $3 AND status = 'LOCKED';",
+                    show_id, seat_ids, now
                 )
                 for lock_doc in lock_recs:
-                    if lock_doc.get("is_booked") is True or lock_doc.get("status") == "BOOKED":
-                        raise HTTPException(
-                            status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Seat {lock_doc['seat_id']} is already booked."
-                        )
-                    if lock_doc.get("expires_at") and lock_doc.get("expires_at") <= now:
-                        raise HTTPException(
-                            status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Seat hold for {lock_doc['seat_id']} has expired. Please select your seats again."
-                        )
                     if (
                         (lock_token and lock_doc.get("lock_token") and lock_doc.get("lock_token") != lock_token)
                         or (lock_doc.get("user_id") and lock_doc.get("user_id") != user_id and lock_doc.get("lock_token") != lock_token)

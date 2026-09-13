@@ -39,15 +39,11 @@ module.exports = async function handler(req, res) {
     // 2. Cryptographic HMAC-SHA256 signature verification
     let isValid = false;
     if (razorpay_signature && razorpay_order_id && RAZORPAY_KEY_SECRET) {
-      if (RAZORPAY_KEY_ID === 'rzp_test_cinebook_dummy_key') {
-        isValid = true;
-      } else {
-        const generated = crypto
-          .createHmac('sha256', RAZORPAY_KEY_SECRET)
-          .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-          .digest('hex');
-        isValid = (generated === razorpay_signature);
-      }
+      const generated = crypto
+        .createHmac('sha256', RAZORPAY_KEY_SECRET)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest('hex');
+      isValid = (generated === razorpay_signature);
     }
 
     // 3. If payment signature verification fails, explicitly release locks and mark booking FAILED
