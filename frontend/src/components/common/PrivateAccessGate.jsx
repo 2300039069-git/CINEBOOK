@@ -4,31 +4,8 @@ import { Lock, Sparkles, KeyRound, ArrowRight, ShieldCheck, Film } from 'lucide-
 const PASSCODE = '2026'; // Changeable private passcode
 
 const PrivateAccessGate = ({ children }) => {
-  const [isUnlocked, setIsUnlocked] = useState(false);
-  const [inputCode, setInputCode] = useState('');
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('cinebook_vip_unlocked');
-    if (saved === 'true') {
-      setIsUnlocked(true);
-    }
-  }, []);
-
-  const handleUnlock = (e) => {
-    e.preventDefault();
-    if (inputCode === PASSCODE || inputCode === 'CineBook@2026' || inputCode === '2026') {
-      localStorage.setItem('cinebook_vip_unlocked', 'true');
-      setIsUnlocked(true);
-      setError('');
-    } else {
-      setError('Incorrect private access passcode. Please try again.');
-    }
-  };
-
-  if (isUnlocked) {
-    return children;
-  }
+  return children;
+};
 
   return (
     <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">

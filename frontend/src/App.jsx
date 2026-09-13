@@ -30,9 +30,8 @@ import PartnerAuthPage from './pages/partner/PartnerAuthPage';
 import PartnerCounterPosPage from './pages/partner/PartnerCounterPosPage';
 import PartnerCanteenPage from './pages/partner/PartnerCanteenPage';
 
-// 3D Cinematic Intro & Private Access Gate & CineBot
+// 3D Cinematic Intro & CineBot
 import CinematicIntro3D from './components/common/CinematicIntro3D';
-import PrivateAccessGate from './components/common/PrivateAccessGate';
 import CineBotSupportModal from './components/common/CineBotSupportModal';
 import { ToastContainer } from './components/common/ToastContainer';
 
@@ -59,8 +58,7 @@ const AdminRoute = ({ children }) => {
 
 function App() {
   return (
-    <PrivateAccessGate>
-      <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300 relative">
+    <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300 relative">
         <Routes>
           {/* Dedicated Route for 3D Cinematic Intro */}
           <Route path="/welcome" element={<CinematicIntro3D onComplete={() => window.location.href = '/'} />} />
@@ -166,7 +164,6 @@ function App() {
         {/* Global Premium Non-Intrusive Toast System */}
         <ToastContainer />
       </div>
-    </PrivateAccessGate>
   );
 }
 
