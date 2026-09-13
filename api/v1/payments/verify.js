@@ -64,13 +64,28 @@ module.exports = async function handler(req, res) {
           const envMode = CASHFREE_ENV === 'production' ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX;
           const cfClient = new Cashfree(envMode, CASHFREE_APP_ID, CASHFREE_SECRET_KEY);
           cfClient.XApiVersion = CASHFREE_API_VERSION;
-          const sdkResp = await cfClient.PGFetchOrder(targetOrderId);
-          if (sdkResp && sdkResp.data) {
-            orderData = sdkResp.data;
+
+          // Check via PGOrderFetchPayments first
+          try {
+            const payResp = await cfClient.PGOrderFetchPayments(targetOrderId);
+            if (payResp && payResp.data && Array.isArray(payResp.data)) {
+              const successPay = payResp.data.find(p => p.payment_status === 'SUCCESS');
+              if (successPay) {
+                isValid = true;
+                verifiedPaymentId = String(successPay.cf_payment_id || `cf_${targetOrderId}`);
+              }
+            }
+          } catch (payErr) {}
+
+          if (!isValid) {
+            const sdkResp = await cfClient.PGFetchOrder(targetOrderId);
+            if (sdkResp && sdkResp.data) {
+              orderData = sdkResp.data;
+            }
           }
         }
 
-        if (!orderData) {
+        if (!orderData && !isValid) {
           orderData = await new Promise((resolve, reject) => {
             const reqCf = https.request({
               hostname: CASHFREE_HOST,
