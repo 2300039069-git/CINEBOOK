@@ -45,48 +45,69 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // 2. Cashfree Payment Status Verification via API
+    // 2. Cashfree Payment Status Verification via cashfree-pg SDK
     let isValid = false;
     let verifiedPaymentId = payment_id || null;
 
     if (CASHFREE_APP_ID && CASHFREE_SECRET_KEY && !CASHFREE_APP_ID.includes('dummy') && targetOrderId) {
       try {
-        const orderData = await new Promise((resolve, reject) => {
-          const reqCf = https.request({
-            hostname: CASHFREE_HOST,
-            port: 443,
-            path: `/pg/orders/${encodeURIComponent(targetOrderId)}`,
-            method: 'GET',
-            headers: {
-              'x-client-id': CASHFREE_APP_ID,
-              'x-client-secret': CASHFREE_SECRET_KEY,
-              'x-api-version': CASHFREE_API_VERSION
-            },
-            timeout: 5000
-          }, (resCf) => {
-            let data = '';
-            resCf.on('data', (chunk) => { data += chunk; });
-            resCf.on('end', () => {
-              try {
-                const json = JSON.parse(data);
-                if (resCf.statusCode >= 200 && resCf.statusCode < 300 && json.order_status) {
-                  resolve(json);
-                } else {
-                  reject(new Error(json.message || 'Order lookup returned non-200'));
-                }
-              } catch (e) {
-                reject(e);
-              }
-            });
-          });
+        let Cashfree = null;
+        let CFEnvironment = null;
+        try {
+          const sdk = require('cashfree-pg');
+          Cashfree = sdk.Cashfree;
+          CFEnvironment = sdk.CFEnvironment;
+        } catch (sdkErr) {}
 
-          reqCf.on('error', reject);
-          reqCf.on('timeout', () => {
-            reqCf.destroy();
-            reject(new Error('Cashfree verify timeout'));
+        let orderData = null;
+        if (Cashfree && CFEnvironment) {
+          const envMode = CASHFREE_ENV === 'production' ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX;
+          const cfClient = new Cashfree(envMode, CASHFREE_APP_ID, CASHFREE_SECRET_KEY);
+          cfClient.XApiVersion = CASHFREE_API_VERSION;
+          const sdkResp = await cfClient.PGFetchOrder(targetOrderId);
+          if (sdkResp && sdkResp.data) {
+            orderData = sdkResp.data;
+          }
+        }
+
+        if (!orderData) {
+          orderData = await new Promise((resolve, reject) => {
+            const reqCf = https.request({
+              hostname: CASHFREE_HOST,
+              port: 443,
+              path: `/pg/orders/${encodeURIComponent(targetOrderId)}`,
+              method: 'GET',
+              headers: {
+                'x-client-id': CASHFREE_APP_ID,
+                'x-client-secret': CASHFREE_SECRET_KEY,
+                'x-api-version': CASHFREE_API_VERSION
+              },
+              timeout: 8000
+            }, (resCf) => {
+              let data = '';
+              resCf.on('data', (chunk) => { data += chunk; });
+              resCf.on('end', () => {
+                try {
+                  const json = JSON.parse(data);
+                  if (resCf.statusCode >= 200 && resCf.statusCode < 300 && json.order_status) {
+                    resolve(json);
+                  } else {
+                    reject(new Error(json.message || 'Order lookup returned non-200'));
+                  }
+                } catch (e) {
+                  reject(e);
+                }
+              });
+            });
+
+            reqCf.on('error', reject);
+            reqCf.on('timeout', () => {
+              reqCf.destroy();
+              reject(new Error('Cashfree verify timeout'));
+            });
+            reqCf.end();
           });
-          reqCf.end();
-        });
+        }
 
         if (orderData && orderData.order_status === 'PAID') {
           isValid = true;

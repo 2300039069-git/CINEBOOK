@@ -1,3 +1,4 @@
+import { load as loadCashfreeSDK } from '@cashfreepayments/cashfree-js';
 import api from './api';
 
 export const CASHFREE_ENV = import.meta.env.VITE_CASHFREE_ENV || 'sandbox';
@@ -6,7 +7,7 @@ let cashfreeInstance = null;
 
 export const loadCashfreeScript = () => {
   return new Promise((resolve) => {
-    if (window.Cashfree) {
+    if (typeof window !== 'undefined' && window.Cashfree) {
       resolve(true);
       return;
     }
@@ -25,11 +26,19 @@ export const loadCashfreeScript = () => {
 };
 
 export const getCashfreeInstance = async () => {
+  if (cashfreeInstance) return cashfreeInstance;
+
+  const mode = CASHFREE_ENV === 'production' ? 'production' : 'sandbox';
+  try {
+    cashfreeInstance = await loadCashfreeSDK({ mode });
+    if (cashfreeInstance) return cashfreeInstance;
+  } catch (sdkErr) {
+    console.warn('Cashfree NPM SDK load warning, falling back to window.Cashfree:', sdkErr);
+  }
+
   await loadCashfreeScript();
-  if (window.Cashfree && !cashfreeInstance) {
-    cashfreeInstance = window.Cashfree({
-      mode: CASHFREE_ENV === 'production' ? 'production' : 'sandbox'
-    });
+  if (typeof window !== 'undefined' && window.Cashfree) {
+    cashfreeInstance = window.Cashfree({ mode });
   }
   return cashfreeInstance;
 };

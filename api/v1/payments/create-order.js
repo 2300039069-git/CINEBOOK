@@ -64,9 +64,49 @@ module.exports = async function handler(req, res) {
     customer_phone: sanitizeCustomerPhone(customer_details?.customer_phone)
   };
 
-  // 1. Call Cashfree PG Orders API
+  // 1. Call Cashfree PG Orders API via cashfree-pg SDK
   if (CASHFREE_APP_ID && CASHFREE_SECRET_KEY && !CASHFREE_APP_ID.includes('dummy')) {
     try {
+      let Cashfree = null;
+      let CFEnvironment = null;
+      try {
+        const sdk = require('cashfree-pg');
+        Cashfree = sdk.Cashfree;
+        CFEnvironment = sdk.CFEnvironment;
+      } catch (sdkLoadErr) {}
+
+      if (Cashfree && CFEnvironment) {
+        const envMode = CASHFREE_ENV === 'production' ? CFEnvironment.PRODUCTION : CFEnvironment.SANDBOX;
+        const cfClient = new Cashfree(envMode, CASHFREE_APP_ID, CASHFREE_SECRET_KEY);
+        cfClient.XApiVersion = CASHFREE_API_VERSION;
+
+        const orderRequest = {
+          order_id: orderId,
+          order_amount: orderAmount,
+          order_currency: 'INR',
+          customer_details: custDetails,
+          order_meta: {
+            return_url: 'https://cinebook.in/checkout?order_id={order_id}'
+          },
+          order_note: `Tickets for booking ${orderId}`
+        };
+
+        const response = await cfClient.PGCreateOrder(orderRequest);
+        if (response && response.data && (response.data.payment_session_id || response.data.order_id)) {
+          const cfOrder = response.data;
+          return res.status(200).json({
+            order_id: cfOrder.order_id || orderId,
+            cf_order_id: cfOrder.cf_order_id,
+            payment_session_id: cfOrder.payment_session_id,
+            order_amount: cfOrder.order_amount || orderAmount,
+            order_currency: cfOrder.order_currency || 'INR',
+            environment: CASHFREE_ENV,
+            booking_id: orderId
+          });
+        }
+      }
+
+      // HTTPS Direct Request Fallback
       const postData = JSON.stringify({
         order_id: orderId,
         order_amount: orderAmount,
@@ -91,7 +131,7 @@ module.exports = async function handler(req, res) {
             'x-api-version': CASHFREE_API_VERSION,
             'Content-Length': Buffer.byteLength(postData)
           },
-          timeout: 5000
+          timeout: 8000
         }, (resCf) => {
           let data = '';
           resCf.on('data', (chunk) => { data += chunk; });
@@ -128,18 +168,14 @@ module.exports = async function handler(req, res) {
         booking_id: orderId
       });
     } catch (err) {
-      console.warn('Cashfree order creation fallback:', err.message);
+      console.warn('Cashfree order creation error:', err.message);
+      return res.status(400).json({
+        detail: 'Cashfree order generation failed: ' + (err.message || 'Invalid parameters')
+      });
     }
   }
 
-  // Graceful fallback for test or offline simulation
-  const simulatedSessionId = 'session_' + crypto.randomBytes(16).toString('hex');
-  return res.status(200).json({
-    order_id: orderId,
-    payment_session_id: simulatedSessionId,
-    order_amount: orderAmount,
-    order_currency: 'INR',
-    environment: CASHFREE_ENV,
-    booking_id: orderId
+  return res.status(400).json({
+    detail: 'Cashfree credentials are not configured.'
   });
 };
