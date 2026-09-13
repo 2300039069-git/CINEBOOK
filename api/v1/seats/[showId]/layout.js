@@ -47,7 +47,7 @@ module.exports = async function handler(req, res) {
       [now]
     );
 
-    // 1. Permanently booked seats
+    // 1. Permanently booked seats from booked_seats table and confirmed bookings table
     const bookedRes = await client.query(
       'SELECT seat_id FROM booked_seats WHERE show_id = $1',
       [showId]
@@ -55,6 +55,21 @@ module.exports = async function handler(req, res) {
     for (const r of bookedRes.rows) {
       dbLocks[r.seat_id] = 'BOOKED';
     }
+
+    try {
+      // Select seats ONLY from bookings with status CONFIRMED or BOOKED (strictly ignoring PENDING, CANCELLED, FAILED)
+      const confBookingsRes = await client.query(
+        "SELECT seats FROM bookings WHERE show_id = $1 AND booking_status IN ('CONFIRMED', 'BOOKED')",
+        [showId]
+      );
+      for (const bRow of confBookingsRes.rows) {
+        const seats = typeof bRow.seats === 'string' ? JSON.parse(bRow.seats) : (bRow.seats || []);
+        for (const s of seats) {
+          const sId = typeof s === 'string' ? s : s.id;
+          if (sId) dbLocks[sId] = 'BOOKED';
+        }
+      }
+    } catch (e) {}
 
     // 2. Active temporary locks (strictly unexpired)
     const locksRes = await client.query(

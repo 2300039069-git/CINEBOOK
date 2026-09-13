@@ -77,13 +77,13 @@ async def verify_payment(
             if db_manager.is_connected:
                 try:
                     await db_manager.execute(
-                        "UPDATE bookings SET booking_status = 'FAILED' WHERE booking_id = $1",
+                        "UPDATE bookings SET booking_status = 'CANCELLED' WHERE booking_id = $1",
                         req.booking_id
                     )
                 except Exception:
                     pass
             if req.booking_id in BOOKINGS_STORE:
-                BOOKINGS_STORE[req.booking_id]["booking_status"] = "FAILED"
+                BOOKINGS_STORE[req.booking_id]["booking_status"] = BookingStatus.CANCELLED.value
 
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

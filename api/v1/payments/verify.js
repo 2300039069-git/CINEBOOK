@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
             [booking.show_id, booking.lock_token || '', seatIds]
           );
         }
-        await client.query("UPDATE bookings SET booking_status = 'FAILED' WHERE booking_id = $1", [booking_id]);
+        await client.query("UPDATE bookings SET booking_status = 'CANCELLED' WHERE booking_id = $1", [booking_id]);
       }
 
       return res.status(400).json({

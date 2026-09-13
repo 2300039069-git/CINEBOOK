@@ -51,13 +51,32 @@ class SeatLockService:
                     now
                 )
 
-                # 1. Permanently booked seats from booked_seats table
+                # 1. Permanently booked seats from booked_seats table and confirmed bookings table
                 booked_rows = await db_manager.fetch_all(
                     "SELECT seat_id FROM booked_seats WHERE show_id = $1;",
                     show_id
                 )
                 for r in booked_rows:
                     db_locks[r["seat_id"]] = "BOOKED"
+
+                try:
+                    # Select seats ONLY from bookings with status CONFIRMED or BOOKED (strictly ignoring PENDING, CANCELLED, FAILED)
+                    conf_bookings = await db_manager.fetch_all(
+                        "SELECT seats FROM bookings WHERE show_id = $1 AND booking_status IN ('CONFIRMED', 'BOOKED');",
+                        show_id
+                    )
+                    for b in conf_bookings:
+                        seats_val = b.get("seats")
+                        if isinstance(seats_val, str):
+                            import json
+                            seats_val = json.loads(seats_val)
+                        if isinstance(seats_val, list):
+                            for s in seats_val:
+                                s_id = s.get("id") if isinstance(s, dict) else str(s)
+                                if s_id:
+                                    db_locks[s_id] = "BOOKED"
+                except Exception:
+                    pass
 
                 # 2. Active temporary locks from seat_locks table (strictly unexpired)
                 lock_rows = await db_manager.fetch_all(
@@ -264,6 +283,10 @@ class SeatLockService:
                     await db_manager.execute(
                         "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED';",
                         show_id, lock_token
+                    )
+                    await db_manager.execute(
+                        "UPDATE bookings SET booking_status = 'CANCELLED' WHERE lock_token = $1 AND booking_status = 'PENDING';",
+                        lock_token
                     )
                 except Exception:
                     pass

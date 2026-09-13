@@ -48,6 +48,13 @@ module.exports = async function handler(req, res) {
         "DELETE FROM seat_locks WHERE lock_token = $1 AND status = 'LOCKED'",
         [lock_token]
       );
+    if (lock_token) {
+      try {
+        await client.query(
+          "UPDATE bookings SET booking_status = 'CANCELLED' WHERE lock_token = $1 AND booking_status = 'PENDING'",
+          [lock_token]
+        );
+      } catch (e) {}
     }
 
     return res.status(200).json({ success: true, message: 'Seat locks successfully released.' });
