@@ -43,6 +43,14 @@ export const getCashfreeInstance = async () => {
   return cashfreeInstance;
 };
 
+export const createCashfreeOrder = async (bookingId, amount, customerDetails = {}) => {
+  return paymentApi.createOrder(bookingId, amount, customerDetails);
+};
+
+export const verifyCashfreePayment = async (paymentDetails) => {
+  return paymentApi.verifyPayment(paymentDetails);
+};
+
 export const paymentApi = {
   createOrder: async (bookingId, amount, customerDetails = {}) => {
     try {
@@ -62,6 +70,10 @@ export const paymentApi = {
     }
   },
 
+  createCashfreeOrder: async (bookingId, amount, customerDetails = {}) => {
+    return paymentApi.createOrder(bookingId, amount, customerDetails);
+  },
+
   verifyPayment: async (paymentDetails) => {
     try {
       const response = await api.post('/payments/verify', paymentDetails);
@@ -73,8 +85,14 @@ export const paymentApi = {
       verifyErr.response = err.response;
       throw verifyErr;
     }
+  },
+
+  verifyCashfreePayment: async (paymentDetails) => {
+    return paymentApi.verifyPayment(paymentDetails);
   }
 };
+
+export default paymentApi;
 
 
 
