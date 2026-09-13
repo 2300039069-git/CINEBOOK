@@ -142,7 +142,7 @@ const CheckoutPage = () => {
         booking_id: trackingBookingId,
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
-        razorpay_signature: signature || 'sim_sig_verified'
+        razorpay_signature: signature || ''
       });
 
       setProcessingStep(2);

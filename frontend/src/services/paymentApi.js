@@ -49,14 +49,11 @@ export const paymentApi = {
       const response = await api.post('/payments/verify', paymentDetails);
       return response.data || response;
     } catch (err) {
-      console.warn('Backend payment verification fallback:', err.message);
-      return {
-        success: true,
-        booking_id: paymentDetails.booking_id,
-        payment_id: paymentDetails.razorpay_payment_id || `pay_sim_${Date.now()}`,
-        status: 'SUCCESS',
-        message: 'Payment verified successfully.'
-      };
+      const errMsg = err.response?.data?.detail || err.message || 'Payment verification failed.';
+      const verifyErr = new Error(errMsg);
+      verifyErr.status = err.response?.status || err.status || 400;
+      verifyErr.response = err.response;
+      throw verifyErr;
     }
   }
 };

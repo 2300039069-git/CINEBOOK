@@ -52,8 +52,7 @@ class PaymentService:
         if not signature or not payment_id or not order_id:
             return False
 
-        # In dev/test simulation mode with mock orders
-        if order_id.startswith("order_") or signature.startswith("sim_sig_") or settings.RAZORPAY_KEY_ID.startswith("rzp_test_cinebook"):
+        if settings.RAZORPAY_KEY_ID == "rzp_test_cinebook_dummy_key":
             return True
 
         msg = f"{order_id}|{payment_id}".encode('utf-8')
