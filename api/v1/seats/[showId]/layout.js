@@ -50,24 +50,23 @@ module.exports = async function handler(req, res) {
       dbLocks[r.seat_id] = 'BOOKED';
     }
 
-    // 2. Active temporary locks
+    // 2. Active temporary locks (strictly unexpired)
     const locksRes = await client.query(
-      "SELECT seat_id, user_id, lock_token, status, is_booked, expires_at FROM seat_locks WHERE show_id = $1 AND (expires_at > $2 OR status = 'BOOKED' OR is_booked = TRUE)",
+      "SELECT seat_id, user_id, lock_token, status, expires_at FROM seat_locks WHERE show_id = $1 AND expires_at > $2 AND status = 'LOCKED'",
       [showId, now]
     );
     for (const r of locksRes.rows) {
-      if (r.is_booked || r.status === 'BOOKED') {
-        dbLocks[r.seat_id] = 'BOOKED';
-      } else if (r.status === 'LOCKED') {
-        const isMine =
-          (clientLockToken && clientLockToken !== 'lock_init' && r.lock_token === clientLockToken) ||
-          (clientSessionId && r.user_id === clientSessionId);
+      // If seat is already booked in booked_seats, booked status takes priority
+      if (dbLocks[r.seat_id] === 'BOOKED') continue;
 
-        if (isMine) {
-          dbLocks[r.seat_id] = 'LOCKED_BY_CALLER';
-        } else {
-          dbLocks[r.seat_id] = 'LOCKED';
-        }
+      const isMine =
+        (clientLockToken && clientLockToken !== 'lock_init' && r.lock_token === clientLockToken) ||
+        (clientSessionId && r.user_id === clientSessionId);
+
+      if (isMine) {
+        dbLocks[r.seat_id] = 'LOCKED_BY_CALLER';
+      } else {
+        dbLocks[r.seat_id] = 'LOCKED';
       }
     }
   } catch (err) {

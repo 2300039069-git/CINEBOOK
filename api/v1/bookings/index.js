@@ -48,27 +48,21 @@ module.exports = async function handler(req, res) {
     const showId = payload.show_id || 'sh-001';
     const seats = payload.seats || [];
     const lockToken = payload.lock_token || '';
-    const paymentId = payload.payment_id || payload.razorpay_payment_id || '';
+    const paymentId = payload.payment_id || payload.razorpay_payment_id || null;
 
     if (!seats || seats.length === 0) {
       return res.status(400).json({ detail: 'No seats selected.' });
     }
 
-    // REQUIRE VALID PAYMENT CONFIRMATION BEFORE PERMANENTLY BLOCKING SEATS
-    if (!paymentId) {
-      return res.status(400).json({
-        detail: 'Payment confirmation (payment_id) is required to permanently confirm booking and lock seats.'
-      });
-    }
-
     const seatIds = seats.map(s => typeof s === 'string' ? s : s.id);
     const bookingId = payload.booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000));
     const now = new Date();
+    const expiresAt = new Date(now.getTime() + (8 * 60 * 1000)); // 8 minutes lock
 
     try {
       await client.connect();
 
-      // 1. Check if any seat is already permanently booked by another confirmed transaction
+      // 1. Check if any seat is already permanently booked
       const bookedCheck = await client.query(
         'SELECT seat_id FROM booked_seats WHERE show_id = $1 AND seat_id = ANY($2)',
         [showId, seatIds]
@@ -79,41 +73,51 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      // 2. Permanently insert into booked_seats table ONLY upon successful payment
-      for (const sId of seatIds) {
-        await client.query(
-          'INSERT INTO booked_seats (show_id, seat_id, user_id, booking_id, booked_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (show_id, seat_id) DO NOTHING',
-          [showId, sId, userId, bookingId, now.toISOString()]
-        );
+      // 2. Check active unexpired locks held by another user/session
+      const lockCheck = await client.query(
+        "SELECT seat_id, user_id, lock_token, status, expires_at FROM seat_locks WHERE show_id = $1 AND seat_id = ANY($2) AND expires_at > $3 AND status = 'LOCKED'",
+        [showId, seatIds, now.toISOString()]
+      );
+      for (const r of lockCheck.rows) {
+        const isMine = (lockToken && r.lock_token === lockToken) || (userId && r.user_id === userId);
+        if (!isMine) {
+          return res.status(409).json({
+            detail: 'Seat ' + r.seat_id + ' is currently held by another customer.'
+          });
+        }
       }
 
-      // 3. Atomically update seat_locks to permanently BOOKED
+      // 3. Ensure temporary hold in seat_locks (status 'LOCKED', not booked)
       for (const sId of seatIds) {
         await client.query(
           `INSERT INTO seat_locks (show_id, seat_id, user_id, lock_token, status, is_booked, locked_at, expires_at)
-           VALUES ($1, $2, $3, $4, 'BOOKED', TRUE, $5, $6)
+           VALUES ($1, $2, $3, $4, 'LOCKED', FALSE, $5, $6)
            ON CONFLICT (show_id, seat_id) DO UPDATE SET
-             status = 'BOOKED',
-             is_booked = TRUE,
-             expires_at = '2099-12-31T23:59:59.999Z'`,
-          [showId, sId, userId, lockToken, now.toISOString(), new Date('2099-12-31').toISOString()]
+             user_id = EXCLUDED.user_id,
+             lock_token = EXCLUDED.lock_token,
+             status = 'LOCKED',
+             is_booked = FALSE,
+             locked_at = EXCLUDED.locked_at,
+             expires_at = EXCLUDED.expires_at`,
+          [showId, sId, userId, lockToken || ('lock_' + userId), now.toISOString(), expiresAt.toISOString()]
         );
       }
 
-      // 4. Insert confirmed booking record into bookings table
+      // 4. Save booking record with initial PENDING status (do NOT permanently book seats yet)
       const totalAmount = Number(payload.total_amount) || 0;
       const baseAmount = Number(payload.base_amount) || 0;
       const convenienceFee = Number(payload.convenience_fee) || 0;
       const taxes = Number(payload.taxes) || 0;
+      const initialStatus = payload.booking_status === 'CONFIRMED' && paymentId ? 'CONFIRMED' : 'PENDING';
 
       await client.query(
         `INSERT INTO bookings (
           booking_id, user_id, show_id, movie_id, theatre_id, show_date, show_time,
           lock_token, seats, base_amount, convenience_fee, taxes, total_amount,
           customer_name, customer_email, customer_phone, booking_status, payment_id, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'CONFIRMED', $17, $18)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         ON CONFLICT (booking_id) DO UPDATE SET
-          booking_status = 'CONFIRMED',
+          booking_status = EXCLUDED.booking_status,
           payment_id = EXCLUDED.payment_id`,
         [
           bookingId, userId, showId,
@@ -127,6 +131,7 @@ module.exports = async function handler(req, res) {
           payload.customer_name || user?.name || 'Valued Customer',
           payload.customer_email || user?.email || 'customer@cinebook.in',
           payload.customer_phone || payload.phone || '+91 98480 12345',
+          initialStatus,
           paymentId,
           now.toISOString()
         ]
@@ -145,7 +150,7 @@ module.exports = async function handler(req, res) {
         convenience_fee: convenienceFee,
         taxes: taxes,
         total_amount: totalAmount,
-        booking_status: 'CONFIRMED',
+        booking_status: initialStatus,
         payment_id: paymentId,
         customer_email: payload.customer_email || user?.email || 'customer@cinebook.in',
         created_at: now.toISOString()
@@ -158,7 +163,7 @@ module.exports = async function handler(req, res) {
       });
     } catch (err) {
       console.error('Create booking error:', err);
-      return res.status(500).json({ detail: 'Failed to complete booking: ' + err.message });
+      return res.status(500).json({ detail: 'Failed to initialize booking session: ' + err.message });
     } finally {
       try { await client.end(); } catch (e) {}
     }

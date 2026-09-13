@@ -47,18 +47,6 @@ async def verify_payment(
     Verify Razorpay cryptographic signature.
     Only upon successful validation are seats transitioned to permanently BOOKED.
     """
-    is_valid = PaymentService.verify_signature(
-        order_id=req.razorpay_order_id,
-        payment_id=req.razorpay_payment_id,
-        signature=req.razorpay_signature
-    )
-
-    if not is_valid:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Payment signature verification failed. Booking cannot be confirmed."
-        )
-
     # 1. Retrieve booking from Supabase DB or memory
     await db_manager.ensure_connected()
     booking = None
@@ -72,6 +60,35 @@ async def verify_payment(
 
     if not booking:
         booking = BOOKINGS_STORE.get(req.booking_id)
+
+    is_valid = PaymentService.verify_signature(
+        order_id=req.razorpay_order_id,
+        payment_id=req.razorpay_payment_id,
+        signature=req.razorpay_signature
+    )
+
+    if not is_valid:
+        # Explicitly release any locks held for that booking on payment verification failure
+        if booking:
+            await SeatLockService.release_seats(
+                show_id=booking.get("show_id", ""),
+                lock_token=booking.get("lock_token", "")
+            )
+            if db_manager.is_connected:
+                try:
+                    await db_manager.execute(
+                        "UPDATE bookings SET booking_status = 'FAILED' WHERE booking_id = $1",
+                        req.booking_id
+                    )
+                except Exception:
+                    pass
+            if req.booking_id in BOOKINGS_STORE:
+                BOOKINGS_STORE[req.booking_id]["booking_status"] = "FAILED"
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment signature verification failed. Booking cannot be confirmed and held seats have been released."
+        )
 
     if not booking:
         raise HTTPException(status_code=404, detail="Associated booking not found.")

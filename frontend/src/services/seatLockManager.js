@@ -314,6 +314,33 @@ export const seatLockManager = {
     }
   },
 
+  // Explicitly release seats on modal dismissal, checkout exit, or payment failure
+  releaseSeats: async (showKey, showId, seatIds, customToken) => {
+    const currentTabId = getTabId();
+    const token = customToken || getTabLockToken();
+    const locks = getCleanLocksMap();
+
+    if (locks[showKey]) {
+      if (Array.isArray(seatIds) && seatIds.length > 0) {
+        seatIds.forEach((s) => {
+          const sId = typeof s === 'string' ? s : s.id;
+          delete locks[showKey][sId];
+        });
+      } else {
+        delete locks[showKey];
+      }
+      localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
+    }
+
+    seatLockManager.broadcastChange(showKey, { action: 'RELEASE_SEATS', seatIds, tabId: currentTabId });
+
+    try {
+      await bookingApi.releaseSeats(showId, token, seatIds);
+    } catch (e) {}
+
+    return { success: true };
+  },
+
   // Permanently mark seats as BOOKED upon checkout payment confirmation
   confirmBooking: (showKey, seatIds, bookingId, showId) => {
     const currentTabId = getTabId();

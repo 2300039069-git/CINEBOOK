@@ -119,6 +119,7 @@ const CheckoutPage = () => {
         await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
       }
     } catch (e) {}
+    await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
     seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
     releaseSeatLock(currentShowKey, show?.id);
     toast.info('Your temporary seat hold has been released.');
@@ -136,8 +137,8 @@ const CheckoutPage = () => {
     // 1. Verify Payment & Commit Permanent Booking in Supabase Database ONLY after successful payment
     let confirmedBookingId = trackingBookingId;
     try {
-      // Step A: Cryptographic payment signature verification
-      await paymentApi.verifyPayment({
+      // Step A: Cryptographic payment signature verification (finalizes booked_seats & updates status to CONFIRMED)
+      const verifyRes = await paymentApi.verifyPayment({
         booking_id: trackingBookingId,
         razorpay_order_id: orderId,
         razorpay_payment_id: paymentId,
@@ -146,7 +147,7 @@ const CheckoutPage = () => {
 
       setProcessingStep(2);
 
-      // Step B: Atomically commit to booked_seats and update status to BOOKED in Supabase
+      // Step B: Atomically ensure booking record is synced
       const backendRes = await bookingApi.createBooking({
         show_id: show?.id || 'sh-001',
         movie_id: movie?.id || 'mv-001',
@@ -158,6 +159,7 @@ const CheckoutPage = () => {
         payment_id: paymentId,
         order_id: orderId,
         signature: signature,
+        booking_status: 'CONFIRMED',
         seats: seats.map((s) => ({
           id: s.id,
           row: s.row || s.id.charAt(0),
@@ -180,7 +182,7 @@ const CheckoutPage = () => {
     } catch (err) {
       setProcessing(false);
       setIsSubmitting(false);
-      const msg = err.message || 'Seat already booked. Another customer completed payment for these seats first.';
+      const msg = err.message || 'Payment verification failed. Your seat hold has been released.';
       setErrorMessage(msg);
       toast.conflict(msg);
       navigate(`/seat-selection/${show?.id || 'sh-001'}`);
@@ -266,7 +268,37 @@ const CheckoutPage = () => {
     // Generate unique transaction tracking ID (NOT permanently committed yet)
     const transactionBookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    // 3. Ensure Razorpay SDK is loaded
+    // 3. Initialize booking session with PENDING status
+    try {
+      await bookingApi.createBooking({
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: selectedDate || new Date().toISOString().split('T')[0],
+        show_time: show?.time || '11:00 AM',
+        lock_token: heldLockToken || `lock_${Date.now()}`,
+        booking_id: transactionBookingId,
+        booking_status: 'PENDING',
+        seats: seats.map((s) => ({
+          id: s.id,
+          row: s.row || s.id.charAt(0),
+          number: s.number || parseInt(s.id.slice(1)) || 1,
+          tier: s.tier || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 'BALCONY' : 'SECOND_CLASS'),
+          price: s.price || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 147 : 84)
+        })),
+        base_amount: baseAmount || (finalTotal - 16.17),
+        convenience_fee: convenienceFeeTotal || convenienceFee || 16.17,
+        taxes: igst || taxes || 2.47,
+        total_amount: finalTotal,
+        customer_name: user?.name || 'Valued Cinema Guest',
+        customer_email: email || user?.email || 'customer@cinebook.in',
+        customer_phone: phone || user?.phone || '9848012345'
+      });
+    } catch (err) {
+      console.warn('Booking session init fallback:', err.message);
+    }
+
+    // 4. Ensure Razorpay SDK is loaded
     const isSdkLoaded = await loadRazorpayScript();
     if (!isSdkLoaded || !window.Razorpay) {
       setIsSubmitting(false);
@@ -276,7 +308,7 @@ const CheckoutPage = () => {
       return;
     }
 
-    // 4. Create Razorpay Payment Order
+    // 5. Create Razorpay Payment Order
     let orderData = null;
     try {
       orderData = await paymentApi.createOrder(transactionBookingId, finalTotal);
@@ -284,7 +316,7 @@ const CheckoutPage = () => {
       console.warn('Order creation fallback:', err);
     }
 
-    // 5. Trigger Official Razorpay Checkout Popup
+    // 6. Trigger Official Razorpay Checkout Popup
     try {
       const options = {
         key: orderData?.key_id || RAZORPAY_KEY_ID || 'rzp_test_Ta1Px7K4yVtNZ4',
@@ -333,6 +365,7 @@ const CheckoutPage = () => {
                 await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
               }
             } catch (e) {}
+            await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
             seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
             releaseSeatLock(currentShowKey, show?.id);
             toast.warning('Payment was cancelled. Your temporary seat hold has been released.');
@@ -352,6 +385,7 @@ const CheckoutPage = () => {
             await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
           }
         } catch (e) {}
+        await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
         seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
         releaseSeatLock(currentShowKey, show?.id);
         const failMsg = resp.error?.description || 'Payment was unsuccessful. Your seat hold has been released. Please try again.';

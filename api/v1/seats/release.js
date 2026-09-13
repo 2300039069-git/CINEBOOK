@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
   const { show_id, lock_token, seat_ids } = req.body || {};
-  if (!show_id) {
+  if (!show_id && !lock_token) {
     return res.status(200).json({ message: 'Released' });
   }
 
@@ -26,7 +26,7 @@ module.exports = async function handler(req, res) {
   try {
     await client.connect();
 
-    if (seat_ids && Array.isArray(seat_ids) && seat_ids.length > 0) {
+    if (show_id && seat_ids && Array.isArray(seat_ids) && seat_ids.length > 0) {
       if (lock_token) {
         await client.query(
           "DELETE FROM seat_locks WHERE show_id = $1 AND (seat_id = ANY($2) OR lock_token = $3) AND status = 'LOCKED'",
@@ -38,10 +38,15 @@ module.exports = async function handler(req, res) {
           [show_id, seat_ids]
         );
       }
-    } else if (lock_token) {
+    } else if (show_id && lock_token) {
       await client.query(
         "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED'",
         [show_id, lock_token]
+      );
+    } else if (lock_token) {
+      await client.query(
+        "DELETE FROM seat_locks WHERE lock_token = $1 AND status = 'LOCKED'",
+        [lock_token]
       );
     }
 

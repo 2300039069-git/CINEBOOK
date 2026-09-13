@@ -53,17 +53,14 @@ class SeatLockService:
                 for r in booked_rows:
                     db_locks[r["seat_id"]] = "BOOKED"
 
-                # 2. Active temporary locks from seat_locks table
+                # 2. Active temporary locks from seat_locks table (strictly unexpired)
                 lock_rows = await db_manager.fetch_all(
-                    "SELECT seat_id, status, expires_at, is_booked FROM seat_locks WHERE show_id = $1 AND (expires_at > $2 OR status = 'BOOKED' OR is_booked = TRUE);",
+                    "SELECT seat_id, status, expires_at, is_booked FROM seat_locks WHERE show_id = $1 AND expires_at > $2 AND status = 'LOCKED';",
                     show_id,
                     now
                 )
                 for r in lock_rows:
-                    if r.get("is_booked") or r.get("status") == "BOOKED":
-                        db_locks[r["seat_id"]] = "BOOKED"
-                    else:
-                        db_locks[r["seat_id"]] = "LOCKED"
+                    db_locks[r["seat_id"]] = "LOCKED"
             except Exception:
                 pass
 
