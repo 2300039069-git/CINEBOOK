@@ -57,16 +57,19 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
-  const { booking_id, amount, customer_details } = req.body || {};
-  const orderAmount = Number(parseFloat(amount || 100).toFixed(2));
-  const rawOrderId = String(booking_id || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000)));
+  const body = req.body || {};
+  const rawBookingId = body.bookingId || body.booking_id || body.orderId || body.order_id;
+  const rawAmount = body.amount || body.orderAmount || body.order_amount;
+  const rawCustomer = body.customer_details || {};
+  const orderAmount = Number(parseFloat(rawAmount || 100).toFixed(2));
+  const rawOrderId = String(rawBookingId || ('CB-2026-' + Math.floor(100000 + Math.random() * 900000)));
   const orderId = rawOrderId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 45);
 
   const custDetails = {
-    customer_id: sanitizeCustomerId(customer_details?.customer_id),
-    customer_name: sanitizeCustomerName(customer_details?.customer_name),
-    customer_email: sanitizeCustomerEmail(customer_details?.customer_email),
-    customer_phone: sanitizeCustomerPhone(customer_details?.customer_phone)
+    customer_id: sanitizeCustomerId(rawCustomer.customer_id || body.customerId || body.customer_id),
+    customer_name: sanitizeCustomerName(rawCustomer.customer_name || body.customerName || body.customer_name),
+    customer_email: sanitizeCustomerEmail(rawCustomer.customer_email || body.customerEmail || body.customer_email),
+    customer_phone: sanitizeCustomerPhone(rawCustomer.customer_phone || body.customerPhone || body.customer_phone)
   };
 
   const orderRequest = {
@@ -178,7 +181,8 @@ module.exports = async function handler(req, res) {
     });
   } catch (err) {
     return res.status(400).json({
-      detail: 'Cashfree order generation failed: ' + (err.message || 'Invalid parameters')
+      detail: 'Cashfree order generation failed: ' + (err.message || 'Invalid parameters'),
+      message: 'Cashfree order generation failed: ' + (err.message || 'Invalid parameters')
     });
   }
 };

@@ -9,9 +9,16 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = useCallback(({ type = 'info', title, message, duration = 4500, action }) => {
+  const addToast = useCallback((msgOrOptions = {}, typeOverride) => {
+    let opts = {};
+    if (typeof msgOrOptions === 'string') {
+      opts = { message: msgOrOptions, type: typeOverride || 'info' };
+    } else if (msgOrOptions && typeof msgOrOptions === 'object') {
+      opts = msgOrOptions;
+    }
+    const { type = 'info', title, message, duration = 4500, action } = opts;
     const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const newToast = { id, type, title, message, duration, action };
+    const newToast = { id, type, title, message: message || (typeof msgOrOptions === 'string' ? msgOrOptions : ''), duration, action };
 
     setToasts((prev) => [...prev, newToast]);
 

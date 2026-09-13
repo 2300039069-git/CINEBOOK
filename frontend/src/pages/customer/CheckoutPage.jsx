@@ -1,664 +1,144 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import {
-  Clock,
-  ShieldCheck,
-  CreditCard,
-  Ticket,
-  ChevronRight,
-  Film,
-  MapPin,
-  CheckCircle2,
-  Sparkles,
-  Lock,
-  Check,
-  AlertCircle,
-  XCircle,
-  ArrowLeft
-} from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { useToast } from '../../context/ToastContext';
-import { loadCashfreeScript, getCashfreeInstance, paymentApi, CASHFREE_ENV } from '../../services/paymentApi';
-import { seatLockManager, getShowKey } from '../../services/seatLockManager';
-import { bookingApi } from '../../services/bookingApi';
+import { ShieldCheck, Ticket, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
-const CheckoutPage = () => {
+export default function CheckoutPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const {
-    selectedMovie,
-    selectedTheatre,
-    selectedShow,
-    selectedDate,
-    selectedSeats,
-    secondsLeft,
-    baseAmount,
-    convenienceFeeBase,
-    convenienceFeeTotal,
-    convenienceFee,
-    igst,
-    cgst,
-    sgst,
-    taxes,
-    totalAmount,
-    lockToken,
-    releaseSeatLock
-  } = useBooking();
+  const { selectedSeats, selectedShow, clearBooking } = useBooking();
+  const { addToast } = useToast();
 
-  const [processing, setProcessing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [processingStep, setProcessingStep] = useState(1);
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [cashfreeLoaded, setCashfreeLoaded] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Fallback metadata references
-  const movie = selectedMovie || MOVIES[0];
-  const theatre = selectedTheatre || THEATRES[0];
-  const show = selectedShow || SAMPLE_SHOWTIMES[0];
-  const seats = selectedSeats || [];
-  const finalTotal = totalAmount > 0 ? totalAmount : 0;
-  const currentShowKey = getShowKey(show, theatre, movie, selectedDate);
-
-  // Strict Login & Selected Seats Guard
-  useEffect(() => {
-    if (!user) {
-      navigate('/login', { state: { from: { pathname: '/checkout' } }, replace: true });
-      return;
-    }
-    if (!selectedSeats || selectedSeats.length === 0) {
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`, { replace: true });
-    }
-  }, [user, selectedSeats, navigate, show?.id]);
-
-  // Keep contact info updated with user profile
-  useEffect(() => {
-    if (user) {
-      if (!email && user.email) setEmail(user.email);
-      if (!phone && user.phone) setPhone(user.phone);
-    }
-  }, [user]);
-
-  // Real-time listener for cross-tab seat conflicts while on checkout
-  useEffect(() => {
-    const unsubscribe = seatLockManager.subscribe((event) => {
-      const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
-      const conflicted = seats.find((s) => statuses[s.id]?.status === 'BOOKED');
-      if (conflicted) {
-        setErrorMessage(`Seat ${conflicted.id} has just been booked by another customer in another session. Please select different seats.`);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [currentShowKey, seats]);
+  const bookingDetails = location.state || {};
+  const show = bookingDetails.show || selectedShow;
+  const seats = bookingDetails.seats || selectedSeats || [];
+  const totalAmount = bookingDetails.totalAmount || (seats.length * (show?.price || 150));
 
   useEffect(() => {
-    loadCashfreeScript().then((loaded) => {
-      setCashfreeLoaded(loaded);
-    });
-  }, []);
+    if (!show || seats.length === 0) {
+      navigate('/movies');
+    }
+  }, [show, seats, navigate]);
 
-  const formatTimer = (secs) => {
-    const s = secs || 300;
-    const m = Math.floor(s / 60);
-    const remainder = s % 60;
-    return `${m.toString().padStart(2, '0')}:${remainder.toString().padStart(2, '0')}`;
-  };
+  const handleCashfreePayment = async () => {
+    setLoading(true);
+    setError(null);
 
-  // Explicit User Action: Cancel Checkout & Immediately Release Held Seats
-  const handleCancelAndRelease = async () => {
-    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
     try {
-      if (show?.id) {
-        await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
+      if (!window.Cashfree) {
+        throw new Error("Cashfree SDK not loaded. Please refresh the page.");
       }
-    } catch (e) {}
-    await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
-    seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-    releaseSeatLock(currentShowKey, show?.id);
-    toast.info('Your temporary seat hold has been released.');
-    navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-  };
 
-  // Called ONLY after Cashfree payment succeeds
-  const completePaymentAndBooking = async (trackingBookingId, orderId, paymentId = '') => {
-    setIsSubmitting(false);
-    setProcessing(true);
-    setProcessingStep(1);
-
-    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
-
-    // 1. Verify Payment & Commit Permanent Booking in Supabase Database ONLY after successful payment
-    let confirmedBookingId = trackingBookingId;
-    try {
-      // Step A: Payment verification with Cashfree (finalizes booked_seats & updates status to CONFIRMED)
-      const verifyRes = await paymentApi.verifyPayment({
-        booking_id: trackingBookingId,
-        order_id: orderId,
-        payment_id: paymentId
+      // 1. Create order on your backend
+      const res = await fetch('/api/v1/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: totalAmount,
+          bookingId: `BK_${Date.now()}`,
+          customerPhone: user?.phone || '9999999999',
+          customerEmail: user?.email || 'guest@cinebook.in',
+          customerName: user?.name || 'Cinebook Viewer'
+        })
       });
 
-      setProcessingStep(2);
+      const data = await res.json();
 
-      // Step B: Atomically ensure booking record is synced
-      const backendRes = await bookingApi.createBooking({
-        show_id: show?.id || 'sh-001',
-        movie_id: movie?.id || 'mv-001',
-        theatre_id: theatre?.id || 'th-001',
-        show_date: selectedDate || new Date().toISOString().split('T')[0],
-        show_time: show?.time || '11:00 AM',
-        lock_token: heldLockToken || `lock_${Date.now()}`,
-        booking_id: trackingBookingId,
-        payment_id: verifyRes?.payment_id || paymentId || `cf_pay_${Date.now()}`,
-        order_id: orderId,
-        booking_status: 'CONFIRMED',
-        seats: seats.map((s) => ({
-          id: s.id,
-          row: s.row || s.id.charAt(0),
-          number: s.number || parseInt(s.id.slice(1)) || 1,
-          tier: s.tier || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 'BALCONY' : 'SECOND_CLASS'),
-          price: s.price || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 147 : 84)
-        })),
-        base_amount: baseAmount || (finalTotal - 16.17),
-        convenience_fee: convenienceFeeTotal || convenienceFee || 16.17,
-        taxes: igst || taxes || 2.47,
-        total_amount: finalTotal,
-        customer_name: user?.name || 'Valued Cinema Guest',
-        customer_email: email || user?.email || 'customer@cinebook.in',
-        customer_phone: phone || user?.phone || '9848012345'
-      });
-
-      if (backendRes && backendRes.booking_id) {
-        confirmedBookingId = backendRes.booking_id;
+      if (!res.ok || !data.payment_session_id) {
+        throw new Error(data.message || data.detail || 'Failed to initialize payment session.');
       }
+
+      // 2. Launch Cashfree Sandbox Checkout
+      const cashfree = window.Cashfree({ mode: 'sandbox' });
+      await cashfree.checkout({
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: '_self'
+      });
     } catch (err) {
-      setProcessing(false);
-      setIsSubmitting(false);
-      const msg = err.message || 'Payment verification failed. Your seat hold has been released.';
-      setErrorMessage(msg);
-      toast.conflict(msg);
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-      return;
+      console.error('Payment Error:', err);
+      setError(err.message || 'Payment initiation failed.');
+      addToast(err.message || 'Failed to launch payment', 'error');
+      setLoading(false);
     }
-
-    // 2. Permanently record booked seats and broadcast to all tabs
-    seatLockManager.confirmBooking(currentShowKey, seats, confirmedBookingId, show?.id);
-
-    const confirmedBooking = {
-      bookingId: confirmedBookingId,
-      movie,
-      theatre,
-      show,
-      showDate: selectedDate || new Date().toISOString().split('T')[0],
-      seats: seats,
-      totalAmount: finalTotal,
-      baseAmount: baseAmount || 0,
-      convenienceFee: convenienceFeeTotal || convenienceFee || 0,
-      convenienceFeeBase: convenienceFeeBase || 0,
-      igst: igst || 0,
-      cgst: cgst || 0,
-      sgst: sgst || 0,
-      taxes: taxes || 0,
-      paymentId: paymentId || `cf_pay_${Date.now()}`,
-      orderId: orderId,
-      paymentMethod: 'CASHFREE',
-      customerName: user?.name || 'Valued Cinema Guest',
-      customerEmail: email || user?.email || 'customer@cinebook.in',
-      customerPhone: phone || user?.phone || '9848012345',
-      status: 'CONFIRMED',
-      bookedAt: new Date().toISOString()
-    };
-
-    const existing = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
-    localStorage.setItem('cinebook_bookings', JSON.stringify([confirmedBooking, ...existing]));
-    localStorage.setItem('cinebook_latest_booking', JSON.stringify(confirmedBooking));
-
-    setProcessingStep(3);
-
-    setTimeout(() => {
-      setProcessing(false);
-      setIsSubmitting(false);
-      toast.success('Payment successful! Your tickets are confirmed.');
-      navigate(`/booking-confirmation/${confirmedBookingId}`);
-    }, 250);
   };
 
-  const handlePayNow = async () => {
-    setErrorMessage('');
-    if (!user) {
-      navigate('/login', { state: { from: { pathname: '/checkout' } } });
-      return;
-    }
-
-    // 1. Pre-check if already permanently booked locally or remotely
-    const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
-    const isConflict = seats.some((s) => statuses[s.id]?.status === 'BOOKED');
-    if (isConflict) {
-      setErrorMessage('Seat already booked. One or more selected seats have been booked by another customer.');
-      toast.conflict('Seat already booked. One or more seats were reserved by another customer.');
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-      return;
-    }
-
-    setIsSubmitting(true);
-    const heldLockToken = (lockToken && lockToken !== 'lock_init' ? lockToken : null) || seatLockManager.getHeldToken(currentShowKey);
-
-    // 2. Verify and re-confirm temporary atomic seat lock on backend (temporary lock ONLY)
-    try {
-      if (show?.id && seats?.length > 0) {
-        await bookingApi.lockSeats(show.id, seats.map((s) => s.id), undefined, heldLockToken);
-      }
-    } catch (err) {
-      const msg = err.message || 'Seat already booked. Another customer has reserved this seat.';
-      setErrorMessage(msg);
-      toast.conflict(msg);
-      setIsSubmitting(false);
-      navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-      return;
-    }
-
-    // Generate unique transaction tracking ID (NOT permanently committed yet)
-    const transactionBookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-
-    // 3. Initialize booking session with PENDING status
-    try {
-      await bookingApi.createBooking({
-        show_id: show?.id || 'sh-001',
-        movie_id: movie?.id || 'mv-001',
-        theatre_id: theatre?.id || 'th-001',
-        show_date: selectedDate || new Date().toISOString().split('T')[0],
-        show_time: show?.time || '11:00 AM',
-        lock_token: heldLockToken || `lock_${Date.now()}`,
-        booking_id: transactionBookingId,
-        booking_status: 'PENDING',
-        seats: seats.map((s) => ({
-          id: s.id,
-          row: s.row || s.id.charAt(0),
-          number: s.number || parseInt(s.id.slice(1)) || 1,
-          tier: s.tier || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 'BALCONY' : 'SECOND_CLASS'),
-          price: s.price || (['A', 'B', 'C', 'D'].includes(s.id.charAt(0)) ? 147 : 84)
-        })),
-        base_amount: baseAmount || (finalTotal - 16.17),
-        convenience_fee: convenienceFeeTotal || convenienceFee || 16.17,
-        taxes: igst || taxes || 2.47,
-        total_amount: finalTotal,
-        customer_name: user?.name || 'Valued Cinema Guest',
-        customer_email: email || user?.email || 'customer@cinebook.in',
-        customer_phone: phone || user?.phone || '9848012345'
-      });
-    } catch (err) {
-      console.warn('Booking session init fallback:', err.message);
-    }
-
-    // 4. Ensure Cashfree SDK is loaded
-    const cashfree = await getCashfreeInstance();
-    if (!cashfree) {
-      setIsSubmitting(false);
-      const failMsg = 'Payment gateway could not be loaded. Please disable ad-blockers or check your connection and try again.';
-      setErrorMessage(failMsg);
-      toast.error(failMsg);
-      return;
-    }
-
-    // 5. Create Cashfree Payment Order
-    let orderData = null;
-    try {
-      const cleanPhone = (phone || user?.phone || '9848012345').replace(/\D/g, '').slice(-10) || '9848012345';
-      const cleanEmail = (email || user?.email || 'customer@cinebook.in').trim();
-
-      orderData = await paymentApi.createOrder(transactionBookingId, finalTotal, {
-        customer_id: user?.id ? String(user.id).replace(/[^a-zA-Z0-9_-]/g, '') : `usr_${Date.now().toString(36)}`,
-        customer_name: user?.name || 'Cinema Guest',
-        customer_email: cleanEmail,
-        customer_phone: cleanPhone
-      });
-    } catch (err) {
-      setIsSubmitting(false);
-      const failMsg = err.message || 'Unable to connect to Cashfree payment gateway. Please try again.';
-      setErrorMessage(failMsg);
-      toast.error(failMsg);
-      return;
-    }
-
-    const paymentSessionId = orderData?.payment_session_id;
-    if (!paymentSessionId) {
-      setIsSubmitting(false);
-      const failMsg = 'Unable to initialize Cashfree payment session. Please try again.';
-      setErrorMessage(failMsg);
-      toast.error(failMsg);
-      return;
-    }
-
-    // 6. Trigger Official Cashfree Checkout Modal
-    try {
-      const checkoutOptions = {
-        paymentSessionId: paymentSessionId,
-        redirectTarget: '_modal'
-      };
-
-      cashfree.checkout(checkoutOptions).then(async (result) => {
-        setIsSubmitting(false);
-        if (result && result.error) {
-          // ON MODAL DISMISS / PAYMENT CANCEL / FAILURE:
-          setProcessing(false);
-          try {
-            if (show?.id) {
-              await bookingApi.releaseSeats(show.id, heldLockToken, seats.map((s) => s.id));
-            }
-          } catch (e) {}
-          await seatLockManager.releaseSeats(currentShowKey, show?.id, seats.map((s) => s.id), heldLockToken);
-          seatLockManager.releaseCurrentTabLocks(currentShowKey, show?.id);
-          releaseSeatLock(currentShowKey, show?.id);
-          const failMsg = result.error.message || 'Payment was cancelled. Your temporary seat hold has been released.';
-          setErrorMessage(failMsg);
-          toast.warning(failMsg);
-          navigate(`/seat-selection/${show?.id || 'sh-001'}`);
-          return;
-        }
-
-        if (result && (result.paymentDetails || result.redirect)) {
-          // PAYMENT SUCCESS: ONLY NOW commit booking permanently to database
-          completePaymentAndBooking(
-            transactionBookingId,
-            orderData?.order_id || transactionBookingId,
-            result.paymentDetails?.paymentMessage || ''
-          );
-        }
-      }).catch(async (err) => {
-        setIsSubmitting(false);
-        setProcessing(false);
-        const failMsg = err?.message || 'Payment modal could not be displayed.';
-        setErrorMessage(failMsg);
-        toast.error(failMsg);
-      });
-
-      setIsSubmitting(false);
-    } catch (err) {
-      setIsSubmitting(false);
-      const failMsg = 'Unable to launch Cashfree payment gateway: ' + (err.message || 'Please try again.');
-      setErrorMessage(failMsg);
-      toast.error(failMsg);
-    }
-  };
+  const formattedSeats = Array.isArray(seats)
+    ? seats.map((s) => (typeof s === 'string' ? s : s?.id || s?.name || s?.number || '')).join(', ')
+    : String(seats || '');
 
   return (
-    <div className="min-h-screen py-10 bg-void-900 text-text-primary transition-colors">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Navigation & Cancel Action */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleCancelAndRelease}
-            className="flex items-center gap-2 text-xs font-semibold text-text-muted hover:text-brand transition-colors cursor-pointer px-3 py-2 rounded-xl bg-void-850 border border-white/8 hover:border-brand/40"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Seat Selection (Release Hold)</span>
-          </button>
+    <div className="min-h-screen bg-slate-950 text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+        >
+          <ArrowLeft size={18} />
+          <span>Back to Seat Selection</span>
+        </button>
 
-          <button
-            type="button"
-            onClick={handleCancelAndRelease}
-            className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 font-semibold cursor-pointer px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 hover:border-red-500/40 transition-colors"
-          >
-            <XCircle className="w-4 h-4" />
-            <span>Cancel & Release Seats</span>
-          </button>
-        </div>
-
-        {/* 1. SEAT LOCK COUNTDOWN BANNER */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-void-850 border border-brand/30 flex items-center justify-between shadow-lg backdrop-blur-md">
-          <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-brand/15 text-brand border border-brand/30">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <span>Temporary Seat Lock Active</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              </h3>
-              <p className="text-xs text-text-muted mt-0.5">
-                Seats are temporarily held for your session. Complete payment to finalize permanent booking.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-right flex-shrink-0">
-            <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Time Remaining</span>
-            <span className="text-lg sm:text-xl font-mono font-black text-brand">
-              {formatTimer(secondsLeft)}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <h1 className="text-2xl font-bold">Booking Checkout</h1>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+              <ShieldCheck size={14} />
+              Cashfree Sandbox Secured
             </span>
           </div>
-        </div>
 
-        {errorMessage && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left 2 Cols: Contact & Payment Gateway Selection */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Contact Details */}
-            <div className="p-6 bg-void-850 rounded-2xl space-y-4 border border-white/8 shadow-md">
-              <h2 className="text-xs font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-brand" /> Ticket Delivery Details
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-text-muted block mb-1.5">Email Address (E-Ticket & QR)</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-void-800 border border-white/8 rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-brand transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-text-muted block mb-1.5">Mobile Number (SMS WhatsApp Pass)</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-void-800 border border-white/8 rounded-xl text-xs text-text-primary font-medium focus:outline-none focus:border-brand transition-colors"
-                  />
-                </div>
-              </div>
+          {error && (
+            <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              <AlertCircle size={18} className="shrink-0" />
+              <span>{error}</span>
             </div>
+          )}
 
-            {/* Payment Gateway - Cashfree Payments */}
-            <div className="p-6 bg-void-850 rounded-2xl space-y-4 border border-white/8 shadow-md">
-              <div className="flex items-center justify-between pb-3 border-b border-white/8">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-brand/15 flex items-center justify-center text-brand border border-brand/30">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="text-xs font-black uppercase tracking-wider text-text-primary">
-                      Payment Gateway
-                    </h2>
-                    <p className="text-[11px] text-text-muted">Direct Official Integration</p>
-                  </div>
-                </div>
-                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>256-Bit SSL Encrypted</span>
-                </span>
-              </div>
-
-              {/* Single Dedicated Cashfree Card */}
-              <div className="p-5 rounded-2xl bg-void-800 border border-brand/30 space-y-3 shadow-inner">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-black text-xs tracking-wider uppercase shadow-sm">
-                      Cashfree
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-text-primary">Cashfree Official Gateway</h3>
-                      <p className="text-[11px] text-emerald-400 font-semibold">Verified & Active</p>
-                    </div>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-brand/20 text-brand flex items-center justify-center">
-                    <Check className="w-4 h-4 stroke-[3]" />
-                  </div>
-                </div>
-
-                <p className="text-xs text-text-secondary leading-relaxed pt-1">
-                  Your payment is securely processed by <strong>Cashfree Payments</strong> (UPI, Credit/Debit Cards, NetBanking, Wallets). Click the button below to open the secure checkout and authorize your transaction.
-                </p>
-
-                <div className="pt-2 border-t border-white/8 flex items-center justify-between text-[11px] text-text-muted">
-                  <span>Merchant: <strong className="text-text-primary font-semibold">CINEBOOK</strong></span>
-                  <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" /> PCI-DSS Level 1 Certified
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Booking Summary Card */}
           <div className="space-y-4">
-            <div className="p-6 bg-void-850 rounded-2xl space-y-5 h-fit border border-white/8 shadow-xl">
-              {/* Mini Movie Header */}
-              <div className="flex items-start gap-3.5 pb-4 border-b border-white/8">
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  className="w-16 h-24 rounded-xl object-cover border border-white/8 flex-shrink-0 shadow-sm"
-                />
-                <div>
-                  <h3 className="text-sm font-black text-text-primary leading-tight">{movie.title}</h3>
-                  <p className="text-xs text-brand font-bold mt-1">{theatre.name}</p>
-                  <span className="inline-block mt-1.5 px-2.5 py-0.5 rounded-full bg-void-800 border border-white/8 text-[10px] font-semibold text-text-secondary">
-                    {show.format || '2D Dolby Atmos'} • {show.time || '11:00 AM'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Order Breakdown */}
-              <div className="space-y-2.5 text-xs text-text-secondary">
-                <div className="flex justify-between items-center">
-                  <span>Selected Seats ({seats.length})</span>
-                  <span className="font-mono font-bold text-text-primary">
-                    {seats.map((s) => s.id).join(', ')}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Base Ticket Price</span>
-                  <span className="font-mono text-text-primary">₹{(baseAmount || 0).toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Convenience Fee</span>
-                  <span className="font-mono text-text-primary">₹{(convenienceFeeTotal || convenienceFee || 0).toFixed(2)}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Taxes (GST 18%)</span>
-                  <span className="font-mono text-text-primary">₹{(igst || taxes || 0).toFixed(2)}</span>
-                </div>
-
-                <div className="pt-3 border-t border-white/8 flex justify-between items-center text-sm font-black">
-                  <div>
-                    <span className="text-text-primary block">Total Payable</span>
-                    <span className="text-[10px] text-emerald-400 font-medium">All Taxes & Fees Included</span>
-                  </div>
-                  <span className="text-2xl text-brand font-black font-mono">₹{Number(finalTotal || 0).toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Confirm & Pay Button */}
-              <button
-                type="button"
-                onClick={handlePayNow}
-                disabled={processing || isSubmitting}
-                className="w-full py-4 rounded-2xl bg-brand hover:bg-brand-hover text-void-950 text-xs sm:text-sm font-black uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-98 shadow-lg shadow-brand/25 transform hover:-translate-y-0.5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-void-950 border-t-transparent rounded-full animate-spin" />
-                    <span>Connecting to Cashfree...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-4 h-4 text-void-950" />
-                    <span>Pay ₹{finalTotal} with Cashfree</span>
-                  </>
-                )}
-              </button>
-
-              <div className="pt-1 text-center space-y-1">
-                <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 100% Instant Refund Guarantee
-                </p>
-                <p className="text-[10px] text-text-muted">
-                  Cancel anytime before showtime for automated bank credit.
-                </p>
-              </div>
+            <div className="flex justify-between items-center text-slate-300">
+              <span>Movie</span>
+              <span className="font-semibold text-white">{show?.movieTitle || show?.title || 'Movie Ticket'}</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-300">
+              <span>Theatre & Time</span>
+              <span className="font-semibold text-white">
+                {show?.theatreName || show?.theatre || 'Cinebook Cinema'} | {show?.time || 'Showtime'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-slate-300">
+              <span>Seats ({seats.length})</span>
+              <span className="font-semibold text-white">{formattedSeats || 'Selected Seats'}</span>
+            </div>
+            <div className="border-t border-slate-800 pt-4 flex justify-between items-center text-lg font-bold">
+              <span>Total Payable Amount</span>
+              <span className="text-rose-400">₹{totalAmount}</span>
             </div>
           </div>
+
+          <button
+            onClick={handleCashfreePayment}
+            disabled={loading}
+            className="w-full py-3.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed font-semibold rounded-xl transition shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                <span>Redirecting to Cashfree...</span>
+              </>
+            ) : (
+              <>
+                <Ticket size={18} />
+                <span>Pay ₹{totalAmount} with Cashfree</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
-
-      {/* --- PAYMENT PROCESSING MODAL --- */}
-      {processing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="max-w-md w-full bg-void-850 rounded-2xl p-7 text-center space-y-5 border border-white/8 shadow-2xl text-text-primary">
-            <div className="w-14 h-14 rounded-2xl bg-brand flex items-center justify-center mx-auto text-void-950 shadow-lg">
-              <CreditCard className="w-7 h-7 text-void-950" />
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-bold text-text-primary">
-                Processing Secure Payment
-              </h3>
-              <p className="text-xs text-text-muted">
-                Confirming with Cashfree & Bank Payment Gateways...
-              </p>
-            </div>
-
-            <div className="space-y-2.5 text-xs text-left">
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
-                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 1 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
-                }`}>✓</span>
-                <span className={processingStep >= 1 ? 'text-text-primary font-medium' : 'text-text-muted'}>
-                  Verifying 256-Bit SSL Payment Token...
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
-                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 2 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
-                }`}>✓</span>
-                <span className={processingStep >= 2 ? 'text-text-primary font-medium' : 'text-text-muted'}>
-                  Securing Confirmed Seats in Database...
-                </span>
-              </div>
-
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-void-800 border border-white/8">
-                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                  processingStep >= 3 ? 'bg-emerald-500 text-white' : 'bg-void-900 border border-white/10 text-text-muted'
-                }`}>✓</span>
-                <span className={processingStep >= 3 ? 'text-text-primary font-medium' : 'text-text-muted'}>
-                  Generating Digital Pass with Signed QR Code...
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
-};
-
-export default CheckoutPage;
+}
