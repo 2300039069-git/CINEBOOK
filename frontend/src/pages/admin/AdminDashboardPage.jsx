@@ -183,7 +183,21 @@ const AdminDashboardPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {MOVIES.map((movie) => (
               <div key={movie.id} className="p-4 rounded-2xl bg-surface border border-border flex gap-3 shadow-sm">
-                <img src={movie.posterUrl} alt={movie.title} className="w-18 h-26 object-cover rounded-xl border border-border" />
+                <img
+                  src={movie.poster || movie.posterUrl || movie.poster_url || '/posters/pushpa2.jpg'}
+                  alt={movie.title}
+                  onError={(e) => {
+                    const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
+                    let fb = '/posters/pushpa2.jpg';
+                    if (t.includes('devara')) fb = '/posters/devara.jpg';
+                    else if (t.includes('kalki')) fb = '/posters/kalki.webp';
+                    else if (t.includes('og') || t.includes('ojas')) fb = '/posters/og.jpg';
+                    if (e.target.src !== fb && !e.target.src.endsWith(fb)) {
+                      e.target.src = fb;
+                    }
+                  }}
+                  className="w-18 h-26 object-cover rounded-xl border border-border"
+                />
                 <div className="space-y-1 flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-text-primary truncate">{movie.title}</h3>
                   <p className="text-[11px] text-text-muted">{movie.genres?.join(', ')}</p>

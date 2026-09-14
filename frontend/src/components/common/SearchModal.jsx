@@ -118,8 +118,18 @@ const SearchModal = ({ isOpen, onClose }) => {
                       >
                         <div className="flex items-center gap-3">
                           <img
-                            src={movie.posterUrl}
+                            src={movie.poster || movie.posterUrl || movie.poster_url || '/posters/pushpa2.jpg'}
                             alt={movie.title}
+                            onError={(e) => {
+                              const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
+                              let fb = '/posters/pushpa2.jpg';
+                              if (t.includes('devara')) fb = '/posters/devara.jpg';
+                              else if (t.includes('kalki')) fb = '/posters/kalki.webp';
+                              else if (t.includes('og') || t.includes('ojas')) fb = '/posters/og.jpg';
+                              if (e.target.src !== fb && !e.target.src.endsWith(fb)) {
+                                e.target.src = fb;
+                              }
+                            }}
                             className="w-12 h-16 object-cover rounded-lg shadow-sm"
                           />
                           <div>

@@ -29,7 +29,36 @@ const HeroCarousel = ({ onWatchTrailer }) => {
     setCurrentIndex((prev) => (prev + 1) % MOVIES.length);
   };
 
-  const currentMovie = MOVIES[currentIndex] || MOVIES[0];
+  const getImageSrc = () => {
+    if (currentMovie.backdropUrl) return currentMovie.backdropUrl;
+    if (currentMovie.posterUrl) return currentMovie.posterUrl;
+    if (currentMovie.poster) return currentMovie.poster;
+    const t = ((currentMovie.title || '') + ' ' + (currentMovie.slug || '')).toLowerCase();
+    if (t.includes('pushpa')) return '/posters/pushpa2.jpg';
+    if (t.includes('devara')) return '/posters/devara.jpg';
+    if (t.includes('kalki')) return '/posters/kalki.webp';
+    if (t.includes('og') || t.includes('ojas')) return '/posters/og.jpg';
+    return '/posters/pushpa2.jpg';
+  };
+
+  const handleImageError = (e) => {
+    const poster = currentMovie.posterUrl || currentMovie.poster;
+    if (poster && e.target.src !== poster && !e.target.src.endsWith(poster)) {
+      e.target.src = poster;
+      return;
+    }
+    const t = ((currentMovie.title || '') + ' ' + (currentMovie.slug || '')).toLowerCase();
+    let fallback = '/posters/pushpa2.jpg';
+    if (t.includes('devara')) fallback = '/posters/devara.jpg';
+    else if (t.includes('kalki')) fallback = '/posters/kalki.webp';
+    else if (t.includes('og') || t.includes('ojas')) fallback = '/posters/og.jpg';
+
+    if (e.target.src !== fallback && !e.target.src.endsWith(fallback)) {
+      e.target.src = fallback;
+      return;
+    }
+    setImageError(true);
+  };
 
   return (
     <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
@@ -50,9 +79,9 @@ const HeroCarousel = ({ onWatchTrailer }) => {
           >
             {!imageError ? (
               <img
-                src={currentMovie.backdropUrl || currentMovie.posterUrl}
+                src={getImageSrc()}
                 alt={currentMovie.title}
-                onError={() => setImageError(true)}
+                onError={handleImageError}
                 className="w-full h-full object-cover object-center filter brightness-[0.72] contrast-[1.05]"
               />
             ) : (

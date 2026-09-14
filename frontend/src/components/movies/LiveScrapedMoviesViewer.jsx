@@ -40,6 +40,8 @@ export default function LiveScrapedMoviesViewer({ city }) {
       movies: MOVIES.map(m => ({
         title: m.title || 'Pushpa 2: The Rule (2024)',
         slug: m.slug || 'pushpa-2-the-rule',
+        poster: m.poster || m.posterUrl || '/posters/pushpa2.jpg',
+        posterUrl: m.posterUrl || m.poster || '/posters/pushpa2.jpg',
         language: Array.isArray(m.languages) ? m.languages[0] : (m.language || 'Telugu'),
         rating: m.rating ? `${m.rating}/10` : '9.4/10',
         formats: Array.isArray(m.formats) ? m.formats : ['2D', 'Dolby Atmos'],

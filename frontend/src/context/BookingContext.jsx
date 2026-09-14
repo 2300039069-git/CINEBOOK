@@ -22,8 +22,18 @@ export const getSeatPrice = (seat) => {
 export const BookingProvider = ({ children }) => {
   const { toast } = useToast();
   const [selectedMovie, setSelectedMovie] = useState(() => {
-    const saved = localStorage.getItem('cinebook_selected_movie');
-    return saved ? JSON.parse(saved) : MOVIES[0];
+    try {
+      const saved = localStorage.getItem('cinebook_selected_movie');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const canonical = MOVIES.find((m) => m.id === parsed.id || m.slug === parsed.slug || m.title === parsed.title);
+        if (canonical) {
+          return { ...parsed, poster: canonical.poster, posterUrl: canonical.posterUrl, backdropUrl: canonical.backdropUrl };
+        }
+        return parsed;
+      }
+    } catch (e) {}
+    return MOVIES[0];
   });
 
   const [selectedTheatre, setSelectedTheatre] = useState(() => {

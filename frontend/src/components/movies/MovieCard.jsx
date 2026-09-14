@@ -2,19 +2,50 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Ticket, Film, Clock, Sparkles } from 'lucide-react';
 
-const MovieCard = ({ movie, onBookClick }) => {
+const MovieCard = ({ movie = {}, onBookClick }) => {
   const [imageError, setImageError] = useState(false);
+  const [fallbackAttempted, setFallbackAttempted] = useState(false);
   const primaryFormat = movie.formats?.[0] || '4K Laser';
+
+  const getPosterSrc = () => {
+    const raw = movie.poster || movie.posterUrl || movie.poster_url;
+    if (raw) return raw;
+    const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
+    if (t.includes('pushpa')) return '/posters/pushpa2.jpg';
+    if (t.includes('devara')) return '/posters/devara.jpg';
+    if (t.includes('kalki')) return '/posters/kalki.webp';
+    if (t.includes('og') || t.includes('ojas')) return '/posters/og.jpg';
+    return '/posters/pushpa2.jpg';
+  };
+
+  const posterSrc = getPosterSrc();
+
+  const handleImageError = (e) => {
+    if (!fallbackAttempted) {
+      setFallbackAttempted(true);
+      const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
+      let nextSrc = '/posters/pushpa2.jpg';
+      if (t.includes('devara')) nextSrc = '/posters/devara.jpg';
+      else if (t.includes('kalki')) nextSrc = '/posters/kalki.webp';
+      else if (t.includes('og') || t.includes('ojas')) nextSrc = '/posters/og.jpg';
+
+      if (e.target.src !== nextSrc && !e.target.src.endsWith(nextSrc)) {
+        e.target.src = nextSrc;
+        return;
+      }
+    }
+    setImageError(true);
+  };
 
   return (
     <div className="group flex flex-col rounded-2xl bg-surface/90 border border-border/80 hover:border-accent/50 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1.5">
       {/* 1. Poster Container with 2:3 Aspect Ratio */}
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface-elevated">
-        {!imageError && movie.posterUrl ? (
+        {!imageError && posterSrc ? (
           <img
-            src={movie.posterUrl}
+            src={posterSrc}
             alt={movie.title}
-            onError={() => setImageError(true)}
+            onError={handleImageError}
             className="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="lazy"
           />
