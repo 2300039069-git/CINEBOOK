@@ -67,8 +67,8 @@ export default function CheckoutPage() {
     }
   }, [show, seats, navigate]);
 
-  // Complete booking directly without opening any payment popup
-  const handleDirectPayment = async () => {
+  // Complete booking with CASHU Payment / Instant Checkout
+  const handleCashuPayment = async () => {
     setLoading(true);
     setError(null);
 
@@ -86,7 +86,7 @@ export default function CheckoutPage() {
 
       // 2. Generate Unique IDs
       const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      const paymentId = `pay_direct_${Date.now()}`;
+      const paymentId = `cashu_pay_${Date.now()}`;
       const heldLockToken =
         (lockToken && lockToken !== 'lock_init' ? lockToken : null) ||
         seatLockManager.getHeldToken(currentShowKey) ||
@@ -144,7 +144,7 @@ export default function CheckoutPage() {
         totalAmount: totalPayable,
         paymentId,
         orderId: `order_${Date.now()}`,
-        paymentMethod: 'DIRECT_CHECKOUT',
+        paymentMethod: 'CASHU_GATEWAY',
         customerName: user?.name || 'Valued Cinema Guest',
         customerEmail: user?.email || 'customer@cinebook.in',
         customerPhone: user?.phone || '9848012345',
@@ -234,7 +234,7 @@ export default function CheckoutPage() {
             <h1 className="text-2xl font-bold">Booking Checkout</h1>
             <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
               <ShieldCheck size={14} />
-              Instant Direct Confirmation
+              CASHU Secure Checkout
             </span>
           </div>
 
@@ -273,19 +273,19 @@ export default function CheckoutPage() {
           </div>
 
           <button
-            onClick={handleDirectPayment}
+            onClick={handleCashuPayment}
             disabled={loading}
             className="w-full py-3.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 disabled:cursor-not-allowed font-semibold rounded-xl transition shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 cursor-pointer text-base active:scale-98"
           >
             {loading ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                <span>Confirming Your Booking...</span>
+                <span>Processing Payment...</span>
               </>
             ) : (
               <>
                 <Ticket size={18} />
-                <span>Confirm & Pay ₹{totalPayable}</span>
+                <span>Pay ₹{totalPayable} with CASHU</span>
               </>
             )}
           </button>

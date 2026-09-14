@@ -15,7 +15,7 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
     if (t.includes('devara')) return '/posters/devara.jpg';
     if (t.includes('kalki')) return '/posters/kalki.webp';
     if (t.includes('og') || t.includes('ojas')) return '/posters/og.jpg';
-    return '/posters/pushpa2.jpg';
+    return '/posters/default.jpg';
   };
 
   const posterSrc = getPosterSrc();
@@ -24,8 +24,9 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
     if (!fallbackAttempted) {
       setFallbackAttempted(true);
       const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
-      let nextSrc = '/posters/pushpa2.jpg';
-      if (t.includes('devara')) nextSrc = '/posters/devara.jpg';
+      let nextSrc = '/posters/default.jpg';
+      if (t.includes('pushpa')) nextSrc = '/posters/pushpa2.jpg';
+      else if (t.includes('devara')) nextSrc = '/posters/devara.jpg';
       else if (t.includes('kalki')) nextSrc = '/posters/kalki.webp';
       else if (t.includes('og') || t.includes('ojas')) nextSrc = '/posters/og.jpg';
 
@@ -38,7 +39,7 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
   };
 
   return (
-    <div className="group flex flex-col rounded-2xl bg-surface/90 border border-border/80 hover:border-accent/50 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1.5">
+    <div className="group flex flex-col rounded-2xl bg-surface/90 border border-border/80 hover:border-accent/50 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1.5 will-change-transform transform-gpu">
       {/* 1. Poster Container with 2:3 Aspect Ratio */}
       <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface-elevated">
         {!imageError && posterSrc ? (
@@ -46,7 +47,7 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
             src={posterSrc}
             alt={movie.title}
             onError={handleImageError}
-            className="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 ease-out"
+            className="h-full w-full object-cover object-center transform group-hover:scale-105 transition-transform duration-500 ease-out will-change-transform transform-gpu"
             loading="lazy"
           />
         ) : (
