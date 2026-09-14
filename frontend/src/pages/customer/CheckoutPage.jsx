@@ -44,7 +44,7 @@ export default function CheckoutPage() {
   const bookingDetails = location.state || {};
   const movie = bookingDetails.movie || selectedMovie || {
     title: 'Pushpa 2: The Rule (2024)',
-    posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop'
+    posterUrl: '/posters/pushpa2.jpg'
   };
   const theatre = bookingDetails.theatre || selectedTheatre || {
     name: 'Siva Cinemas 4K Laser',
@@ -120,7 +120,7 @@ export default function CheckoutPage() {
           posterUrl:
             movie?.posterUrl ||
             show?.posterUrl ||
-            'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+            '/posters/pushpa2.jpg',
           genre: movie?.genre || 'Action, Drama',
           language: movie?.language || 'Telugu'
         },

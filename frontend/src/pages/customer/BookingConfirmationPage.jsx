@@ -25,7 +25,7 @@ const BookingConfirmationPage = () => {
     latestBooking ||
     bookings[0] || {
       bookingId: bookingId || 'CB-2026-894120',
-      movie: { title: 'Pushpa 2: The Rule (2024)', posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop' },
+      movie: { title: 'Pushpa 2: The Rule (2024)', posterUrl: '/posters/pushpa2.jpg' },
       theatre: { name: 'Siva Cinemas 4K Laser', address: 'Near Old Bus Stand, Guntur' },
       show: { time: '11:00 AM', format: '2D Dolby Atmos', language: 'Telugu' },
       showDate: new Date().toISOString().split('T')[0],

@@ -304,7 +304,10 @@
             }
           ]
         }
-      ]
+      ],
+      "poster": "/posters/pushpa2.jpg",
+      "posterUrl": "/posters/pushpa2.jpg",
+      "poster_url": "/posters/pushpa2.jpg"
     },
     {
       "title": "Devara: Part 1",
@@ -550,7 +553,10 @@
             }
           ]
         }
-      ]
+      ],
+      "poster": "/posters/devara.jpg",
+      "posterUrl": "/posters/devara.jpg",
+      "poster_url": "/posters/devara.jpg"
     },
     {
       "title": "Kalki 2898 AD",
@@ -797,7 +803,10 @@
             }
           ]
         }
-      ]
+      ],
+      "poster": "/posters/kalki.webp",
+      "posterUrl": "/posters/kalki.webp",
+      "poster_url": "/posters/kalki.webp"
     }
   ]
 }

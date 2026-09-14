@@ -345,7 +345,10 @@
             }
           ]
         }
-      ]
+      ],
+      "poster": "/posters/pushpa2.jpg",
+      "posterUrl": "/posters/pushpa2.jpg",
+      "poster_url": "/posters/pushpa2.jpg"
     },
     {
       "title": "Pushpa: The Rise (2021)",
@@ -613,7 +616,10 @@
             }
           ]
         }
-      ]
+      ],
+      "poster": "/posters/pushpa2.jpg",
+      "posterUrl": "/posters/pushpa2.jpg",
+      "poster_url": "/posters/pushpa2.jpg"
     },
     {
       "title": "Ala Vaikunthapurramuloo (2020)",

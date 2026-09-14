@@ -171,6 +171,8 @@ const REGIONAL_REGISTRY = {
       {
         title: 'Pushpa 2: The Rule (2024)',
         slug: 'pushpa-2-the-rule',
+        poster: '/posters/pushpa2.jpg',
+        posterUrl: '/posters/pushpa2.jpg',
         language: 'Telugu',
         rating: '9.5/10',
         genres: ['Action', 'Crime', 'Drama'],
@@ -180,6 +182,8 @@ const REGIONAL_REGISTRY = {
       {
         title: 'Devara: Part 1',
         slug: 'devara-part-1',
+        poster: '/posters/devara.jpg',
+        posterUrl: '/posters/devara.jpg',
         language: 'Telugu',
         rating: '9.1/10',
         genres: ['Action', 'Drama'],
@@ -189,6 +193,8 @@ const REGIONAL_REGISTRY = {
       {
         title: 'Kalki 2898 AD',
         slug: 'kalki-2898-ad',
+        poster: '/posters/kalki.webp',
+        posterUrl: '/posters/kalki.webp',
         language: 'Telugu',
         rating: '9.2/10',
         genres: ['Sci-Fi', 'Action'],

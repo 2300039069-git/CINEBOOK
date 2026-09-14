@@ -147,7 +147,7 @@ const MyBookingsPage = () => {
                   {/* Left: Movie & Cinema info */}
                   <div className="flex items-start gap-4 sm:gap-5">
                     <img
-                      src={b.movie?.posterUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop'}
+                      src={b.movie?.posterUrl || '/posters/pushpa2.jpg'}
                       alt={b.movie?.title}
                       className="w-18 sm:w-20 h-24 sm:h-28 rounded-2xl object-cover border border-border/80 flex-shrink-0 shadow-sm"
                     />
