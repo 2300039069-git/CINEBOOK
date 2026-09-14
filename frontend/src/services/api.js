@@ -4,18 +4,24 @@ const isLocalhost =
   typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-const API_BASE_URL = isLocalhost
-  ? (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1')
-  : (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost')
-      ? import.meta.env.VITE_API_URL
-      : '/api/v1');
+const rawApiUrl = import.meta.env.VITE_API_URL;
+
+let API_BASE_URL = 'http://localhost:8000/api/v1';
+
+if (rawApiUrl) {
+  const trimmed = rawApiUrl.replace(/\/+$/, '');
+  API_BASE_URL = trimmed.endsWith('/api/v1') ? trimmed : `${trimmed}/api/v1`;
+} else if (!isLocalhost) {
+  // Production fallback to Render backend
+  API_BASE_URL = 'https://cinebook-backend.onrender.com/api/v1';
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 25000,
 });
 
 // Request interceptor to attach JWT bearer token
