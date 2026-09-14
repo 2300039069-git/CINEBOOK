@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useLocation, Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import {
   CheckCircle2,
@@ -13,20 +13,26 @@ import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt'
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
+  const location = useLocation();
   const { clearBooking } = useBooking();
 
-  // Load booking from localStorage or fallback
+  // Load booking from state, localStorage, or fallback
   const bookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
-  const booking = bookings.find((b) => b.bookingId === bookingId) || bookings[0] || {
-    bookingId: bookingId || 'CB-2026-894120',
-    movie: { title: 'Pushpa 2: The Rule (2024)', posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop' },
-    theatre: { name: 'Siva Cinemas 4K Laser', address: 'Near Old Bus Stand, Guntur' },
-    show: { time: '11:00 AM', format: '2D Dolby Atmos', language: 'Telugu' },
-    showDate: new Date().toISOString().split('T')[0],
-    seats: [{ id: 'C5' }, { id: 'C6' }],
-    totalAmount: 459,
-    paymentId: `pay_rzp_${Date.now()}`
-  };
+  const latestBooking = JSON.parse(localStorage.getItem('cinebook_latest_booking') || 'null');
+  const booking =
+    location.state?.booking ||
+    (bookingId ? bookings.find((b) => b.bookingId === bookingId) : null) ||
+    latestBooking ||
+    bookings[0] || {
+      bookingId: bookingId || 'CB-2026-894120',
+      movie: { title: 'Pushpa 2: The Rule (2024)', posterUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop' },
+      theatre: { name: 'Siva Cinemas 4K Laser', address: 'Near Old Bus Stand, Guntur' },
+      show: { time: '11:00 AM', format: '2D Dolby Atmos', language: 'Telugu' },
+      showDate: new Date().toISOString().split('T')[0],
+      seats: [{ id: 'C5' }, { id: 'C6' }],
+      totalAmount: 459,
+      paymentId: `pay_direct_${Date.now()}`
+    };
 
   const [showThermalModal, setShowThermalModal] = useState(false);
 

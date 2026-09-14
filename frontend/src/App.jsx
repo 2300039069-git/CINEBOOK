@@ -122,6 +122,14 @@ function App() {
                       }
                     />
                     <Route
+                      path="/booking-confirmation"
+                      element={
+                        <CustomerRoute>
+                          <BookingConfirmationPage />
+                        </CustomerRoute>
+                      }
+                    />
+                    <Route
                       path="/my-bookings"
                       element={
                         <CustomerRoute>
