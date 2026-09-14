@@ -1,0 +1,6 @@
+# Ignore backend, scrapers, and legacy api files for Vercel Frontend SPA build
+backend/
+api/
+scrapers/
+.env
+.env.*

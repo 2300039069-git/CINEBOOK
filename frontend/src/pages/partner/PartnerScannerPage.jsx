@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../../services/api';
 import {
   QrCode,
   CheckCircle2,
@@ -99,12 +100,7 @@ const PartnerScannerPage = () => {
     setIsProcessing(true);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/partner/scan-ticket', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ qr_payload: code })
-      });
-      const data = await res.json();
+      const data = await api.post('/partner/scan-ticket', { qr_payload: code });
 
       setScanResult(data);
       if (data.status === 'ADMITTED') {

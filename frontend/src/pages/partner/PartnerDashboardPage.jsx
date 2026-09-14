@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 import {
   TrendingUp,
   Ticket,
@@ -133,11 +134,10 @@ const PartnerDashboardPage = () => {
 
   useEffect(() => {
     // Fetch live partner data if backend available
-    fetch('http://127.0.0.1:8000/api/v1/partner/reports/daily-summary?theatre_id=th-gtr-001')
-      .then(res => res.json())
+    api.get('/partner/reports/daily-summary?theatre_id=th-gtr-001')
       .then(data => {
-        if (data.summary) setSummary(prev => ({ ...prev, ...data.summary }));
-        if (data.shows_breakdown && data.shows_breakdown.length > 0) setShows(data.shows_breakdown);
+        if (data?.summary) setSummary(prev => ({ ...prev, ...data.summary }));
+        if (data?.shows_breakdown && data.shows_breakdown.length > 0) setShows(data.shows_breakdown);
       })
       .catch(() => {});
   }, []);

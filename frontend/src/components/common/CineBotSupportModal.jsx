@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import api from '../../services/api';
 import {
   MessageSquare,
   X,
@@ -52,12 +53,7 @@ const CineBotSupportModal = () => {
     setIsTyping(true);
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/v1/support/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: query })
-      });
-      const data = await res.json();
+      const data = await api.post('/support/chat', { message: query });
 
       setIsTyping(false);
       setMessages((prev) => [
@@ -65,8 +61,8 @@ const CineBotSupportModal = () => {
         {
           id: Date.now() + 1,
           sender: 'BOT',
-          text: data.reply,
-          suggested_actions: data.suggested_actions,
+          text: data?.reply || 'How else can I assist you?',
+          suggested_actions: data?.suggested_actions,
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }
       ]);
