@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   MapPin,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Calendar
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
@@ -127,6 +128,11 @@ const SeatSelectionPage = () => {
   const selectedSeatsRef = React.useRef(selectedSeats);
   selectedSeatsRef.current = selectedSeats;
 
+  // Update layout immediately whenever showId changes
+  useEffect(() => {
+    setRawLayout(generateSeatLayout(show.id));
+  }, [show.id]);
+
   // Load layout and subscribe to real-time seat locks & bookings from Supabase backend & cross-tabs
   useEffect(() => {
     let isMounted = true;
@@ -136,17 +142,18 @@ const SeatSelectionPage = () => {
         const token = sessionStorage.getItem('cinebook_tab_lock_token') || '';
         const tabId = getTabId();
         const res = await bookingApi.getSeatLayout(show.id, token, tabId);
-        if (res && res.tiers && res.tiers.length > 0 && isMounted) {
+        const tiers = res?.tiers || (Array.isArray(res) ? res : null);
+        if (tiers && tiers.length > 0 && isMounted) {
           // Self-heal any stale browser cache with server truth
-          seatLockManager.syncWithBackend(currentShowKey, res.tiers);
-          setRawLayout(res.tiers);
+          seatLockManager.syncWithBackend(currentShowKey, tiers);
+          setRawLayout(tiers);
 
           // Extract real-time backend lock & booked statuses
           const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
           const backendStatuses = {};
           const currentSelected = selectedSeatsRef.current || [];
 
-          res.tiers.forEach((tier) => {
+          tiers.forEach((tier) => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
                 const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
@@ -226,9 +233,9 @@ const SeatSelectionPage = () => {
   }, [show.id, currentShowKey]);
 
   // Merge base layout with live atomic locks and bookings from Supabase
-  const dynamicLayout = rawLayout.map((tier) => ({
+  const dynamicLayout = (rawLayout && rawLayout.length > 0 ? rawLayout : generateSeatLayout(show.id)).map((tier) => ({
     ...tier,
-    rows: tier.rows.map((row) => ({
+    rows: (tier.rows || []).map((row) => ({
       ...row,
       seats: row.seats.map((seat) => {
         const liveInfo = liveStatuses[seat.id];
