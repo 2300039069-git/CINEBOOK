@@ -342,44 +342,44 @@ const SeatSelectionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-text-primary pb-36 transition-colors">
+    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] pb-36 transition-colors">
       {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-16 sm:top-20 z-30 bg-void-900/95 backdrop-blur-md border-b border-white/8 py-3.5 px-4 sm:px-6 lg:px-8 shadow-lg">
+      <div className="sticky top-16 sm:top-20 z-30 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 py-3.5 px-4 sm:px-6 lg:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2 rounded-xl bg-void-800 text-text-secondary hover:text-text-primary border border-white/8 transition-colors cursor-pointer"
+              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black text-text-primary leading-none">
+                <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 leading-none">
                   {movie.title}
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-void-800 text-text-secondary text-[10px] font-bold border border-white/8">
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </div>
-              <p className="text-xs text-text-muted mt-1">
-                {theatre.name} • <span className="text-brand font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                {theatre.name} • <span className="text-primary font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-void-800 border border-white/8 text-text-secondary shadow-xs">
-              <Calendar className="w-3.5 h-3.5 text-brand" />
-              <span className="font-bold text-text-primary">{formattedDateStr}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <span className="font-bold text-slate-900 dark:text-slate-100">{formattedDateStr}</span>
             </div>
 
             {/* 8-Minute Countdown Timer Widget */}
             <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
               secondsLeft < 120
-                ? 'bg-primary/15 border-primary text-primary animate-pulse'
-                : 'bg-void-800 border-brand/40 text-brand'
+                ? 'bg-rose-500/15 border-rose-500 text-rose-600 dark:text-rose-400 animate-pulse'
+                : 'bg-slate-100 dark:bg-slate-800 border-amber-500/40 text-amber-600 dark:text-amber-400'
             }`}>
               <Clock className="w-4 h-4" />
               <div className="leading-tight">
@@ -394,11 +394,11 @@ const SeatSelectionPage = () => {
       {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
       {selectedSeats.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3.5 rounded-2xl bg-void-850 border border-brand/30 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
-            <div className="flex items-center gap-2.5 text-xs text-text-secondary">
-              <Sparkles className="w-4 h-4 text-brand flex-shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#161B26] border border-primary/30 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
+              <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
               <span>
-                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-brand font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-brand">{formatTime(secondsLeft)}</strong>.
+                <strong className="text-slate-900 dark:text-slate-100">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-primary font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-primary">{formatTime(secondsLeft)}</strong>.
               </span>
             </div>
           </div>
@@ -415,26 +415,26 @@ const SeatSelectionPage = () => {
       </div>
 
       {/* 4. STICKY BOTTOM BOOKING SUMMARY BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-void-900/95 backdrop-blur-md border-t border-white/8 py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Selected Seats summary */}
           <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-brand/15 text-brand border border-brand/30 hidden sm:block">
+            <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 hidden sm:block">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-text-muted font-semibold">Selected Seats:</span>
+                <span className="text-slate-500 dark:text-slate-400 font-semibold">Selected Seats:</span>
                 {selectedSeats.length > 0 ? (
-                  <span className="font-black bg-void-800 px-3 py-0.5 rounded-full border border-brand/40 text-brand">
+                  <span className="font-black bg-slate-100 dark:bg-slate-800 px-3 py-0.5 rounded-full border border-primary/40 text-primary">
                     {selectedSeats.map((s) => s.id).join(', ')}
                   </span>
                 ) : (
-                  <span className="text-text-muted italic">Click on seat layout above</span>
+                  <span className="text-slate-400 italic">Click on seat layout above</span>
                 )}
               </div>
-              <p className="text-[11px] text-text-muted mt-1">
-                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Ticket(s): <strong className="text-text-primary font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Convenience Fee (10% + 18% GST): <strong className="text-text-primary font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Ticket(s): <strong className="text-slate-900 dark:text-slate-100 font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Convenience Fee (10% + 18% GST): <strong className="text-slate-900 dark:text-slate-100 font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
               </p>
             </div>
           </div>
@@ -442,18 +442,18 @@ const SeatSelectionPage = () => {
           {/* Action Total and Checkout Button */}
           <div className="flex items-center justify-between sm:justify-end gap-6">
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-text-muted block tracking-wider">Total Amount (Incl. All)</span>
-              <span className="text-xl sm:text-2xl font-black text-brand font-mono">₹{Number(totalAmount || 0).toFixed(2)}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Amount (Incl. All)</span>
+              <span className="text-xl sm:text-2xl font-black text-primary font-mono">₹{Number(totalAmount || 0).toFixed(2)}</span>
             </div>
 
             <button
               type="button"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all duration-200 cursor-pointer ${
+              className={`px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 cursor-pointer ${
                 selectedSeats.length > 0
-                  ? 'bg-brand hover:bg-brand-hover text-void-950 shadow-lg shadow-brand/25 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-98'
-                  : 'bg-void-800 text-text-muted cursor-not-allowed border border-white/8'
+                  ? 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/25 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-98'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700'
               }`}
             >
               <span>Proceed to Pay</span>

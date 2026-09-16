@@ -305,58 +305,58 @@ export default function CheckoutPage() {
     : String(seats || '');
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background text-text-primary pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors">
       <div className="max-w-3xl mx-auto space-y-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-text-muted hover:text-text-primary transition-colors cursor-pointer text-sm font-medium"
         >
           <ArrowLeft size={18} />
           <span>Back to Seat Selection</span>
         </button>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-            <h1 className="text-2xl font-bold">Booking Checkout</h1>
-            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full">
+        <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <h1 className="text-2xl font-bold text-text-primary">Booking Checkout</h1>
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
               <ShieldCheck size={14} />
               CASHU Secure Gateway
             </span>
           </div>
 
           {error && (
-            <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
               <AlertCircle size={18} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center text-slate-300">
-              <span>Movie</span>
-              <span className="font-semibold text-white">
+            <div className="flex justify-between items-center text-text-secondary">
+              <span className="text-sm">Movie</span>
+              <span className="font-semibold text-text-primary text-sm sm:text-base">
                 {movie?.title || show?.movieTitle || 'Movie Ticket'}
               </span>
             </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>Theatre & Time</span>
-              <span className="font-semibold text-white">
+            <div className="flex justify-between items-center text-text-secondary">
+              <span className="text-sm">Theatre & Time</span>
+              <span className="font-semibold text-text-primary text-sm sm:text-base">
                 {theatre?.name || show?.theatreName || 'Cinebook Cinema'} | {show?.time || 'Showtime'}
               </span>
             </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>Date</span>
-              <span className="font-semibold text-white">{showDate}</span>
+            <div className="flex justify-between items-center text-text-secondary">
+              <span className="text-sm">Date</span>
+              <span className="font-semibold text-text-primary text-sm sm:text-base">{showDate}</span>
             </div>
-            <div className="flex justify-between items-center text-slate-300">
-              <span>Seats ({seats.length})</span>
-              <span className="font-semibold text-white">{formattedSeatsText || 'Selected Seats'}</span>
+            <div className="flex justify-between items-center text-text-secondary">
+              <span className="text-sm">Seats ({seats.length})</span>
+              <span className="font-semibold text-primary text-sm sm:text-base">{formattedSeatsText || 'Selected Seats'}</span>
             </div>
-            <div className="border-t border-slate-800 pt-4 flex justify-between items-center text-lg font-bold">
-              <span>Total Payable Amount</span>
+            <div className="border-t border-border pt-4 flex justify-between items-center text-lg font-bold">
+              <span className="text-text-primary">Total Payable Amount</span>
               <div className="text-right">
-                <span className="text-amber-400 block text-xl">₹{totalPayable}</span>
-                <span className="text-xs text-slate-400 font-normal">Approx. ${usdAmount} USD</span>
+                <span className="text-primary block text-2xl font-black">₹{totalPayable}</span>
+                <span className="text-xs text-text-muted font-normal">Approx. ${usdAmount} USD</span>
               </div>
             </div>
           </div>
@@ -364,9 +364,9 @@ export default function CheckoutPage() {
           <button
             onClick={handleOpenCashuModal}
             disabled={loading}
-            className="w-full py-4 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-black font-extrabold rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer text-base active:scale-98"
+            className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-extrabold rounded-xl transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer text-base active:scale-98"
           >
-            <Wallet size={19} className="text-black" />
+            <Wallet size={19} className="text-white" />
             <span>Pay ₹{totalPayable} with CASHU</span>
             <ChevronRight size={18} className="ml-1" />
           </button>

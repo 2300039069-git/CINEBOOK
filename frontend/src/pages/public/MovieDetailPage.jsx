@@ -214,7 +214,7 @@ const MovieDetailPage = () => {
                   const element = document.getElementById('showtimes-section');
                   element?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-7 py-3 rounded-xl bg-gold hover:bg-gold-hover text-background text-xs sm:text-sm font-black uppercase tracking-wider shadow-lg transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+                className="px-7 py-3 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg transition-all cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 Grab your seats in {selectedCity.name}
               </button>

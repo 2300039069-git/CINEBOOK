@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Ticket, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, Lock, Ticket, ChevronRight, ShieldCheck, Sparkles, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CinebookSeat3D from './CinebookSeat3D';
 
@@ -155,7 +155,7 @@ const SeatSelectionModal = ({
                                 onClick={() => toggleSeat(seatObj)}
                                 className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] font-black flex items-center justify-center transition-all cursor-pointer ${
                                   isSelected
-                                    ? 'bg-gradient-to-br from-amber-400 via-brand to-amber-600 text-void-950 shadow-cta scale-110 ring-2 ring-brand'
+                                    ? 'bg-primary text-white shadow-cta scale-110 ring-2 ring-primary'
                                     : isBooked
                                     ? 'bg-surface-elevated text-text-muted cursor-not-allowed opacity-40 border border-border line-through'
                                     : isLocked
