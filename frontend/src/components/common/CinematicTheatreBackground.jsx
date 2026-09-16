@@ -2,12 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // Curated high-performance 3D cinema auditorium and projector footage sources
 const CINEMA_VIDEO_SOURCES = [
+  '/theatre-bg.mp4',
+  '/videos/theatre-bg.mp4',
+  '/theatre.mp4',
   'https://assets.mixkit.co/videos/preview/mixkit-cinema-screen-in-an-empty-room-41554-large.mp4',
   'https://assets.mixkit.co/videos/preview/mixkit-projector-playing-a-movie-in-a-dark-room-41553-large.mp4'
 ];
 
 const CinematicTheatreBackground = ({
-  opacity = 0.28,
+  videoUrl,
+  opacity = 0.32,
   showProjectorBeam = true,
   showParticles = true,
   className = ''
@@ -145,8 +149,10 @@ const CinematicTheatreBackground = ({
             }`}
             style={{ opacity: videoLoaded ? opacity : 0 }}
           >
-            <source src={CINEMA_VIDEO_SOURCES[0]} type="video/mp4" />
-            <source src={CINEMA_VIDEO_SOURCES[1]} type="video/mp4" />
+            {videoUrl && <source src={videoUrl} type="video/mp4" />}
+            {CINEMA_VIDEO_SOURCES.map((src, i) => (
+              <source key={i} src={src} type="video/mp4" />
+            ))}
           </video>
         )}
 
