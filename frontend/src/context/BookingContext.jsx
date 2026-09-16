@@ -144,7 +144,9 @@ export const BookingProvider = ({ children }) => {
     }
 
     // Check if locked by another user (NOT current user)
-    if (seat.isLockedByOther || seatLockManager.isSeatLockedByOtherTab(showKey, seat.id) || (seat.status === 'LOCKED' && !seat.isLockedByMe)) {
+    const isOther = Boolean(seat.is_locked_by_other) || Boolean(seat.isLockedByOther) || seatLockManager.isSeatLockedByOtherTab(showKey, seat.id);
+    const isMine = Boolean(seat.is_locked_by_me) || Boolean(seat.isLockedByMe);
+    if ((seat.status === 'LOCKED' && !isMine) || isOther) {
       toast.conflict(`Seat ${seat.id} is currently held by another customer.`);
       return;
     }

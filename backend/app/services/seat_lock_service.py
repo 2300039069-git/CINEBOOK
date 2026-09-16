@@ -35,14 +35,19 @@ class SeatLockService:
             del IN_MEMORY_SEAT_STORE[k]
 
     @classmethod
-    async def get_show_layout(cls, show_id: str) -> SeatLayoutResponse:
-        """Generate full cinema seat map with real-time dynamic statuses"""
+    async def get_show_layout(
+        cls,
+        show_id: str,
+        user_id: Optional[str] = None,
+        lock_token: Optional[str] = None
+    ) -> SeatLayoutResponse:
+        """Generate full cinema seat map with real-time dynamic statuses and lock ownership"""
         await db_manager.ensure_connected()
         cls._cleanup_expired_locks()
         now = datetime.now(timezone.utc)
 
         # Retrieve Supabase locks if connected
-        db_locks = {}
+        db_locks: Dict[str, dict] = {}
         if db_manager.is_connected:
             try:
                 # 0. Purge expired locks in database on query time
@@ -57,7 +62,7 @@ class SeatLockService:
                     show_id
                 )
                 for r in booked_rows:
-                    db_locks[r["seat_id"]] = "BOOKED"
+                    db_locks[r["seat_id"]] = {"status": "BOOKED"}
 
                 try:
                     # Select seats ONLY from bookings with status CONFIRMED or BOOKED (strictly ignoring PENDING, CANCELLED, FAILED)
@@ -74,18 +79,23 @@ class SeatLockService:
                             for s in seats_val:
                                 s_id = s.get("id") if isinstance(s, dict) else str(s)
                                 if s_id:
-                                    db_locks[s_id] = "BOOKED"
+                                    db_locks[s_id] = {"status": "BOOKED"}
                 except Exception:
                     pass
 
                 # 2. Active temporary locks from seat_locks table (strictly unexpired)
                 lock_rows = await db_manager.fetch_all(
-                    "SELECT seat_id, status, expires_at, is_booked FROM seat_locks WHERE show_id = $1 AND expires_at > $2 AND status = 'LOCKED';",
+                    "SELECT seat_id, user_id, lock_token, status, expires_at, is_booked FROM seat_locks WHERE show_id = $1 AND expires_at > $2 AND status = 'LOCKED';",
                     show_id,
                     now
                 )
                 for r in lock_rows:
-                    db_locks[r["seat_id"]] = "LOCKED"
+                    db_locks[r["seat_id"]] = {
+                        "status": "LOCKED",
+                        "user_id": r.get("user_id"),
+                        "lock_token": r.get("lock_token"),
+                        "expires_at": r.get("expires_at")
+                    }
             except Exception:
                 pass
 
@@ -111,8 +121,10 @@ class SeatLockService:
                     seat_id = f"{r_letter}{num}"
                     total_seats += 1
                     
-                    # Determine live status
+                    # Determine live status and lock ownership
                     seat_status = SeatStatus.AVAILABLE
+                    is_locked_by_me = False
+                    is_locked_by_other = False
                     
                     # 1. Check in-memory store
                     mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
@@ -120,14 +132,43 @@ class SeatLockService:
                         if mem_entry["status"] == "BOOKED":
                             seat_status = SeatStatus.BOOKED
                         elif mem_entry["status"] == "LOCKED" and mem_entry["expires_at"] > now:
-                            seat_status = SeatStatus.LOCKED
+                            mem_is_mine = False
+                            if lock_token and mem_entry.get("lock_token") == lock_token:
+                                mem_is_mine = True
+                            elif user_id and mem_entry.get("user_id") == user_id:
+                                mem_is_mine = True
+
+                            if mem_is_mine:
+                                is_locked_by_me = True
+                                is_locked_by_other = False
+                                seat_status = SeatStatus.AVAILABLE
+                            else:
+                                is_locked_by_me = False
+                                is_locked_by_other = True
+                                seat_status = SeatStatus.LOCKED
 
                     # 2. Check Supabase
                     if seat_id in db_locks:
-                        if db_locks[seat_id] == "BOOKED":
+                        db_entry = db_locks[seat_id]
+                        if db_entry.get("status") == "BOOKED":
                             seat_status = SeatStatus.BOOKED
-                        elif db_locks[seat_id] == "LOCKED":
-                            seat_status = SeatStatus.LOCKED
+                            is_locked_by_me = False
+                            is_locked_by_other = False
+                        elif db_entry.get("status") == "LOCKED":
+                            db_is_mine = False
+                            if lock_token and db_entry.get("lock_token") == lock_token:
+                                db_is_mine = True
+                            elif user_id and db_entry.get("user_id") == user_id:
+                                db_is_mine = True
+
+                            if db_is_mine:
+                                is_locked_by_me = True
+                                is_locked_by_other = False
+                                seat_status = SeatStatus.AVAILABLE
+                            else:
+                                is_locked_by_me = False
+                                is_locked_by_other = True
+                                seat_status = SeatStatus.LOCKED
 
                     if seat_status == SeatStatus.AVAILABLE:
                         available_count += 1
@@ -143,7 +184,9 @@ class SeatLockService:
                         tier=tc["tier"],
                         price=tc["price"],
                         status=seat_status,
-                        is_aisle_after=(num == 3 or num == 11)
+                        is_aisle_after=(num == 3 or num == 11),
+                        is_locked_by_me=is_locked_by_me,
+                        is_locked_by_other=is_locked_by_other
                     ))
                 tier_rows.append(SeatRow(row_letter=r_letter, seats=seats_in_row))
             
@@ -274,29 +317,41 @@ class SeatLockService:
             )
 
     @classmethod
-    async def release_seats(cls, show_id: str, lock_token: str) -> bool:
-        """Release temporary lock when customer cancels checkout or navigates away"""
+    async def release_seats(cls, show_id: str, lock_token: str, seat_ids: Optional[List[str]] = None) -> bool:
+        """Release temporary lock when customer cancels checkout or unselects a seat"""
         async with LOCK_MUTEX:
             await db_manager.ensure_connected()
             if db_manager.is_connected:
                 try:
-                    await db_manager.execute(
-                        "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED';",
-                        show_id, lock_token
-                    )
-                    await db_manager.execute(
-                        "UPDATE bookings SET booking_status = 'CANCELLED' WHERE lock_token = $1 AND booking_status = 'PENDING';",
-                        lock_token
-                    )
+                    if seat_ids and len(seat_ids) > 0:
+                        await db_manager.execute(
+                            "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND seat_id = ANY($3) AND status = 'LOCKED';",
+                            show_id, lock_token, seat_ids
+                        )
+                    else:
+                        await db_manager.execute(
+                            "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED';",
+                            show_id, lock_token
+                        )
+                        await db_manager.execute(
+                            "UPDATE bookings SET booking_status = 'CANCELLED' WHERE lock_token = $1 AND booking_status = 'PENDING';",
+                            lock_token
+                        )
                 except Exception:
                     pass
 
-            released_keys = [
-                k for k, v in IN_MEMORY_SEAT_STORE.items()
-                if k[0] == show_id and v.get("lock_token") == lock_token and v.get("status") == "LOCKED"
-            ]
-            for k in released_keys:
-                del IN_MEMORY_SEAT_STORE[k]
+            if seat_ids and len(seat_ids) > 0:
+                for s_id in seat_ids:
+                    key = (show_id, s_id)
+                    if key in IN_MEMORY_SEAT_STORE and IN_MEMORY_SEAT_STORE[key].get("lock_token") == lock_token:
+                        del IN_MEMORY_SEAT_STORE[key]
+            else:
+                released_keys = [
+                    k for k, v in IN_MEMORY_SEAT_STORE.items()
+                    if k[0] == show_id and v.get("lock_token") == lock_token and v.get("status") == "LOCKED"
+                ]
+                for k in released_keys:
+                    del IN_MEMORY_SEAT_STORE[k]
 
             return True
 

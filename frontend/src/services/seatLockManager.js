@@ -4,6 +4,28 @@ const STORAGE_KEY_LOCKS = 'cinebook_global_seat_locks';
 const STORAGE_KEY_BOOKED = 'cinebook_global_booked_seats';
 const BROADCAST_CHANNEL_NAME = 'cinebook_seat_lock_channel';
 const LOCK_DURATION_MS = 8 * 60 * 1000; // 8 minutes
+const RECENTLY_RELEASED_DURATION_MS = 3000; // 3-second optimistic immunity cooldown
+
+// In-memory cooldown registry to prevent polling race conditions and UI flickering
+const recentlyReleasedSeats = new Map();
+
+export const markSeatRecentlyReleased = (showKey, seatId) => {
+  if (!showKey || !seatId) return;
+  const key = `${showKey}:${seatId}`;
+  recentlyReleasedSeats.set(key, Date.now() + RECENTLY_RELEASED_DURATION_MS);
+};
+
+export const isSeatRecentlyReleased = (showKey, seatId) => {
+  if (!showKey || !seatId) return false;
+  const key = `${showKey}:${seatId}`;
+  const expiry = recentlyReleasedSeats.get(key);
+  if (!expiry) return false;
+  if (Date.now() > expiry) {
+    recentlyReleasedSeats.delete(key);
+    return false;
+  }
+  return true;
+};
 
 // Safe broadcast channel initialization
 let broadcastChannel = null;
@@ -90,6 +112,9 @@ export const getBookedSeatsMap = () => {
 };
 
 export const seatLockManager = {
+  markSeatRecentlyReleased,
+  isSeatRecentlyReleased,
+
   // Synchronize local cache with ground truth from the server layout
   syncWithBackend: (showKey, tiers) => {
     try {
@@ -101,8 +126,18 @@ export const seatLockManager = {
       (tiers || []).forEach((tier) => {
         (tier.rows || []).forEach((row) => {
           (row.seats || []).forEach((seat) => {
+            // If recently released locally, ensure it is purged from local locks
+            if (isSeatRecentlyReleased(showKey, seat.id)) {
+              if (locks[showKey]?.[seat.id]) {
+                delete locks[showKey][seat.id];
+                locksChanged = true;
+              }
+              return;
+            }
+
             // If server reports seat as AVAILABLE (not booked on server):
-            if (seat.status === 'AVAILABLE' && !seat.isLockedByOther) {
+            const isOtherLocked = Boolean(seat.isLockedByOther) || Boolean(seat.is_locked_by_other);
+            if (seat.status === 'AVAILABLE' && !isOtherLocked) {
               if (booked[showKey]?.[seat.id]) {
                 delete booked[showKey][seat.id];
                 bookedChanged = true;
@@ -148,8 +183,11 @@ export const seatLockManager = {
       };
     });
 
-    // 2. Mark active locks
+    // 2. Mark active locks (skipping seats recently released by user)
     Object.keys(showLocks).forEach((seatId) => {
+      if (isSeatRecentlyReleased(showKey, seatId)) {
+        return;
+      }
       const lock = showLocks[seatId];
       const isMine = lock.tabId === currentTabId || (currentLockToken && lock.lockToken === currentLockToken);
       statusMap[seatId] = {
@@ -167,6 +205,7 @@ export const seatLockManager = {
 
   // Check if a seat is locked by another tab
   isSeatLockedByOtherTab: (showKey, seatId) => {
+    if (isSeatRecentlyReleased(showKey, seatId)) return false;
     const locks = getCleanLocksMap();
     const showLocks = locks[showKey] || {};
     const lock = showLocks[seatId];
@@ -259,11 +298,14 @@ export const seatLockManager = {
     return { success: true, lockToken, expiresAt };
   },
 
-  // Unlock a seat
+  // Unlock a seat with optimistic immunity cooldown to eliminate blinking/flickering
   unlockSeat: async (showKey, seatId, showId) => {
     const currentTabId = getTabId();
     const currentLockToken = getTabLockToken();
     const locks = getCleanLocksMap();
+
+    // 1. Immediately register immunity cooldown
+    markSeatRecentlyReleased(showKey, seatId);
 
     let lockToken = currentLockToken;
     if (locks[showKey]?.[seatId]) {
@@ -275,10 +317,10 @@ export const seatLockManager = {
       }
     }
 
-    // Broadcast change immediately across tabs
+    // 2. Broadcast unlock change immediately across tabs
     seatLockManager.broadcastChange(showKey, { action: 'UNLOCK', seatId, tabId: currentTabId });
 
-    // Release seat lock in database immediately
+    // 3. Release seat lock in database asynchronously
     if (showId) {
       bookingApi.releaseSeats(showId, lockToken, [seatId]).catch(() => {});
     }
@@ -299,6 +341,7 @@ export const seatLockManager = {
     Object.keys(locks[showKey]).forEach((seatId) => {
       if (locks[showKey][seatId].tabId === currentTabId || locks[showKey][seatId].lockToken === currentLockToken) {
         lastToken = locks[showKey][seatId].lockToken || lastToken;
+        markSeatRecentlyReleased(showKey, seatId);
         delete locks[showKey][seatId];
         releasedAny = true;
       }
@@ -320,17 +363,21 @@ export const seatLockManager = {
     const token = customToken || getTabLockToken();
     const locks = getCleanLocksMap();
 
-    if (locks[showKey]) {
-      if (Array.isArray(seatIds) && seatIds.length > 0) {
-        seatIds.forEach((s) => {
-          const sId = typeof s === 'string' ? s : s.id;
+    if (Array.isArray(seatIds) && seatIds.length > 0) {
+      seatIds.forEach((s) => {
+        const sId = typeof s === 'string' ? s : s.id;
+        markSeatRecentlyReleased(showKey, sId);
+        if (locks[showKey]) {
           delete locks[showKey][sId];
-        });
-      } else {
-        delete locks[showKey];
-      }
-      localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
+        }
+      });
+    } else if (locks[showKey]) {
+      Object.keys(locks[showKey]).forEach((sId) => {
+        markSeatRecentlyReleased(showKey, sId);
+      });
+      delete locks[showKey];
     }
+    localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
 
     seatLockManager.broadcastChange(showKey, { action: 'RELEASE_SEATS', seatIds, tabId: currentTabId });
 
@@ -389,6 +436,14 @@ export const seatLockManager = {
   subscribe: (callback) => {
     const handleBroadcast = (event) => {
       if (event.data) {
+        if (event.data.action === 'UNLOCK' && event.data.seatId && event.data.showKey) {
+          markSeatRecentlyReleased(event.data.showKey, event.data.seatId);
+        } else if (event.data.action === 'RELEASE_SEATS' && Array.isArray(event.data.seatIds) && event.data.showKey) {
+          event.data.seatIds.forEach((s) => {
+            const sId = typeof s === 'string' ? s : s.id;
+            markSeatRecentlyReleased(event.data.showKey, sId);
+          });
+        }
         callback(event.data);
       }
     };
@@ -397,6 +452,9 @@ export const seatLockManager = {
       if (event.key === STORAGE_KEY_LOCKS || event.key === STORAGE_KEY_BOOKED || event.key === 'cinebook_last_seat_event') {
         try {
           const data = event.newValue ? JSON.parse(event.newValue) : {};
+          if (data.action === 'UNLOCK' && data.seatId && data.showKey) {
+            markSeatRecentlyReleased(data.showKey, data.seatId);
+          }
           callback(data);
         } catch (e) {
           callback({});

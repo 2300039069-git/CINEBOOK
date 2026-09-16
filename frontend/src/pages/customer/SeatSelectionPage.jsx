@@ -137,9 +137,20 @@ const SeatSelectionPage = () => {
           res.tiers.forEach((tier) => {
             (tier.rows || []).forEach((row) => {
               (row.seats || []).forEach((seat) => {
+                const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
+                if (isRecentlyReleased) {
+                  backendStatuses[seat.id] = {
+                    status: 'AVAILABLE',
+                    isLockedByOtherTab: false,
+                    isLockedByCurrentTab: false
+                  };
+                  return;
+                }
+
                 const isSelectedInThisTab = currentSelected.some((sel) => sel.id === seat.id);
-                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab) || Boolean(seat.isLockedByMe);
+                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab) || Boolean(seat.isLockedByMe) || Boolean(seat.is_locked_by_me);
                 const isMine = isSelectedInThisTab || isLockedByThisTab;
+                const isOtherLocked = !isMine && (Boolean(seat.isLockedByOther) || Boolean(seat.is_locked_by_other) || Boolean(localStatuses[seat.id]?.isLockedByOtherTab));
 
                 if (seat.status === 'BOOKED') {
                   backendStatuses[seat.id] = {
@@ -147,10 +158,10 @@ const SeatSelectionPage = () => {
                     isLockedByOtherTab: false,
                     isLockedByCurrentTab: false
                   };
-                } else if (seat.status === 'LOCKED' || seat.isLockedByOther) {
+                } else if (seat.status === 'LOCKED' || isOtherLocked) {
                   backendStatuses[seat.id] = {
                     status: isMine ? 'AVAILABLE' : 'LOCKED',
-                    isLockedByOtherTab: !isMine,
+                    isLockedByOtherTab: isOtherLocked,
                     isLockedByCurrentTab: isMine
                   };
                 } else {
@@ -182,8 +193,8 @@ const SeatSelectionPage = () => {
     // 1. Initial fetch
     fetchLatestLayout();
 
-    // 2. High-speed real-time polling (every 600ms) for instantaneous cross-account / cross-browser seat sync
-    const pollTimer = setInterval(fetchLatestLayout, 600);
+    // 2. High-speed real-time polling (every 1500ms) for instantaneous cross-account / cross-browser seat sync
+    const pollTimer = setInterval(fetchLatestLayout, 1500);
 
     // 3. Local cross-tab broadcast listener (0ms instant cross-window sync)
     const unsubscribe = seatLockManager.subscribe((event) => {
@@ -210,8 +221,20 @@ const SeatSelectionPage = () => {
       seats: row.seats.map((seat) => {
         const liveInfo = liveStatuses[seat.id];
         const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
+        const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
 
-        // 1. If selected in this tab, ALWAYS keep selected & available for current user
+        // 1. If recently released by current tab, force AVAILABLE (0ms flicker immunity)
+        if (isRecentlyReleased && !isSelectedInThisTab) {
+          return {
+            ...seat,
+            status: 'AVAILABLE',
+            isLockedByOtherTab: false,
+            isLockedByOther: false,
+            isLockedByMe: false
+          };
+        }
+
+        // 2. If selected in this tab, ALWAYS keep selected & available for current user
         if (isSelectedInThisTab) {
           return {
             ...seat,
@@ -222,7 +245,7 @@ const SeatSelectionPage = () => {
           };
         }
 
-        // 2. If permanently booked in backend or live state
+        // 3. If permanently booked in backend or live state
         if (seat.status === 'BOOKED' || liveInfo?.status === 'BOOKED') {
           return {
             ...seat,
@@ -232,8 +255,21 @@ const SeatSelectionPage = () => {
           };
         }
 
-        // 3. If locked by another customer in backend or live state
-        if (seat.isLockedByOther || liveInfo?.isLockedByOtherTab || (seat.status === 'LOCKED' && !seat.isLockedByMe && !liveInfo?.isLockedByCurrentTab)) {
+        // 4. If locked by current user (held in session / backend)
+        const isMine = seat.is_locked_by_me || seat.isLockedByMe || liveInfo?.isLockedByCurrentTab;
+        if (isMine) {
+          return {
+            ...seat,
+            status: 'AVAILABLE',
+            isLockedByOtherTab: false,
+            isLockedByOther: false,
+            isLockedByMe: true
+          };
+        }
+
+        // 5. If locked by another customer in backend or live state
+        const isOther = seat.is_locked_by_other || seat.isLockedByOther || liveInfo?.isLockedByOtherTab || (seat.status === 'LOCKED' && !isMine);
+        if (isOther) {
           return {
             ...seat,
             status: 'LOCKED',
@@ -242,7 +278,7 @@ const SeatSelectionPage = () => {
           };
         }
 
-        // 4. Clean available
+        // 6. Clean available
         return {
           ...seat,
           status: 'AVAILABLE',

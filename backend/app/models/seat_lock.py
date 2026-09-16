@@ -21,6 +21,8 @@ class SeatItem(BaseModel):
     price: float
     status: SeatStatus = SeatStatus.AVAILABLE
     is_aisle_after: bool = False
+    is_locked_by_me: bool = False
+    is_locked_by_other: bool = False
 
 class SeatRow(BaseModel):
     row_letter: str

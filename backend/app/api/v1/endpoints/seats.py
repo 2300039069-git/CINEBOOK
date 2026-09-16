@@ -13,9 +13,19 @@ from app.api.deps import get_current_active_user, get_optional_user
 router = APIRouter()
 
 @router.get("/{show_id}/layout", response_model=SeatLayoutResponse)
-async def get_seat_layout(show_id: str):
-    """Retrieve visual cinema seat layout with real-time availability and lock states (Publicly viewable)"""
-    return await SeatLockService.get_show_layout(show_id)
+async def get_seat_layout(
+    show_id: str,
+    lock_token: Optional[str] = None,
+    client_session_id: Optional[str] = None,
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
+):
+    """Retrieve visual cinema seat layout with real-time availability and lock ownership states"""
+    user_id = current_user.id if current_user else client_session_id
+    return await SeatLockService.get_show_layout(
+        show_id=show_id,
+        user_id=user_id,
+        lock_token=lock_token
+    )
 
 import uuid
 
@@ -51,6 +61,7 @@ async def release_seats(
     """Explicitly release temporary seat lock"""
     await SeatLockService.release_seats(
         show_id=req.show_id,
-        lock_token=req.lock_token
+        lock_token=req.lock_token,
+        seat_ids=req.seat_ids
     )
     return {"message": "Seat locks successfully released."}
