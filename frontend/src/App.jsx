@@ -10,7 +10,7 @@ import TheatresPage from './pages/public/TheatresPage';
 import LoginPage from './pages/public/LoginPage';
 import RegisterPage from './pages/public/RegisterPage';
 import ForgotPasswordPage from './pages/public/ForgotPasswordPage';
-import { AboutPage, ContactPage, TermsPage, PrivacyPage, CancellationPolicyPage } from './pages/public/StaticPages';
+import { AboutPage, ContactPage, TermsPage, PrivacyPage, CancellationRefundsPage, CancellationPolicyPage } from './pages/public/StaticPages';
 import SeatSelectionPage from './pages/customer/SeatSelectionPage';
 import CheckoutPage from './pages/customer/CheckoutPage';
 import BookingConfirmationPage from './pages/customer/BookingConfirmationPage';
@@ -97,12 +97,14 @@ function App() {
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     
-                    {/* Static / Policy Pages */}
+                    {/* Static / Policy Pages (Cashfree Compliance) */}
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/privacy" element={<PrivacyPage />} />
-                    <Route path="/cancellation-policy" element={<CancellationPolicyPage />} />
+                    <Route path="/cancellation-refunds" element={<CancellationRefundsPage />} />
+                    <Route path="/cancellation-policy" element={<CancellationRefundsPage />} />
+                    <Route path="/refunds" element={<CancellationRefundsPage />} />
 
                     {/* Customer Booking Flow */}
                     <Route path="/seat-selection/:showId" element={<SeatSelectionPage />} />

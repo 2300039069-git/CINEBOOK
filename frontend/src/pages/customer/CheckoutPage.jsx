@@ -67,12 +67,16 @@ export default function CheckoutPage() {
   };
   const show = bookingDetails.show || selectedShow;
   const seats = bookingDetails.seats || selectedSeats || [];
-  const showDate = bookingDetails.showDate || selectedDate || new Date().toISOString().split('T')[0];
+  const numSeats = seats.length > 0 ? seats.length : 1;
+  const calculatedBasePrice = seats.reduce((acc, s) => {
+    const p = typeof s === 'object' && s?.price ? Number(s.price) : (show?.price || 150);
+    return acc + p;
+  }, 0) || (numSeats * (show?.price || 150));
 
-  const totalPayable =
-    bookingDetails.totalAmount ||
-    contextTotalAmount ||
-    (seats.length > 0 ? seats.length * (show?.price || 150) : 150);
+  const baseTicketPrice = baseAmount || calculatedBasePrice;
+  const flatConvenienceFee = 10.00;
+  const gstOnConvenienceFee = 1.80; // 18% GST on ₹10 (SAC 998599)
+  const totalPayable = Number((baseTicketPrice + flatConvenienceFee + gstOnConvenienceFee).toFixed(2));
 
   const usdAmount = (totalPayable / 83.5).toFixed(2);
   const currentShowKey = getShowKey(show, theatre, movie, showDate);
@@ -220,9 +224,9 @@ export default function CheckoutPage() {
         },
         showDate,
         seats: formattedSeatsList,
-        baseAmount: baseAmount || totalPayable - 16.17,
-        convenienceFee: convenienceFeeTotal || convenienceFee || 16.17,
-        taxes: igst || taxes || 2.47,
+        baseAmount: baseTicketPrice,
+        convenienceFee: flatConvenienceFee,
+        taxes: gstOnConvenienceFee,
         totalAmount: totalPayable,
         paymentId,
         orderId: `order_${Date.now()}`,
@@ -260,9 +264,9 @@ export default function CheckoutPage() {
           order_id: `order_${Date.now()}`,
           booking_status: 'CONFIRMED',
           seats: formattedSeatsList,
-          base_amount: baseAmount || totalPayable - 16.17,
-          convenience_fee: convenienceFeeTotal || convenienceFee || 16.17,
-          taxes: igst || taxes || 2.47,
+          base_amount: baseTicketPrice,
+          convenience_fee: flatConvenienceFee,
+          taxes: gstOnConvenienceFee,
           total_amount: totalPayable,
           customer_name: user?.name || 'Valued Cinema Guest',
           customer_email: user?.email || cashuAccount || 'customer@cinebook.in',
@@ -352,12 +356,70 @@ export default function CheckoutPage() {
               <span className="text-sm">Seats ({seats.length})</span>
               <span className="font-semibold text-primary text-sm sm:text-base">{formattedSeatsText || 'Selected Seats'}</span>
             </div>
-            <div className="border-t border-border pt-4 flex justify-between items-center text-lg font-bold">
-              <span className="text-text-primary">Total Payable Amount</span>
-              <div className="text-right">
-                <span className="text-primary block text-2xl font-black">₹{totalPayable}</span>
-                <span className="text-xs text-text-muted font-normal">Approx. ${usdAmount} USD</span>
+
+            {/* Transparent Itemized Price Breakdown (Cashfree Compliance) */}
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-surface-elevated border border-border space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-border text-xs">
+                <span className="font-bold text-text-primary uppercase tracking-wider">Itemized Fare Breakdown</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-bold">
+                  GST SAC 998599 Compliant
+                </span>
               </div>
+
+              {/* 1. Base Ticket Price */}
+              <div className="flex justify-between items-center text-xs text-text-secondary">
+                <span className="flex items-center gap-1.5">
+                  <Ticket className="w-3.5 h-3.5 text-text-muted" />
+                  <span>Base Ticket Price ({seats.length} {seats.length === 1 ? 'Seat' : 'Seats'})</span>
+                  <span className="text-[10px] text-text-muted">(Includes Cinema GST)</span>
+                </span>
+                <span className="font-bold text-text-primary">₹{baseTicketPrice}</span>
+              </div>
+
+              {/* 2. Internet Handling Fee */}
+              <div className="flex justify-between items-center text-xs text-text-secondary">
+                <span className="flex items-center gap-1.5">
+                  <span>Internet Handling / Convenience Fee</span>
+                  <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold border border-amber-500/20">
+                    Lowest Fee • Flat ₹10
+                  </span>
+                </span>
+                <span className="font-bold text-text-primary">₹{flatConvenienceFee.toFixed(2)}</span>
+              </div>
+
+              {/* 3. Integrated GST on Handling Fee */}
+              <div className="flex justify-between items-center text-xs text-text-secondary">
+                <span className="flex items-center gap-1.5">
+                  <span>Integrated GST on Convenience Fee (18%)</span>
+                  <span className="text-[10px] text-text-muted">(SAC 998599)</span>
+                </span>
+                <span className="font-bold text-text-primary">₹{gstOnConvenienceFee.toFixed(2)}</span>
+              </div>
+
+              {/* 4. Total Payable Row */}
+              <div className="border-t border-border pt-3 flex justify-between items-center">
+                <div>
+                  <span className="text-sm sm:text-base font-black text-text-primary block">Total Payable Amount</span>
+                  <span className="text-[10px] text-text-muted block mt-0.5">
+                    Internet handling fee includes 18% GST (SAC 998599).
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-primary block text-2xl font-black">₹{totalPayable}</span>
+                  <span className="text-[10px] text-text-muted font-normal">Approx. ${usdAmount} USD</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cashfree Security Trust Badge */}
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                100% Secure Checkout | Cashfree Payments Partner
+              </span>
+              <span className="flex items-center gap-1 text-[11px] text-text-muted font-normal">
+                <Lock className="w-3 h-3 text-primary" /> 256-Bit SSL Encrypted
+              </span>
             </div>
           </div>
 
@@ -367,7 +429,7 @@ export default function CheckoutPage() {
             className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-extrabold rounded-xl transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer text-base active:scale-98"
           >
             <Wallet size={19} className="text-white" />
-            <span>Pay ₹{totalPayable} with CASHU</span>
+            <span>Pay ₹{totalPayable} Securely</span>
             <ChevronRight size={18} className="ml-1" />
           </button>
         </div>
