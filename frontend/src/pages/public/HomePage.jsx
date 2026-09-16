@@ -27,6 +27,7 @@ import HeroCarousel from '../../components/movies/HeroCarousel';
 import MovieCard from '../../components/movies/MovieCard';
 import TheatreShowtimesCard from '../../components/theatres/TheatreShowtimesCard';
 import TrailerModal from '../../components/movies/TrailerModal';
+import DateDayRibbon from '../../components/common/DateDayRibbon';
 import GlassCard from '../../components/common/GlassCard';
 import GradientButton from '../../components/common/GradientButton';
 import AmbientGlow from '../../components/common/AmbientGlow';
@@ -41,7 +42,7 @@ const CATEGORY_CAPSULES = [
 
 const HomePage = () => {
   const { selectedCity, setIsCityModalOpen } = useLocation();
-  const { setSelectedMovie, setSelectedTheatre, setSelectedShow } = useBooking();
+  const { setSelectedMovie, setSelectedTheatre, setSelectedShow, selectedDate, setSelectedDate } = useBooking();
   const navigate = useNavigate();
 
   // Filter theatres strictly for the active selected city
@@ -52,17 +53,20 @@ const HomePage = () => {
   const activeTheatre = cityTheatres[selectedTheatreIndex] || cityTheatres[0] || THEATRES[0];
   const [selectedTrailerMovie, setSelectedTrailerMovie] = useState(null);
 
-  const handleVenueBook = ({ theatreName, time }) => {
+  const handleVenueBook = ({ theatreName, time, date }) => {
     const movie = MOVIES[0];
+    const chosenDate = date || selectedDate || new Date().toISOString().split('T')[0];
     setSelectedMovie(movie);
     setSelectedTheatre(activeTheatre);
+    setSelectedDate(chosenDate);
     setSelectedShow({
       id: `sh-${activeTheatre.id}-01`,
       movieId: movie.id,
       theatreId: activeTheatre.id,
       theatreName: activeTheatre.name,
       time: time || '11:00 AM',
-      format: '2D Dolby Atmos'
+      format: '2D Dolby Atmos',
+      date: chosenDate
     });
     navigate(`/seat-selection/sh-${activeTheatre.id}-01`);
   };
@@ -76,8 +80,16 @@ const HomePage = () => {
       {/* 1. 3D HERO CAROUSEL BILLBOARD */}
       <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
 
-      {/* 2. 3D CATEGORY CAPSULES STRIP */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      {/* 2. DYNAMIC DATES & DAYS SCHEDULING RIBBON */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <DateDayRibbon
+          selectedDate={selectedDate}
+          onDateSelect={(d) => setSelectedDate(d)}
+        />
+      </div>
+
+      {/* 3. 3D CATEGORY CAPSULES STRIP */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex items-center gap-3 overflow-x-auto pb-3 scrollbar-none">
           {CATEGORY_CAPSULES.map((cap) => {
             const Icon = cap.icon;
@@ -104,7 +116,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* 3. MAIN DISCOVERY: 3D MOVIES + THEATRE SHOWTIMES */}
+      {/* 4. MAIN DISCOVERY: 3D MOVIES + THEATRE SHOWTIMES */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
@@ -201,6 +213,7 @@ const HomePage = () => {
                 priceRange="₹120 - ₹280"
                 amenities={activeTheatre.amenities || ['4K RGB Laser', 'Dolby Atmos', 'Plush Recliners']}
                 timeSlots={['11:00 AM', '02:30 PM', '06:15 PM', '09:45 PM']}
+                selectedDate={selectedDate}
                 onBookTickets={handleVenueBook}
               />
             </GlassCard>

@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Search, SlidersHorizontal, Film, RotateCcw, Sparkles, LayoutGrid, Radio } from 'lucide-react';
 import { MOVIES, GENRES, LANGUAGES, FORMATS } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
+import { useBooking } from '../../context/BookingContext';
 import MovieCard from '../../components/movies/MovieCard';
 import LiveScrapedMoviesViewer from '../../components/movies/LiveScrapedMoviesViewer';
+import DateDayRibbon from '../../components/common/DateDayRibbon';
 
 const MoviesPage = () => {
   const { selectedCity } = useLocation();
+  const { selectedDate, setSelectedDate } = useBooking();
   const [viewMode, setViewMode] = useState('CARDS'); // 'CARDS' | 'LIVE_FEED'
   const [search, setSearch] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
@@ -103,6 +106,12 @@ const MoviesPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Dynamic Dates & Days Scheduler */}
+        <DateDayRibbon
+          selectedDate={selectedDate}
+          onDateSelect={(d) => setSelectedDate(d)}
+        />
 
         {/* Dynamic View: Cards vs Live Scraped Feed */}
         {viewMode === 'LIVE_FEED' ? (

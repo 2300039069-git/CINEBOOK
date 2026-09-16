@@ -95,6 +95,18 @@ const SeatSelectionPage = () => {
   const currentShowKey = getShowKey(show.id, theatre.id, movie.id, effectiveDate);
   const currentTabId = getTabId();
 
+  // Formatted date string (e.g., "Wednesday, 16 Sep 2026")
+  const formattedDateStr = React.useMemo(() => {
+    try {
+      const d = new Date(effectiveDate);
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    } catch (e) {
+      return effectiveDate;
+    }
+  }, [effectiveDate]);
+
   // Keep BookingContext synced with the current show
   useEffect(() => {
     if (show && show.id !== selectedShow?.id) {
@@ -357,10 +369,10 @@ const SeatSelectionPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5 text-text-muted">
-              <Clock className="w-3.5 h-3.5 opacity-60" />
-              <span>Date: <strong className="text-text-primary">{selectedDate || 'Today'}</strong></span>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-void-800 border border-white/8 text-text-secondary shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-brand" />
+              <span className="font-bold text-text-primary">{formattedDateStr}</span>
             </div>
 
             {/* 8-Minute Countdown Timer Widget */}
