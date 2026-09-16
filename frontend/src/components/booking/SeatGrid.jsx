@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Clock, Ticket, Sparkles, Lock, Store, Zap } from 'lucide-react';
+import { ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import CinebookSeat3D from './CinebookSeat3D';
 
 const SeatGrid = ({
@@ -8,13 +8,10 @@ const SeatGrid = ({
   onToggleSeat
 }) => {
   return (
-    <div className="w-full cine-card p-5 sm:p-8 space-y-8">
+    <div className="w-full rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-xl p-5 sm:p-8 space-y-8 transition-colors">
       {/* 1. CURVED CINEMA SCREEN AT TOP */}
       <div className="text-center space-y-3 pt-2">
         <div className="relative mx-auto max-w-xl px-6">
-          {/* Ambient Screen Glow */}
-          <div className="absolute -top-4 inset-x-8 h-12 bg-brand/15 blur-2xl rounded-full pointer-events-none" />
-          
           {/* Curved Screen SVG / Gradient Bar */}
           <svg className="w-full h-8 overflow-visible" viewBox="0 0 400 30" fill="none">
             <path
@@ -25,50 +22,50 @@ const SeatGrid = ({
             />
             <defs>
               <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.1" />
-                <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.95" />
-                <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.1" />
+                <stop offset="0%" stopColor="#E50914" stopOpacity="0.2" />
+                <stop offset="50%" stopColor="#E50914" stopOpacity="1" />
+                <stop offset="100%" stopColor="#E50914" stopOpacity="0.2" />
               </linearGradient>
             </defs>
           </svg>
         </div>
 
-        <p className="text-[11px] font-bold uppercase tracking-widest text-text-muted flex items-center justify-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-brand" />
+        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
           <span>Screen This Way • 4K RGB Laser Silver Screen</span>
         </p>
       </div>
 
       {/* 2. SEAT STATE LEGEND */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-2xl bg-void-800/80 border border-white/8 text-xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 text-xs">
         {/* State Badges */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-void-800 border border-white/8"></div>
-            <span className="text-text-muted font-medium text-xs">Available</span>
+            <div className="w-4 h-4 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
+            <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Available</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-md bg-brand/20 border border-brand/40 flex items-center justify-center shadow-xs shadow-brand/40">
+            <div className="w-5 h-5 rounded-md bg-primary/20 border border-primary/40 flex items-center justify-center shadow-xs">
               <CinebookSeat3D size="xs" />
             </div>
-            <span className="text-text-primary font-bold text-xs">Selected</span>
+            <span className="text-slate-900 dark:text-slate-100 font-bold text-xs">Selected</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-brand/15 border border-brand/30 text-brand flex items-center justify-center text-[10px]">
+            <div className="w-4 h-4 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center text-[10px]">
               <Clock className="w-2.5 h-2.5" />
             </div>
-            <span className="text-text-muted font-medium text-xs">Locked</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Locked</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-void-950/60 border border-white/5 opacity-30 flex items-center justify-center text-[10px] text-text-muted">
+            <div className="w-4 h-4 rounded-md bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 opacity-40 flex items-center justify-center text-[10px] text-slate-500">
               ✕
             </div>
-            <span className="text-text-muted font-medium text-xs">Sold Out</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Sold Out</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-brand font-semibold">
-          <ShieldCheck className="w-3.5 h-3.5 text-brand flex-shrink-0" />
+        <div className="flex items-center gap-1.5 text-[11px] text-primary font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span>Atomic Seat Lock Active</span>
         </div>
       </div>
@@ -79,22 +76,22 @@ const SeatGrid = ({
           {seatLayout.map((tier) => (
             <div key={tier.name} className="space-y-3">
               {/* Tier Header with Price */}
-              <div className="flex items-center justify-between pb-2 border-b border-white/8 text-xs">
-                <span className="font-extrabold text-text-primary uppercase tracking-wider flex items-center gap-2">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800 text-xs">
+                <span className="font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                   <span>{tier.label || (tier.name === 'BALCONY' ? 'Balcony Class' : 'Second Class')}</span>
                   {tier.name === 'BALCONY' && (
-                    <span className="px-2 py-0.5 rounded-full bg-brand/15 text-brand text-[10px] font-black border border-brand/30">
+                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/30">
                       Balcony (₹147 + 10% Fee + GST)
                     </span>
                   )}
                   {tier.name === 'SECOND_CLASS' && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 text-[10px] font-black border border-blue-500/30">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black border border-blue-500/30">
                       Second Class (₹84 + 10% Fee + GST)
                     </span>
                   )}
                 </span>
-                <span className="text-brand font-black text-sm">
-                  ₹{tier.price} <span className="text-text-muted font-normal text-xs">/ seat</span>
+                <span className="text-primary font-black text-sm">
+                  ₹{tier.price} <span className="text-slate-500 dark:text-slate-400 font-normal text-xs">/ seat</span>
                 </span>
               </div>
 
@@ -103,7 +100,7 @@ const SeatGrid = ({
                 {tier.rows.map((row) => (
                   <div key={row.rowLetter} className="flex items-center justify-center gap-3">
                     {/* Row Letter Left */}
-                    <span className="w-5 text-center text-xs font-bold text-text-muted select-none">
+                    <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
                       {row.rowLetter}
                     </span>
 
@@ -132,18 +129,18 @@ const SeatGrid = ({
                               }
                               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center select-none relative ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-amber-400 via-brand to-amber-600 text-void-950 shadow-lg shadow-brand/40 ring-2 ring-brand ring-offset-1 ring-offset-void-900 scale-110 active:scale-95 cursor-pointer z-10 font-black'
+                                  ? 'bg-gradient-to-br from-primary to-red-700 text-white shadow-md shadow-primary/30 ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-[#161B26] scale-110 active:scale-95 cursor-pointer z-10 font-black'
                                   : isLocked
-                                  ? 'bg-brand/20 border border-brand/50 text-brand cursor-not-allowed opacity-80 shadow-xs shadow-brand/20'
+                                  ? 'bg-amber-500/20 border border-amber-500/50 text-amber-500 cursor-not-allowed opacity-80 shadow-xs'
                                   : isBooked
-                                  ? 'bg-void-950/40 border border-white/5 opacity-20 cursor-not-allowed text-text-muted'
-                                  : 'bg-void-800 border border-white/8 hover:border-brand hover:text-brand text-text-primary hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
+                                  ? 'bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 opacity-20 cursor-not-allowed text-slate-400'
+                                  : 'bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:border-primary hover:text-primary text-slate-800 dark:text-slate-100 hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
                               }`}
                             >
                               {isSelected ? (
                                 <CinebookSeat3D size="md" />
                               ) : isLocked ? (
-                                <Clock className="w-3.5 h-3.5 text-brand animate-pulse" />
+                                <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
                               ) : (
                                 seat.number
                               )}
@@ -155,7 +152,7 @@ const SeatGrid = ({
                     </div>
 
                     {/* Row Letter Right */}
-                    <span className="w-5 text-center text-xs font-bold text-text-muted select-none">
+                    <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
                       {row.rowLetter}
                     </span>
                   </div>

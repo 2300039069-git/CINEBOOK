@@ -61,20 +61,20 @@ const DateDayRibbon = ({
     <div className={`w-full space-y-3.5 ${className}`}>
       {/* Header with Active Date Summary & Quick Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-brand/15 border border-brand/30 text-brand flex items-center justify-center shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs">
             <Calendar className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-text-primary">
+              <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
                 Select Date & Day
               </h3>
-              <span className="px-2 py-0.5 rounded-full bg-brand/20 text-brand text-[10px] font-extrabold border border-brand/40 animate-pulse">
+              <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-extrabold border border-primary/20">
                 Live Box Office
               </span>
             </div>
-            <p className="text-[11px] text-text-muted">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
               {datesList.find((d) => d.dateISO === activeDate)?.formattedLong || 'Select a day to view showtimes'}
             </p>
           </div>
@@ -88,8 +88,8 @@ const DateDayRibbon = ({
               onClick={() => handleSelect(datesList[0].dateISO)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
                 activeDate === datesList[0].dateISO
-                  ? 'bg-brand text-void-950 border-brand shadow-xs font-black'
-                  : 'bg-void-850/80 border-white/8 text-text-secondary hover:border-brand/40 hover:text-text-primary'
+                  ? 'bg-primary text-white border-primary shadow-sm font-black'
+                  : 'bg-white dark:bg-[#161B26] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary'
               }`}
             >
               Today
@@ -99,8 +99,8 @@ const DateDayRibbon = ({
               onClick={() => handleSelect(datesList[1].dateISO)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
                 activeDate === datesList[1].dateISO
-                  ? 'bg-brand text-void-950 border-brand shadow-xs font-black'
-                  : 'bg-void-850/80 border-white/8 text-text-secondary hover:border-brand/40 hover:text-text-primary'
+                  ? 'bg-primary text-white border-primary shadow-sm font-black'
+                  : 'bg-white dark:bg-[#161B26] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary'
               }`}
             >
               Tomorrow
@@ -112,7 +112,7 @@ const DateDayRibbon = ({
                   const weekend = datesList.find((d) => d.isWeekend && !d.isToday && !d.isTomorrow);
                   if (weekend) handleSelect(weekend.dateISO);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-void-850/80 border-white/8 text-text-secondary hover:border-brand/40 hover:text-text-primary cursor-pointer hidden md:inline-block"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-white dark:bg-[#161B26] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-primary/50 hover:text-primary cursor-pointer hidden md:inline-block"
               >
                 Weekend
               </button>
@@ -122,7 +122,7 @@ const DateDayRibbon = ({
       </div>
 
       {/* Horizontal 8-Day Scrolling Ribbon */}
-      <div className="p-2 sm:p-2.5 rounded-2xl bg-void-900/90 border border-white/10 backdrop-blur-xl shadow-lg">
+      <div className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 scrollbar-none">
           {datesList.map((item) => {
             const isSelected = activeDate === item.dateISO;
@@ -133,14 +133,14 @@ const DateDayRibbon = ({
                 onClick={() => handleSelect(item.dateISO)}
                 className={`relative flex flex-col items-center justify-center min-w-[70px] sm:min-w-[82px] py-2.5 sm:py-3 px-2 rounded-xl border transition-all duration-200 cursor-pointer flex-shrink-0 group ${
                   isSelected
-                    ? 'bg-gradient-to-b from-amber-400 via-brand to-amber-600 text-void-950 border-brand shadow-md shadow-brand/30 scale-105 z-10'
-                    : 'bg-void-850/90 border-white/6 hover:border-brand/50 text-text-secondary hover:text-text-primary hover:bg-void-800'
+                    ? 'bg-primary text-white border-primary shadow-md scale-105 z-10'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/60 hover:border-primary/40 text-slate-700 dark:text-slate-300 hover:text-primary dark:hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 {/* Day code */}
                 <span
                   className={`text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase ${
-                    isSelected ? 'text-void-950 font-black' : 'text-text-muted group-hover:text-brand'
+                    isSelected ? 'text-white font-black' : 'text-slate-500 dark:text-slate-400 group-hover:text-primary'
                   }`}
                 >
                   {item.dayCode}
@@ -149,7 +149,7 @@ const DateDayRibbon = ({
                 {/* Day Number */}
                 <span
                   className={`text-base sm:text-xl font-black my-0.5 tracking-tight ${
-                    isSelected ? 'text-void-950' : 'text-text-primary'
+                    isSelected ? 'text-white' : 'text-slate-900 dark:text-slate-100'
                   }`}
                 >
                   {item.dayNumber}
@@ -158,7 +158,7 @@ const DateDayRibbon = ({
                 {/* Month Name */}
                 <span
                   className={`text-[10px] font-bold uppercase ${
-                    isSelected ? 'text-void-950/80 font-extrabold' : 'text-text-muted'
+                    isSelected ? 'text-white/80 font-extrabold' : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   {item.monthCode}
@@ -166,7 +166,7 @@ const DateDayRibbon = ({
 
                 {/* Active Indicator Pip */}
                 {isSelected && (
-                  <span className="absolute -bottom-1 w-2 h-2 rounded-full bg-void-950 border border-brand" />
+                  <span className="absolute -bottom-1 w-2 h-2 rounded-full bg-white border border-primary" />
                 )}
               </button>
             );

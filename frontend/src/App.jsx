@@ -30,9 +30,8 @@ import PartnerAuthPage from './pages/partner/PartnerAuthPage';
 import PartnerCounterPosPage from './pages/partner/PartnerCounterPosPage';
 import PartnerCanteenPage from './pages/partner/PartnerCanteenPage';
 
-// 3D Cinematic Intro & CineBot & 3D Theatre Background
+// 3D Cinematic Intro & CineBot
 import CinematicIntro3D from './components/common/CinematicIntro3D';
-import CinematicTheatreBackground from './components/common/CinematicTheatreBackground';
 import CineBotSupportModal from './components/common/CineBotSupportModal';
 import { ToastContainer } from './components/common/ToastContainer';
 
@@ -60,8 +59,7 @@ const AdminRoute = ({ children }) => {
 function App() {
   return (
     <div className="flex flex-col min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] transition-colors duration-300 relative">
-      {/* Global 3D Cinema Theater Video & Volumetric Projector Background */}
-      <CinematicTheatreBackground opacity={0.35} showProjectorBeam={true} showParticles={true} />
+
         <Routes>
           {/* Dedicated Route for 3D Cinematic Intro */}
           <Route path="/welcome" element={<CinematicIntro3D onComplete={() => window.location.href = '/'} />} />

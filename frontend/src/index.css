@@ -5,52 +5,52 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #090A0E;
-    --theme-surface: #12141C;
-    --theme-card: #12141C;
-    --theme-elevated: #1A1D27;
-    --theme-hover: #232736;
-    --theme-subtle: #0C0E14;
-    --theme-border: rgba(255, 255, 255, 0.08);
-    --theme-border-subtle: rgba(255, 255, 255, 0.05);
-    --theme-border-hover: #F59E0B;
-    --theme-primary: #E63950;
-    --theme-primary-hover: #F43F5E;
-    --theme-accent: #F59E0B;
-    --theme-crimson: #E63950;
+    --theme-bg: #0B0F17;
+    --theme-surface: #161B26;
+    --theme-card: #161B26;
+    --theme-elevated: #1E293B;
+    --theme-hover: #242F42;
+    --theme-subtle: #0F141F;
+    --theme-border: #1E293B;
+    --theme-border-subtle: #151D2A;
+    --theme-border-hover: #E50914;
+    --theme-primary: #E50914;
+    --theme-primary-hover: #FF1E2B;
+    --theme-accent: #E50914;
+    --theme-crimson: #E50914;
     --theme-gold: #F59E0B;
     --theme-cyan: #06B6D4;
-    --theme-text: #F4F4F6;
-    --theme-text-primary: #F4F4F6;
-    --theme-text-secondary: #9CA3AF;
-    --theme-text-muted: #6B7280;
+    --theme-text: #F1F5F9;
+    --theme-text-primary: #F1F5F9;
+    --theme-text-secondary: #94A3B8;
+    --theme-text-muted: #64748B;
   }
 
   .light {
-    --theme-bg: #F5F5F7;
+    --theme-bg: #F8FAFC;
     --theme-surface: #FFFFFF;
     --theme-card: #FFFFFF;
-    --theme-elevated: #EDECEF;
-    --theme-hover: #E3E2E6;
-    --theme-subtle: #F9F9FA;
-    --theme-border: #E0DFE5;
-    --theme-border-subtle: #ECEBF0;
-    --theme-border-hover: #D97706;
-    --theme-primary: #E63950;
-    --theme-primary-hover: #D1293F;
-    --theme-accent: #D97706;
-    --theme-crimson: #E63950;
+    --theme-elevated: #F1F5F9;
+    --theme-hover: #E2E8F0;
+    --theme-subtle: #F8FAFC;
+    --theme-border: #E2E8F0;
+    --theme-border-subtle: #F1F5F9;
+    --theme-border-hover: #E50914;
+    --theme-primary: #E50914;
+    --theme-primary-hover: #CC0812;
+    --theme-accent: #E50914;
+    --theme-crimson: #E50914;
     --theme-gold: #D97706;
     --theme-cyan: #0284C7;
-    --theme-text: #111115;
-    --theme-text-primary: #111115;
-    --theme-text-secondary: #4B5563;
-    --theme-text-muted: #6B7280;
+    --theme-text: #0F172A;
+    --theme-text-primary: #0F172A;
+    --theme-text-secondary: #475569;
+    --theme-text-muted: #64748B;
   }
 
   body {
-    background-color: var(--theme-bg, #090A0E);
-    color: var(--theme-text-primary, #F4F4F6);
+    background-color: var(--theme-bg, #0B0F17);
+    color: var(--theme-text-primary, #F1F5F9);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -60,20 +60,18 @@
 }
 
 @layer utilities {
-  /* Cinematic Void & Electric Amber Card */
+  /* Clean Cinema Card with Adaptive Surface */
   .cine-card {
-    background-color: #12141C;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background-color: var(--theme-surface, #161B26);
+    border: 1px solid var(--theme-border, #1E293B);
+    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.2);
     border-radius: 1rem;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .cine-card:hover {
-    border-color: rgba(245, 158, 11, 0.3);
-    box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.8), 0 0 20px -2px rgba(245, 158, 11, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    border-color: var(--theme-border-hover, #E50914);
+    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
   }
 
   /* 3D Perspective & Transform Contexts */
