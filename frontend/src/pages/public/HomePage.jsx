@@ -73,20 +73,40 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background text-text-primary pb-20 relative overflow-hidden transition-colors">
-      {/* Background Cinematic Mesh Glows */}
-      <AmbientGlow variant="crimson" intensity="subtle" className="top-80 -left-40 w-96 h-96" />
-      <AmbientGlow variant="gold" intensity="subtle" className="top-[700px] -right-40 w-[500px] h-[500px]" />
-
-      {/* 1. 3D HERO CAROUSEL BILLBOARD */}
-      <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
-
-      {/* 2. DYNAMIC DATES & DAYS SCHEDULING RIBBON */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-        <DateDayRibbon
-          selectedDate={selectedDate}
-          onDateSelect={(d) => setSelectedDate(d)}
-        />
+      {/* Ambient Looping Cinema Background Video & Dark Vignette Overlay */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-50 filter brightness-90 contrast-110"
+        >
+          <source src="/cinema-bg.mp4" type="video/mp4" />
+          <source src="/cinema-bg.mp4.mp4" type="video/mp4" />
+          <source src="/theatre-bg.mp4" type="video/mp4" />
+        </video>
+        {/* Dark Vignette Overlay Layer to keep text, search bars & cards clear and readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black pointer-events-none" />
       </div>
+
+      {/* Background Cinematic Mesh Glows */}
+      <AmbientGlow variant="crimson" intensity="subtle" className="top-80 -left-40 w-96 h-96 pointer-events-none z-0" />
+      <AmbientGlow variant="gold" intensity="subtle" className="top-[700px] -right-40 w-[500px] h-[500px] pointer-events-none z-0" />
+
+      {/* Interactive Page Content with Higher z-index */}
+      <div className="relative z-10">
+        {/* 1. 3D HERO CAROUSEL BILLBOARD */}
+        <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
+
+        {/* 2. DYNAMIC DATES & DAYS SCHEDULING RIBBON */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+          <DateDayRibbon
+            selectedDate={selectedDate}
+            onDateSelect={(d) => setSelectedDate(d)}
+          />
+        </div>
 
       {/* 3. 3D CATEGORY CAPSULES STRIP */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -337,6 +357,7 @@ const HomePage = () => {
           </GlassCard>
         </div>
       </div>
+    </div>
 
       {/* 6. TRAILER PREVIEW MODAL */}
       {selectedTrailerMovie && (

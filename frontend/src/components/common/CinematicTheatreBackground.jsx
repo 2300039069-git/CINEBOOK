@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // Curated high-performance 3D cinema auditorium and projector footage sources
 const CINEMA_VIDEO_SOURCES = [
+  '/cinema-bg.mp4',
+  '/cinema-bg.mp4.mp4',
   '/theatre-bg.mp4',
   '/videos/theatre-bg.mp4',
   '/theatre.mp4',
