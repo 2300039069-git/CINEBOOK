@@ -40,7 +40,7 @@ const sanitizeApiUrl = (url) => {
 };
 
 // Default Render Backend URL for production fallback
-const DEFAULT_RENDER_BACKEND = 'https://cinebook-backend.onrender.com/api/v1';
+const DEFAULT_RENDER_BACKEND = 'https://cinebook-backend-i2k9.onrender.com/api/v1';
 
 let API_BASE_URL = 'http://localhost:8000/api/v1';
 
