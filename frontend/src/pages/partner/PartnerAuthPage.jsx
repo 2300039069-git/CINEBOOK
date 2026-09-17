@@ -12,9 +12,14 @@ import {
   Sparkles
 } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 const PartnerAuthPage = () => {
   const navigate = useNavigate();
+  const { login, register } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     theatre_name: 'Siva Cinemas',
     owner_name: 'K. Siva Rama Krishna',
@@ -28,9 +33,28 @@ const PartnerAuthPage = () => {
     account_holder: 'Siva Cinemas Exhibitors LLP'
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate('/partner');
+    setError('');
+    setLoading(true);
+    try {
+      if (isRegister) {
+        await register({
+          name: formData.owner_name,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          role: 'THEATRE_ADMIN'
+        });
+      } else {
+        await login(formData.email, formData.password, 'THEATRE_ADMIN');
+      }
+      navigate('/partner');
+    } catch (err) {
+      setError(err.message || 'Partner authentication failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -78,6 +102,12 @@ const PartnerAuthPage = () => {
             New Theatre Registration
           </button>
         </div>
+
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-medium">
+            {error}
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
