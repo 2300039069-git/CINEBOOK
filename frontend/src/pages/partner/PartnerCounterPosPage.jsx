@@ -24,6 +24,7 @@ import {
 import { MOVIES, THEATRES } from '../../data/mockData';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
 import { seatLockManager, getShowKey as getGlobalShowKey } from '../../services/seatLockManager';
+import api from '../../services/api';
 
 // Base Screen 1 Seat Layout Template
 const BASE_SEAT_LAYOUT = {
@@ -226,11 +227,7 @@ const PartnerCounterPosPage = () => {
 
     // 3. Post to backend server if online
     try {
-      fetch('http://localhost:5000/api/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newReceipt)
-      }).catch(() => {});
+      api.post('/bookings', { ...newReceipt, payment_method: 'CASH', source: 'POS_COUNTER' }).catch(() => {});
     } catch (e) {}
 
     // 4. Open Modal for 80mm Print

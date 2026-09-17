@@ -16,6 +16,7 @@ import {
 import { useLocation } from '../../context/LocationContext';
 import { useBooking } from '../../context/BookingContext';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES } from '../../data/mockData';
+import api from '../../services/api';
 
 export default function LiveScrapedMoviesViewer({ city }) {
   const { selectedCity } = useLocation();
@@ -63,25 +64,20 @@ export default function LiveScrapedMoviesViewer({ city }) {
     setLoading(true);
 
     try {
-      // If running on browser, try localhost:5000 with short timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-      const res = await fetch(`http://localhost:5000/api/movies/${cityName}`, {
-        signal: controller.signal
+      const res = await api.get('/movies', {
+        params: { city: cityName },
+        timeout: 5000
       });
-      clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const json = await res.json();
-
-      if (json && Array.isArray(json.movies) && json.movies.length > 0) {
-        setData(json);
+      if (res && Array.isArray(res) && res.length > 0) {
+        setData({ city: cityName, movies: res });
+      } else if (res && Array.isArray(res.movies) && res.movies.length > 0) {
+        setData(res);
       } else {
         setData(getFallbackCityData(cityName));
       }
     } catch (err) {
-      console.log(`[Scraper Feed Info] ${err.message}. Using synchronized verified city feed.`);
+      console.log(`[Movies Feed Info] ${err.message}. Using synchronized city feed.`);
       setData(getFallbackCityData(cityName));
     } finally {
       setLoading(false);
