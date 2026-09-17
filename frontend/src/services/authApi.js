@@ -5,22 +5,13 @@ export const authApi = {
     try {
       return await api.post('/auth/login', { email, password });
     } catch (err) {
+      if (err.status === 401 || err.response?.status === 401) {
+        throw new Error('Incorrect email or password. Please verify your credentials.');
+      }
       if (!err.status || err.message?.includes('Network Error') || err.message?.includes('timeout') || err.status >= 500) {
-        console.warn('[CineBook Auth] Live backend unreachable/waking up. Generating resilient authenticated session.');
-        const isAdmin = email.includes('admin');
-        const isTheatre = email.includes('partner') || email.includes('theatre');
-        const role = isAdmin ? 'SUPER_ADMIN' : isTheatre ? 'THEATRE_ADMIN' : 'CUSTOMER';
-        return {
-          access_token: `token_session_${Date.now()}`,
-          token_type: 'bearer',
-          user: {
-            id: `usr_${Date.now()}`,
-            name: email.split('@')[0],
-            email: email,
-            phone: '9848012345',
-            role: role
-          }
-        };
+        throw new Error(
+          'Unable to reach CineBook backend server on Render. The server may be waking up (cold start takes ~30-45s on Render Free Tier). Please check your connection and try again.'
+        );
       }
       throw err;
     }
@@ -30,19 +21,13 @@ export const authApi = {
     try {
       return await api.post('/auth/register', userData);
     } catch (err) {
+      if (err.status === 400 || err.response?.status === 400) {
+        throw new Error(err.response?.data?.detail || err.message || 'An account with this email already exists.');
+      }
       if (!err.status || err.message?.includes('Network Error') || err.message?.includes('timeout') || err.status >= 500) {
-        console.warn('[CineBook Auth] Live backend unreachable/waking up. Generating resilient registered session.');
-        return {
-          access_token: `token_session_${Date.now()}`,
-          token_type: 'bearer',
-          user: {
-            id: `usr_${Date.now()}`,
-            name: userData.name || userData.email.split('@')[0],
-            email: userData.email,
-            phone: userData.phone || '9848012345',
-            role: userData.role || 'CUSTOMER'
-          }
-        };
+        throw new Error(
+          'Unable to reach CineBook backend server on Render. The server may be waking up. Please try again in a few moments.'
+        );
       }
       throw err;
     }
