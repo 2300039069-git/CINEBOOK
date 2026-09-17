@@ -28,15 +28,15 @@ logger = logging.getLogger("cinebook")
 # Background worker to prevent Render Free-Tier 15-minute sleep
 async def render_keep_alive_worker():
     """
-    Pings the Render backend health endpoint every 10 minutes (600s)
-    to prevent Render free tier containers from spinning down after 15 minutes of inactivity.
+    Pings the Render backend health endpoint every 9 minutes (540s)
+    via the public Render URL to prevent free tier containers from spinning down.
     """
     logger.info("Render Keep-Alive worker initialized.")
-    await asyncio.sleep(60) # Initial delay after boot
+    await asyncio.sleep(60)  # Initial delay after boot
     while True:
         try:
-            render_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("BACKEND_URL")
-            target_url = f"{render_url}/health" if render_url else "http://127.0.0.1:8000/health"
+            render_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("BACKEND_URL") or "https://cinebook-backend-i2k9.onrender.com"
+            target_url = f"{render_url.rstrip('/')}/health"
             
             async with httpx.AsyncClient(timeout=15.0) as client:
                 res = await client.get(target_url)
@@ -44,8 +44,8 @@ async def render_keep_alive_worker():
         except Exception as ping_err:
             logger.debug(f"Render Keep-Alive notice: {ping_err}")
 
-        # Sleep for 10 minutes (600s) - keeps container actively awake
-        await asyncio.sleep(600)
+        # Sleep for 9 minutes (540s) - keeps container active before the 15-min Render limit
+        await asyncio.sleep(540)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
