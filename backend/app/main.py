@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add backend directory to sys.path so both root and backend-relative execution work on Render
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 import asyncio
 import logging
 import os
@@ -60,11 +68,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Set CORS middleware for Localhost, Netlify, Vercel frontend, and production domains
+# Set CORS middleware for Localhost, Netlify, Vercel frontend, and all production domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_origin_regex=r"https://.*(\.netlify\.app|\.vercel\.app)",
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

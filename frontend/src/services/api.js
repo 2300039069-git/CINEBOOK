@@ -13,13 +13,30 @@ const localOverride =
     : null;
 const globalOverride = typeof window !== 'undefined' ? window.__CINEBOOK_API_URL__ : null;
 
-// Build-time Vite environment variable
-const rawApiUrl = localOverride || globalOverride || import.meta.env.VITE_API_URL;
+// Build-time Vite environment variables (checks all common conventions)
+const rawApiUrl =
+  localOverride ||
+  globalOverride ||
+  import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_BACKEND_URL ||
+  import.meta.env.VITE_SERVER_URL;
 
 const sanitizeApiUrl = (url) => {
-  if (!url) return '';
-  const trimmed = url.trim().replace(/\/+$/, '');
-  return trimmed.endsWith('/api/v1') ? trimmed : `${trimmed}/api/v1`;
+  if (!url || typeof url !== 'string') return '';
+  let trimmed = url.trim();
+  // Auto-prepend https:// if user pasted domain without protocol
+  if (!/^https?:\/\//i.test(trimmed)) {
+    trimmed = `https://${trimmed}`;
+  }
+  trimmed = trimmed.replace(/\/+$/, '');
+  if (!trimmed.endsWith('/api/v1')) {
+    if (trimmed.endsWith('/api')) {
+      trimmed = `${trimmed}/v1`;
+    } else {
+      trimmed = `${trimmed}/api/v1`;
+    }
+  }
+  return trimmed;
 };
 
 // Default Render Backend URL for production fallback
@@ -39,6 +56,11 @@ if (rawApiUrl) {
   API_BASE_URL = DEFAULT_RENDER_BACKEND;
 } else {
   API_BASE_URL = 'http://localhost:8000/api/v1';
+}
+
+if (typeof window !== 'undefined') {
+  console.info(`🎬 [CineBook] API Base URL: ${API_BASE_URL}`);
+  window.__CINEBOOK_CURRENT_API__ = API_BASE_URL;
 }
 
 const api = axios.create({
