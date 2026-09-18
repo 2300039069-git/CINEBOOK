@@ -391,6 +391,30 @@ async def check_upi_status(order_id: str):
 
     is_paid = order_data.get("paid", False) or order_data.get("status") == PaymentStatus.PAID.value
 
+    # Smart Auto-Check: If pending, scan Gmail for recent bank credit alerts
+    if not is_paid and settings.GMAIL_APP_PASSWORD:
+        last_gmail_check = order_data.get("last_gmail_check", 0)
+        now = time.time()
+        if now - last_gmail_check >= 4.0:
+            order_data["last_gmail_check"] = now
+            try:
+                alerts = GmailPaymentPoller.check_recent_emails(
+                    email_address=settings.GMAIL_ADDRESS,
+                    app_password=settings.GMAIL_APP_PASSWORD,
+                    max_emails=5
+                )
+                target_amt = float(order_data.get("amount", 0))
+                for a in alerts:
+                    a_amt = a.get("amount")
+                    if a_amt and abs(a_amt - target_amt) < 0.50:
+                        utr = a.get("utr_number") or f"GMAIL-UTR-{int(now*1000)}"
+                        payment_id = f"upi_pay_gmail_{utr}"
+                        await _confirm_upi_booking(order_id=order_id, payment_id=payment_id, utr_number=utr)
+                        is_paid = True
+                        break
+            except Exception as e:
+                logger.warning(f"Background Gmail poll check notice: {e}")
+
     return UpiStatusResponse(
         order_id=order_id,
         booking_id=order_data["booking_id"],
@@ -399,7 +423,7 @@ async def check_upi_status(order_id: str):
         paid=is_paid,
         utr_number=order_data.get("utr_number"),
         booking=order_data.get("booking"),
-        message="Payment completed successfully." if is_paid else "Awaiting UPI payment."
+        message="Payment completed successfully via Gmail/UPI alert." if is_paid else "Awaiting UPI payment."
     )
 
 

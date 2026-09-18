@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     
     # Automated Gmail Payment Alert Poller
     GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "kancharladhanush2003@gmail.com")
-    GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "")
+    GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "yuwz szcf ocvy socc")
     
     # Resend / Email Configuration
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")

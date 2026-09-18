@@ -1,4 +1,4 @@
-﻿import imaplib
+import imaplib
 import email
 from email.header import decode_header
 import re
@@ -110,13 +110,30 @@ class GmailPaymentPoller:
 
                 combined_text = f"{subject}\n{sender}\n{body}"
 
-                keywords = ["credit", "credited", "received", "payment", "phonepe", "gpay", "axis", "upi", "inr", "rs."]
-                if not any(k in combined_text.lower() for k in keywords):
+                # Ignore obvious non-payment emails & debits
+                subject_lower = subject.lower()
+                sender_lower = sender.lower()
+                combined_lower = combined_text.lower()
+
+                # Must not be a debit or irrelevant marketing
+                if "debited from" in subject_lower or "was debited" in subject_lower:
+                    continue
+                if any(spam in subject_lower for spam in ["job", "internshala", "unstop", "resume", "certification", "offer", "tira beauty"]):
+                    continue
+
+                # Must contain credit/payment received keywords
+                is_credit_signal = any(
+                    sig in combined_lower for sig in [
+                        "was credited", "credited to", "credited with", "credit of",
+                        "received from", "payment of", "received rs", "received inr", "received ₹"
+                    ]
+                )
+                if not is_credit_signal:
                     continue
 
                 extracted_amount = None
                 amt_match = re.search(
-                    r'(?:(?:Received|Payment of|credited(?:\s+by|\s+with)?)\s*)?(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)',
+                    r'(?:(?:Received|Payment of|credited(?:\s+by|\s+with|\s+to)?)\s*)?(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)',
                     combined_text,
                     re.IGNORECASE
                 )
@@ -147,7 +164,11 @@ class GmailPaymentPoller:
                     if any_12:
                         extracted_utr = any_12.group(1)
 
-                if extracted_amount or extracted_utr:
+                valid_senders = ["bank", "axis", "phonepe", "gpay", "google", "paytm", "sbi", "hdfc", "icici", "kotak", "npci", "razorpay", "cashfree"]
+                is_trusted_sender = any(s in sender_lower for s in valid_senders)
+
+                # Only include genuine bank/UPI credits
+                if extracted_amount and (is_trusted_sender or extracted_utr):
                     parsed_alerts.append({
                         "msg_id": msg_id.decode("utf-8") if isinstance(msg_id, bytes) else str(msg_id),
                         "subject": subject,
@@ -155,7 +176,7 @@ class GmailPaymentPoller:
                         "date": date_str,
                         "amount": extracted_amount,
                         "utr_number": extracted_utr,
-                        "raw_snippet": body[:200]
+                        "raw_snippet": body[:200].strip()
                     })
 
             mail.logout()
