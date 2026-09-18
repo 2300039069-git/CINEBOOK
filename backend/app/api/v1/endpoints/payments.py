@@ -395,9 +395,8 @@ async def create_upi_qr_order(
 @router.get("/upi-status/{order_id}", response_model=UpiStatusResponse)
 async def check_upi_status(order_id: str):
     """
-    Real-time auto-polling endpoint for VyaparGateway / UPI.
-    Frontend polls every 2 seconds to check if payment was confirmed.
-    Fast, non-blocking response (<10ms).
+    Real-time auto-polling endpoint for VyaparGateway.
+    Frontend polls every 2 seconds. Checks memory, Supabase PostgreSQL, and VyaparGateway live API.
     """
     order_data = UPI_ORDERS_STORE.get(order_id)
     if not order_data:
@@ -411,73 +410,68 @@ async def check_upi_status(order_id: str):
                 order_data = o
                 break
 
-    if not order_data:
-        # Fallback check Supabase PostgreSQL DB
-        if db_manager.is_connected:
-            try:
-                row = await db_manager.fetch_one(
-                    "SELECT * FROM payments WHERE order_id = $1 OR booking_id = $1 LIMIT 1",
-                    order_id
-                )
-                if row and row.get("status") in ("SUCCESS", "PAID", "CONFIRMED", "BOOKED"):
-                    return UpiStatusResponse(
-                        order_id=order_id,
-                        booking_id=row.get("booking_id", ""),
-                        status=PaymentStatus.PAID,
-                        amount=float(row.get("amount", 1.0)),
-                        paid=True,
-                        utr_number=row.get("payment_id"),
-                        message="Payment confirmed via database."
-                    )
-            except Exception:
-                pass
-        return UpiStatusResponse(
-            order_id=order_id,
-            booking_id=f"CB-{order_id[-6:]}",
-            status=PaymentStatus.PENDING,
-            amount=1.0,
-            paid=False,
-            message="Awaiting UPI payment."
+    is_paid = False
+    if order_data:
+        is_paid = (
+            order_data.get("paid", False) or
+            order_data.get("status") in (PaymentStatus.PAID.value, "PAID", "CONFIRMED", "BOOKED", "SUCCESS")
         )
 
-    is_paid = (
-        order_data.get("paid", False) or
-        order_data.get("status") in (PaymentStatus.PAID.value, "PAID", "CONFIRMED", "BOOKED", "SUCCESS")
-    )
+    target_bid = order_data.get("booking_id") if order_data else order_id
+    target_oid = order_data.get("order_id") if order_data else order_id
+    target_ctxn = order_data.get("client_txn_id") if order_data else order_id
 
-    # If not yet confirmed locally, actively query VyaparGateway's live API v2.1.0 in real time!
+    # 1. Check Supabase DB for confirmation synced from Render webhook
+    if not is_paid and db_manager.is_connected:
+        try:
+            row = await db_manager.fetch_one("""
+                SELECT * FROM bookings 
+                WHERE (booking_id = $1 OR booking_id = $2 OR order_id = $1 OR order_id = $2)
+                AND booking_status = 'CONFIRMED' LIMIT 1
+            """, target_bid, target_oid)
+            if row:
+                is_paid = True
+                if order_data:
+                    order_data["status"] = PaymentStatus.PAID.value
+                    order_data["paid"] = True
+                    order_data["utr_number"] = row.get("payment_id")
+        except Exception as e:
+            logger.debug(f"Supabase sync check notice: {e}")
+
+    # 2. Query VyaparGateway's live API v2.1.0 in real-time
     if not is_paid:
-        vyapar_order_id = order_data.get("order_id") if order_data else order_id
-        vyapar_client_txn_id = order_data.get("client_txn_id") if order_data else order_id
         try:
             vyapar_check = await VyaparService.check_order_status(
-                order_id=vyapar_order_id,
-                client_txn_id=vyapar_client_txn_id
+                order_id=target_oid,
+                client_txn_id=target_ctxn
             )
             if vyapar_check.get("is_paid") is True or vyapar_check.get("status") in ("PAID", "SUCCESS", "COMPLETED"):
                 utr = vyapar_check.get("utr_number") or f"VG_AUTO_{int(time.time()*1000)}"
                 payment_id = f"vyapar_{utr}"
-                b_id = order_data.get("booking_id") if order_data else order_id
                 
-                logger.info(f"✨ VyaparGateway real-time check confirmed payment for order {order_id} (UTR: {utr})")
+                logger.info(f"✨ VyaparGateway live check confirmed payment for {order_id} (UTR: {utr})")
                 order_data = await _confirm_upi_booking(
-                    order_id=order_id,
+                    order_id=target_oid,
                     payment_id=payment_id,
                     utr_number=utr,
-                    booking_id=b_id
+                    booking_id=target_bid
                 )
                 is_paid = True
         except Exception as check_err:
             logger.debug(f"VyaparGateway live poll check notice: {check_err}")
 
+    amount_val = float(order_data.get("amount", 1.0)) if order_data else 1.0
+    utr_val = order_data.get("utr_number") if order_data else None
+    booking_val = order_data.get("booking") if order_data else None
+
     return UpiStatusResponse(
         order_id=order_id,
-        booking_id=order_data.get("booking_id", f"CB-{order_id[-6:]}"),
+        booking_id=target_bid or f"CB-{order_id[-6:]}",
         status=PaymentStatus.PAID if is_paid else PaymentStatus.PENDING,
-        amount=order_data.get("amount", 1.0),
+        amount=amount_val,
         paid=is_paid,
-        utr_number=order_data.get("utr_number"),
-        booking=order_data.get("booking"),
+        utr_number=utr_val,
+        booking=booking_val,
         message="Payment completed successfully." if is_paid else "Awaiting UPI payment."
     )
 
