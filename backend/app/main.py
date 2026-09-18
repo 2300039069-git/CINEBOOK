@@ -149,12 +149,18 @@ async def lifespan(app: FastAPI):
     await connect_to_supabase()
     keep_alive_task = asyncio.create_task(render_keep_alive_worker())
     gmail_task = asyncio.create_task(gmail_continuous_poller_worker())
-    yield
-    # Shutdown: Cancel tasks and close database connections
-    keep_alive_task.cancel()
-    gmail_task.cancel()
-    logger.info("Shutting down CineBook backend service...")
-    await close_supabase_connection()
+    try:
+        yield
+    finally:
+        # Shutdown: Cancel background tasks and close database connections
+        logger.info("Shutting down CineBook backend service...")
+        for task in [keep_alive_task, gmail_task]:
+            task.cancel()
+        try:
+            await asyncio.wait_for(asyncio.gather(keep_alive_task, gmail_task, return_exceptions=True), timeout=2.0)
+        except Exception:
+            pass
+        await close_supabase_connection()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

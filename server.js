@@ -24,16 +24,69 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 app.use(cors());
 
 // ============================================================================
-// 3. Webhook endpoint /api/webhook/vyapar MUST use express.raw BEFORE express.json()
+// 1. Webhook endpoint /api/webhook/vyapar MUST use express.raw BEFORE express.json()
 // ============================================================================
-app.use('/api/webhook/vyapar', express.raw({ type: 'application/json' }));
-app.use('/webhook/vyapar', express.raw({ type: 'application/json' }));
+app.post(['/api/webhook/vyapar', '/webhook/vyapar'], express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const timestamp = req.headers['x-vyapargateway-timestamp'];
+    const signature = req.headers['x-vyapargateway-signature'];
+    const rawBody = req.body.toString('utf8');
+
+    const expectedSig = crypto
+      .createHmac('sha256', process.env.VYAPAR_WEBHOOK_SECRET || '')
+      .update(`${timestamp}.${rawBody}`)
+      .digest('hex');
+
+    if (process.env.VYAPAR_WEBHOOK_SECRET && signature !== expectedSig) {
+      console.warn('[VyaparGateway Webhook] Invalid signature rejected (401 Unauthorized)');
+      return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    const data = JSON.parse(rawBody || '{}');
+    console.log('[VyaparGateway Webhook] Verified payload:', data);
+
+    if (data.status === 'success' || data.event === 'payment.success' || data.status === true) {
+      const clientTxnId = data.client_txn_id || (data.data && data.data.client_txn_id) || '';
+      let bookingId = '';
+      if (clientTxnId.startsWith('CNB_')) {
+        bookingId = clientTxnId.split('_')[1];
+      } else {
+        bookingId = data.booking_id || clientTxnId;
+      }
+
+      const upiTxnId = data.upi_txn_id || data.utr || (data.data && data.data.upi_txn_id) || `VG_${Date.now()}`;
+
+      if (bookingId) {
+        try {
+          await supabase
+            .from('bookings')
+            .update({
+              status: 'BOOKED',
+              booking_status: 'CONFIRMED',
+              payment_utr: upiTxnId,
+              payment_id: `vyapar_${upiTxnId}`,
+              confirmed_at: new Date().toISOString()
+            })
+            .eq('booking_id', bookingId);
+
+          console.log(`[VyaparGateway Webhook] Supabase booking ${bookingId} transitioned to BOOKED with UTR ${upiTxnId}`);
+        } catch (dbErr) {
+          console.warn('[VyaparGateway Webhook] Supabase sync notice:', dbErr.message);
+        }
+      }
+    }
+    return res.status(200).json({ status: true });
+  } catch (err) {
+    console.error('[VyaparGateway Webhook] Error:', err);
+    return res.status(500).json({ status: false, error: err.message });
+  }
+});
 
 // All other endpoints use express.json()
 app.use(express.json());
 
 // ============================================================================
-// 1 & 2. Order Creation Endpoint (POST /api/v1/create_order & /api/v1/payments/create-vyapar-order)
+// 2. Order Creation Endpoint (POST /api/v1/create_order)
 // ============================================================================
 app.post(['/api/v1/create_order', '/api/v1/payments/create-vyapar-order', '/api/create_order'], async (req, res) => {
   try {
@@ -81,69 +134,63 @@ app.post(['/api/v1/create_order', '/api/v1/payments/create-vyapar-order', '/api/
 });
 
 // ============================================================================
-// 3 & 4. Webhook Route (POST /api/webhook/vyapar) with HMAC SHA256 Verification
+// 3. Fallback Active Status Polling (GET /api/check-status/:orderId)
 // ============================================================================
-app.post(['/api/webhook/vyapar', '/webhook/vyapar'], async (req, res) => {
+app.get(['/api/check-status/:orderId', '/check-status/:orderId', '/api/v1/payments/check-status/:orderId', '/api/v1/payments/upi-status/:orderId'], async (req, res) => {
   try {
-    const rawBody = req.body.toString('utf8');
-    const signature = req.headers['x-vyapargateway-signature'];
-    const timestamp = req.headers['x-vyapargateway-timestamp'];
-    const secret = process.env.VYAPAR_WEBHOOK_SECRET;
+    const { orderId } = req.params;
+    const apiKey = process.env.VYAPAR_API_KEY || 'vg_live_ldyjlAfN9ThqOb2CdAivodK8';
 
-    // 1. Verify HMAC SHA256 of `${timestamp}.${rawBody}`
-    if (secret) {
-      const stringToSign = `${timestamp}.${rawBody}`;
-      const computedSig = crypto.createHmac('sha256', secret).update(stringToSign).digest('hex');
-      if (computedSig !== signature) {
-        console.warn('[VyaparGateway Webhook] Invalid signature rejected (401 Unauthorized)');
-        return res.status(401).json({ status: false, error: 'Unauthorized: Invalid signature' });
+    const checkRes = await fetch('https://vyapargateway.com/api/v1/check_order_status', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ order_id: orderId, client_txn_id: orderId })
+    });
+
+    const checkData = await checkRes.json();
+    const orderInfo = checkData.data || {};
+    const st = (orderInfo.status || '').toLowerCase();
+    const isPaid = st === 'success' || st === 'paid' || st === 'completed' || st === 'successful';
+    const utr = orderInfo.upi_txn_id || orderInfo.utr || orderInfo.txn_id;
+
+    if (isPaid) {
+      const clientTxnId = orderInfo.client_txn_id || orderId;
+      const bId = clientTxnId.startsWith('CNB_') ? clientTxnId.split('_')[1] : (orderInfo.booking_id || clientTxnId);
+      if (bId) {
+        try {
+          await supabase
+            .from('bookings')
+            .update({
+              status: 'BOOKED',
+              booking_status: 'CONFIRMED',
+              payment_utr: utr,
+              payment_id: `vyapar_${utr}`,
+              confirmed_at: new Date().toISOString()
+            })
+            .eq('booking_id', bId);
+
+          console.log(`[Active Check] Supabase updated to BOOKED for ${bId} with UTR ${utr}`);
+        } catch (e) {
+          console.warn('[Active Check] Supabase update warning:', e.message);
+        }
       }
     }
 
-    const payload = JSON.parse(rawBody || '{}');
-    console.log('[VyaparGateway Webhook] Payload verified:', payload);
-
-    // 2. Verify payload.status === "success"
-    const isSuccess = payload.status === 'success' || payload.event === 'payment.success' || payload.status === true;
-    if (!isSuccess) {
-      console.warn(`[VyaparGateway Webhook] Non-success status: ${payload.status}`);
-      return res.status(200).json({ status: true, message: 'Non-success status acknowledged' });
-    }
-
-    // 3. Parse client_txn_id to get bookingId (format: CNB_${bookingId}_${Date.now()})
-    const clientTxnId = payload.client_txn_id || (payload.data && payload.data.client_txn_id) || '';
-    let bookingId = '';
-    if (clientTxnId.startsWith('CNB_')) {
-      const parts = clientTxnId.split('_');
-      bookingId = parts[1];
-    } else {
-      bookingId = payload.booking_id || clientTxnId;
-    }
-
-    const upiTxnId = payload.upi_txn_id || payload.utr || (payload.data && payload.data.upi_txn_id) || `VG_${Date.now()}`;
-
-    // 4. Run Supabase update: status = 'BOOKED' and payment_utr = payload.upi_txn_id
-    if (bookingId) {
-      try {
-        await supabase
-          .from('bookings')
-          .update({
-            booking_status: 'CONFIRMED',
-            payment_id: `vyapar_${upiTxnId}`
-          })
-          .eq('booking_id', bookingId);
-
-        console.log(`[VyaparGateway Webhook] Supabase booking ${bookingId} transitioned to BOOKED with UTR ${upiTxnId}`);
-      } catch (dbErr) {
-        console.warn('[VyaparGateway Webhook] Supabase sync notice:', dbErr.message);
-      }
-    }
-
-    // 5. Return 200 OK with {"status": true}
-    return res.status(200).json({ status: true, message: 'Payment confirmed successfully' });
+    return res.json({
+      order_id: orderId,
+      status: isPaid ? 'PAID' : 'PENDING',
+      paid: isPaid,
+      is_paid: isPaid,
+      utr_number: utr,
+      amount: orderInfo.amount || 1.0,
+      raw_data: orderInfo
+    });
   } catch (err) {
-    console.error('[VyaparGateway Webhook] Handler error:', err);
-    return res.status(500).json({ status: false, error: err.message });
+    console.error('[Check Status] Error:', err);
+    return res.status(500).json({ error: err.message, status: 'PENDING', paid: false });
   }
 });
 
@@ -182,6 +229,7 @@ app.listen(PORT, () => {
   console.log(`🚀 CineBook Express API running on port ${PORT}`);
   console.log(`📡 Order Creation: POST http://localhost:${PORT}/api/v1/create_order`);
   console.log(`📡 Webhook Route:  POST http://localhost:${PORT}/api/webhook/vyapar`);
+  console.log(`📡 Active Check:   GET  http://localhost:${PORT}/api/check-status/:orderId`);
   console.log(`========================================================`);
 });
 
