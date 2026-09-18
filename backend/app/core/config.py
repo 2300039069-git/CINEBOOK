@@ -38,6 +38,14 @@ class Settings(BaseSettings):
     GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "kancharladhanush2003@gmail.com")
     GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "yuwz szcf ocvy socc")
     
+    # Instamojo Payment Gateway Settings
+    INSTAMOJO_CLIENT_ID: Optional[str] = os.getenv("INSTAMOJO_CLIENT_ID", "")
+    INSTAMOJO_CLIENT_SECRET: Optional[str] = os.getenv("INSTAMOJO_CLIENT_SECRET", "")
+    INSTAMOJO_API_KEY: Optional[str] = os.getenv("INSTAMOJO_API_KEY", "")
+    INSTAMOJO_AUTH_TOKEN: Optional[str] = os.getenv("INSTAMOJO_AUTH_TOKEN", "")
+    INSTAMOJO_SALT: Optional[str] = os.getenv("INSTAMOJO_SALT", "")
+    INSTAMOJO_ENV: str = os.getenv("INSTAMOJO_ENV", "production")  # "production" or "test"
+    
     # Resend / Email Configuration
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")

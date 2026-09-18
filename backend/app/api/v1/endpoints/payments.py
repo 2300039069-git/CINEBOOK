@@ -762,4 +762,60 @@ async def verify_upi_utr_submission(req: VerifyUtrRequest):
     }
 
 
+from app.services.instamojo_service import InstamojoService
+
+@router.post("/create-instamojo-order")
+async def create_instamojo_payment_order(
+    req: CreateOrderRequest,
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
+):
+    """
+    Creates an Instamojo Payment Request for an active booking session.
+    Allows credit cards, debit cards, net banking, and UPI payments.
+    """
+    cust = req.customer_details.dict() if req.customer_details else {}
+    name = (current_user.name if current_user else None) or cust.get("customer_name") or "Valued Cinema Guest"
+    email = (current_user.email if current_user else None) or cust.get("customer_email") or "customer@cinebook.in"
+    phone = (current_user.phone if current_user else None) or cust.get("customer_phone") or "9848012345"
+
+    result = await InstamojoService.create_payment_request(
+        amount=req.amount,
+        booking_id=req.booking_id,
+        customer_name=name,
+        customer_email=email,
+        customer_phone=phone
+    )
+    return result
+
+
+@router.post("/instamojo-webhook")
+async def receive_instamojo_webhook(post_data: Dict[str, Any]):
+    """
+    Instant Webhook listener for Instamojo payment confirmation.
+    Validates MAC signature and confirms the ticket booking.
+    """
+    logger.info(f"Received Instamojo webhook: {post_data}")
+    is_valid = InstamojoService.verify_webhook_mac(post_data)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail="Invalid MAC signature.")
+
+    status_val = post_data.get("status")
+    if status_val not in ["Credit", "Completed", "SUCCESS"]:
+        return {"success": False, "message": f"Ignored non-credit status: {status_val}"}
+
+    purpose = post_data.get("purpose", "")
+    payment_id = post_data.get("payment_id")
+    b_match = re.search(r'(CB-\d+-\d+)', purpose)
+    booking_id = b_match.group(1) if b_match else None
+
+    if booking_id:
+        for oid, o in UPI_ORDERS_STORE.items():
+            if o.get("booking_id") == booking_id:
+                await _confirm_upi_booking(order_id=oid, payment_id=f"im_{payment_id}", utr_number=payment_id)
+                break
+
+    return {"success": True, "message": "Instamojo payment verified and booking confirmed."}
+
+
+
 
