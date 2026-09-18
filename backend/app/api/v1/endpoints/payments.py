@@ -33,6 +33,7 @@ router = APIRouter()
 # In-memory store for active UPI QR orders and used UTR numbers
 UPI_ORDERS_STORE: Dict[str, Dict[str, Any]] = {}
 USED_UTR_NUMBERS: set = set()
+PROCESSED_EMAIL_MSG_IDS: set = set()
 
 @router.post("/create-order", response_model=CreateOrderResponse)
 async def create_payment_order(
@@ -428,36 +429,6 @@ async def check_upi_status(order_id: str):
 
     is_paid = order_data.get("paid", False) or order_data.get("status") == PaymentStatus.PAID.value
 
-    # Smart Non-Blocking Background Check: Scans Gmail in a separate thread without blocking the event loop
-    if not is_paid and getattr(settings, "GMAIL_APP_PASSWORD", None):
-        last_gmail_check = order_data.get("last_gmail_check", 0)
-        now = time.time()
-        if now - last_gmail_check >= 8.0:
-            order_data["last_gmail_check"] = now
-            try:
-                import asyncio
-                alerts = await asyncio.wait_for(
-                    asyncio.to_thread(
-                        GmailPaymentPoller.check_recent_emails,
-                        email_address=settings.GMAIL_ADDRESS,
-                        app_password=settings.GMAIL_APP_PASSWORD,
-                        max_emails=3
-                    ),
-                    timeout=2.0
-                )
-                target_amt = float(order_data.get("amount", 1.0))
-                for a in (alerts or []):
-                    a_amt = a.get("amount")
-                    # Match exact amounts, micro test payments (e.g. ₹0.01 or ₹1.00), or low test amounts
-                    if a_amt and (abs(a_amt - target_amt) < 0.50 or a_amt == 0.01 or (target_amt <= 5.0 and a_amt <= 5.0)):
-                        utr = a.get("utr_number") or f"GMAIL-UTR-{int(now*1000)}"
-                        payment_id = f"upi_pay_gmail_{utr}"
-                        await _confirm_upi_booking(order_id=order_id, payment_id=payment_id, utr_number=utr)
-                        is_paid = True
-                        break
-            except Exception as e:
-                logger.debug(f"Background Gmail poll notice: {e}")
-
     return UpiStatusResponse(
         order_id=order_id,
         booking_id=order_data["booking_id"],
@@ -468,6 +439,7 @@ async def check_upi_status(order_id: str):
         booking=order_data.get("booking"),
         message="Payment completed successfully." if is_paid else "Awaiting UPI payment."
     )
+
 
 
 import re

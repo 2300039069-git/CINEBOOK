@@ -51,21 +51,46 @@ async def render_keep_alive_worker():
 async def gmail_continuous_poller_worker():
     """
     Background worker that continuously polls Gmail IMAP for Axis Bank / PhonePe credit alerts
-    and automatically confirms any active pending UPI orders with 0ms delay to HTTP requests.
+    and automatically confirms active pending UPI orders.
+    Strictly verifies email timestamp (must arrive AFTER order creation) and deduplicates UTRs/msg_ids.
     """
     logger.info("Gmail Continuous Poller worker initialized.")
+    import time
     from app.services.gmail_payment_service import GmailPaymentPoller
-    from app.api.v1.endpoints.payments import UPI_ORDERS_STORE, _confirm_upi_booking
+    from app.api.v1.endpoints.payments import (
+        UPI_ORDERS_STORE,
+        USED_UTR_NUMBERS,
+        PROCESSED_EMAIL_MSG_IDS,
+        _confirm_upi_booking
+    )
+
+    gmail_pass = getattr(settings, "GMAIL_APP_PASSWORD", None)
+
+    # Pre-seed existing historical email msg_ids at worker startup so past emails never confirm new orders
+    if gmail_pass:
+        try:
+            init_alerts = await asyncio.to_thread(
+                GmailPaymentPoller.check_recent_emails,
+                email_address=settings.GMAIL_ADDRESS,
+                app_password=gmail_pass,
+                max_emails=10
+            )
+            for ia in (init_alerts or []):
+                if ia.get("msg_id"):
+                    PROCESSED_EMAIL_MSG_IDS.add(ia["msg_id"])
+                if ia.get("utr_number"):
+                    USED_UTR_NUMBERS.add(ia["utr_number"])
+            logger.info(f"Initialized Gmail poller: safely ignored {len(PROCESSED_EMAIL_MSG_IDS)} past emails.")
+        except Exception as seed_err:
+            logger.debug(f"Poller seed notice: {seed_err}")
 
     while True:
         try:
-            # Only poll if there is at least one active pending order and Gmail password configured
             pending_orders = [
                 (oid, o) for oid, o in UPI_ORDERS_STORE.items()
                 if not o.get("paid") and o.get("status") != "PAID"
             ]
 
-            gmail_pass = getattr(settings, "GMAIL_APP_PASSWORD", None)
             if pending_orders and gmail_pass:
                 alerts = await asyncio.to_thread(
                     GmailPaymentPoller.check_recent_emails,
@@ -75,24 +100,46 @@ async def gmail_continuous_poller_worker():
                 )
 
                 for alert in (alerts or []):
-                    amt = alert.get("amount")
-                    utr = alert.get("utr_number") or f"GMAIL-UTR-{int(time.time()*1000)}"
+                    msg_id = alert.get("msg_id")
+                    if msg_id and msg_id in PROCESSED_EMAIL_MSG_IDS:
+                        continue
 
-                    for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+                    utr = alert.get("utr_number")
+                    if utr and utr in USED_UTR_NUMBERS:
+                        continue
+
+                    alert_ts = alert.get("timestamp", 0)
+                    amt = alert.get("amount")
+
+                    for oid, o in sorted(pending_orders, key=lambda x: x[1].get("created_at", 0), reverse=True):
+                        order_created = o.get("created_at", 0)
                         target_amt = float(o.get("amount", 1.0))
-                        if not o.get("paid") and (
-                            (amt and abs(float(amt) - target_amt) < 0.50)
-                            or amt == 0.01
-                            or (target_amt <= 5.0 and amt and amt <= 5.0)
-                        ):
-                            payment_id = f"upi_pay_gmail_{utr}"
-                            logger.info(f"✨ Auto-confirming booking for order {oid} via Gmail alert (Amount: ₹{amt}, UTR: {utr})")
-                            await _confirm_upi_booking(order_id=oid, payment_id=payment_id, utr_number=utr)
-                            break
+
+                        # STRICT REQUIREMENT:
+                        # 1. Email MUST have arrived AFTER the order was created (with 15s clock tolerance)
+                        # 2. Amount must match or be acceptable test amount
+                        if alert_ts >= (order_created - 15.0):
+                            amount_match = (
+                                (amt and abs(float(amt) - target_amt) < 0.50)
+                                or (amt == 0.01 and target_amt <= 5.0)
+                                or (target_amt <= 5.0 and amt and amt <= 5.0)
+                            )
+                            if amount_match and not o.get("paid"):
+                                clean_utr = utr or f"GMAIL-UTR-{int(time.time()*1000)}"
+                                payment_id = f"upi_pay_gmail_{clean_utr}"
+                                
+                                if msg_id:
+                                    PROCESSED_EMAIL_MSG_IDS.add(msg_id)
+                                USED_UTR_NUMBERS.add(clean_utr)
+                                
+                                logger.info(f"✨ Verified NEW real-time payment for order {oid} via Gmail alert (Amount: ₹{amt}, UTR: {clean_utr})")
+                                await _confirm_upi_booking(order_id=oid, payment_id=payment_id, utr_number=clean_utr)
+                                break
         except Exception as e:
             logger.debug(f"Gmail background worker notice: {e}")
 
         await asyncio.sleep(4)
+
 
 
 @asynccontextmanager

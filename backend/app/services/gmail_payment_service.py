@@ -1,5 +1,6 @@
 import imaplib
 import email
+import email.utils
 from email.header import decode_header
 import re
 import time
@@ -167,6 +168,15 @@ class GmailPaymentPoller:
                 valid_senders = ["bank", "axis", "phonepe", "gpay", "google", "paytm", "sbi", "hdfc", "icici", "kotak", "npci", "razorpay", "cashfree"]
                 is_trusted_sender = any(s in sender_lower for s in valid_senders)
 
+                # Parse email timestamp
+                email_ts = time.time()
+                try:
+                    if date_str:
+                        dt = email.utils.parsedate_to_datetime(date_str)
+                        email_ts = dt.timestamp()
+                except Exception:
+                    email_ts = time.time()
+
                 # Only include genuine bank/UPI credits
                 if extracted_amount and (is_trusted_sender or extracted_utr):
                     parsed_alerts.append({
@@ -174,6 +184,7 @@ class GmailPaymentPoller:
                         "subject": subject,
                         "sender": sender,
                         "date": date_str,
+                        "timestamp": email_ts,
                         "amount": extracted_amount,
                         "utr_number": extracted_utr,
                         "raw_snippet": body[:200].strip()
