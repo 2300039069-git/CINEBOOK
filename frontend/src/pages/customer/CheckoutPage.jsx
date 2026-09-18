@@ -492,15 +492,15 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* UPI Supported Apps Banner */}
+            {/* VyaparGateway Supported Apps Banner */}
             <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-surface-elevated border border-border text-xs text-text-secondary">
               <span className="flex items-center gap-2 font-medium">
                 <Smartphone className="w-4 h-4 text-primary shrink-0" />
-                <span>Supports all UPI Apps:</span>
+                <span>VyaparGateway UPI:</span>
                 <span className="font-bold text-text-primary">PhonePe • GPay • Paytm • BHIM • CRED</span>
               </span>
               <span className="flex items-center gap-1 text-[11px] text-emerald-500 font-semibold">
-                <Lock className="w-3 h-3" /> Multi-Channel Instant Verification
+                <Lock className="w-3 h-3" /> Vyapar Instant Webhook
               </span>
             </div>
           </div>
@@ -513,12 +513,12 @@ export default function CheckoutPage() {
             {loading ? (
               <>
                 <Loader2 size={19} className="animate-spin text-white" />
-                <span>Generating Dynamic UPI QR...</span>
+                <span>Initializing VyaparGateway Payment...</span>
               </>
             ) : (
               <>
                 <QrCode size={19} className="text-white" />
-                <span>Pay ₹{totalPayable} via UPI Apps / QR Code</span>
+                <span>Pay ₹{totalPayable} via VyaparGateway</span>
                 <ChevronRight size={18} className="ml-1" />
               </>
             )}
@@ -527,7 +527,7 @@ export default function CheckoutPage() {
       </div>
 
       {/* ========================================================= */}
-      {/* ZERO-TYPING DYNAMIC SAVINGS ACCOUNT UPI QR MODAL          */}
+      {/* VYAPARGATEWAY OFFICIAL INSTANT UPI QR MODAL               */}
       {/* ========================================================= */}
       {isUpiModalOpen && upiOrder && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -541,9 +541,9 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-text-primary text-base tracking-wide">Pay via Any UPI App</h3>
+                    <h3 className="font-extrabold text-text-primary text-base tracking-wide">VyaparGateway UPI</h3>
                     <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      Auto-Verify
+                      Webhook Verified
                     </span>
                   </div>
                   <p className="text-[11px] text-text-muted flex items-center gap-1">

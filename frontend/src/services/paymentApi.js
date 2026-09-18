@@ -91,11 +91,11 @@ export const paymentApi = {
     return paymentApi.verifyPayment(paymentDetails);
   },
 
-  // --- Savings Account UPI QR API Methods ---
+  // --- VyaparGateway Payment Methods ---
 
-  createUpiQrOrder: async (bookingId, amount, movieTitle = 'Movie Ticket', customerDetails = {}) => {
+  createVyaparOrder: async (bookingId, amount, movieTitle = 'Movie Ticket', customerDetails = {}) => {
     try {
-      const response = await api.post('/payments/create-upi-qr', {
+      const response = await api.post('/payments/create-vyapar-order', {
         booking_id: bookingId,
         amount: Number(amount),
         movie_title: movieTitle,
@@ -103,12 +103,16 @@ export const paymentApi = {
       });
       return response.data || response;
     } catch (err) {
-      const errMsg = err.response?.data?.detail || err.message || 'Failed to generate UPI QR code.';
-      console.error('UPI QR creation error:', errMsg);
+      const errMsg = err.response?.data?.detail || err.message || 'Failed to initialize VyaparGateway order.';
+      console.error('VyaparGateway order error:', errMsg);
       const customErr = new Error(errMsg);
       customErr.response = err.response;
       throw customErr;
     }
+  },
+
+  createUpiQrOrder: async (bookingId, amount, movieTitle = 'Movie Ticket', customerDetails = {}) => {
+    return paymentApi.createVyaparOrder(bookingId, amount, movieTitle, customerDetails);
   },
 
   getUpiPaymentStatus: async (orderId) => {
