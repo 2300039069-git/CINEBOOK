@@ -89,11 +89,72 @@ export const paymentApi = {
 
   verifyCashfreePayment: async (paymentDetails) => {
     return paymentApi.verifyPayment(paymentDetails);
+  },
+
+  // --- Savings Account UPI QR API Methods ---
+
+  createUpiQrOrder: async (bookingId, amount, movieTitle = 'Movie Ticket', customerDetails = {}) => {
+    try {
+      const response = await api.post('/payments/create-upi-qr', {
+        booking_id: bookingId,
+        amount: Number(amount),
+        movie_title: movieTitle,
+        customer_details: customerDetails
+      });
+      return response.data || response;
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.message || 'Failed to generate UPI QR code.';
+      console.error('UPI QR creation error:', errMsg);
+      const customErr = new Error(errMsg);
+      customErr.response = err.response;
+      throw customErr;
+    }
+  },
+
+  getUpiPaymentStatus: async (orderId) => {
+    try {
+      const response = await api.get(`/payments/upi-status/${orderId}`);
+      return response.data || response;
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.message || 'Failed to check UPI payment status.';
+      const statusErr = new Error(errMsg);
+      statusErr.response = err.response;
+      throw statusErr;
+    }
+  },
+
+  simulateUpiPaymentSuccess: async (orderId) => {
+    try {
+      const response = await api.post(`/payments/simulate-upi-success/${orderId}`);
+      return response.data || response;
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.message || 'Simulation failed.';
+      const simErr = new Error(errMsg);
+      simErr.response = err.response;
+      throw simErr;
+    }
+  },
+
+  verifyUpiUtr: async (orderId, utrNumber, bookingId = null) => {
+    try {
+      const response = await api.post('/payments/verify-upi-utr', {
+        order_id: orderId,
+        booking_id: bookingId,
+        utr_number: utrNumber
+      });
+      return response.data || response;
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.message || 'UTR verification failed.';
+      const utrErr = new Error(errMsg);
+      utrErr.response = err.response;
+      throw utrErr;
+    }
   }
 };
 
+export const createUpiQrOrder = paymentApi.createUpiQrOrder;
+export const getUpiPaymentStatus = paymentApi.getUpiPaymentStatus;
+export const simulateUpiPaymentSuccess = paymentApi.simulateUpiPaymentSuccess;
+export const verifyUpiUtr = paymentApi.verifyUpiUtr;
+
 export default paymentApi;
-
-
-
-

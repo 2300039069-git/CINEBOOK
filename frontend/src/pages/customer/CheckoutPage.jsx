@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { useToast } from '../../context/ToastContext';
 import { seatLockManager, getShowKey } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
+import {
+  createUpiQrOrder,
+  getUpiPaymentStatus,
+  simulateUpiPaymentSuccess,
+  verifyUpiUtr
+} from '../../services/paymentApi';
 import {
   ShieldCheck,
   Ticket,
@@ -12,15 +19,19 @@ import {
   ArrowLeft,
   Loader2,
   CheckCircle2,
-  Film,
+  QrCode,
   Clock,
   Sparkles,
-  Wallet,
+  Smartphone,
   CreditCard,
   Lock,
   ExternalLink,
   X,
-  ChevronRight
+  ChevronRight,
+  Copy,
+  Check,
+  Zap,
+  Info
 } from 'lucide-react';
 
 export default function CheckoutPage() {
@@ -34,10 +45,6 @@ export default function CheckoutPage() {
     selectedDate,
     selectedSeats,
     baseAmount,
-    convenienceFeeTotal,
-    convenienceFee,
-    igst,
-    taxes,
     totalAmount: contextTotalAmount,
     lockToken,
     clearBooking
@@ -47,14 +54,23 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // CASHU Payment Gateway Modal state
-  const [isCashuModalOpen, setIsCashuModalOpen] = useState(false);
-  const [cashuTab, setCashuTab] = useState('wallet'); // 'wallet' | 'card' | 'external'
-  const [cashuAccount, setCashuAccount] = useState(user?.email || 'customer@cinebook.in');
-  const [cashuPassword, setCashuPassword] = useState('pass1234');
-  const [cashuCardNumber, setCashuCardNumber] = useState('4589 3200 9811 7642');
-  const [cashuCardPin, setCashuCardPin] = useState('8832');
-  const [isProcessingCashu, setIsProcessingCashu] = useState(false);
+  // UPI Payment Modal State
+  const [isUpiModalOpen, setIsUpiModalOpen] = useState(false);
+  const [upiOrder, setUpiOrder] = useState(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(300);
+
+  // Fallback UTR manual verification state
+  const [showUtrFallback, setShowUtrFallback] = useState(false);
+  const [utrInput, setUtrInput] = useState('');
+  const [isVerifyingUtr, setIsVerifyingUtr] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  // Refs for polling and timer intervals
+  const pollIntervalRef = useRef(null);
+  const countdownTimerRef = useRef(null);
 
   const bookingDetails = location.state || {};
   const movie = bookingDetails.movie || selectedMovie || {
@@ -67,6 +83,8 @@ export default function CheckoutPage() {
   };
   const show = bookingDetails.show || selectedShow;
   const seats = bookingDetails.seats || selectedSeats || [];
+  const showDate = bookingDetails.date || selectedDate || new Date().toISOString().split('T')[0];
+
   const numSeats = seats.length > 0 ? seats.length : 1;
   const calculatedBasePrice = seats.reduce((acc, s) => {
     const p = typeof s === 'object' && s?.price ? Number(s.price) : (show?.price || 150);
@@ -78,7 +96,6 @@ export default function CheckoutPage() {
   const gstOnConvenienceFee = 1.80; // 18% GST on ₹10 (SAC 998599)
   const totalPayable = Number((baseTicketPrice + flatConvenienceFee + gstOnConvenienceFee).toFixed(2));
 
-  const usdAmount = (totalPayable / 83.5).toFixed(2);
   const currentShowKey = getShowKey(show, theatre, movie, showDate);
 
   useEffect(() => {
@@ -87,10 +104,167 @@ export default function CheckoutPage() {
     }
   }, [show, seats, navigate]);
 
-  // Open the CASHU Payment Popup Tab
-  const handleOpenCashuModal = () => {
+  // Clean up polling and timer intervals on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    };
+  }, []);
+
+  // Format seat objects helper
+  const getFormattedSeats = () => {
+    return seats.map((s) => ({
+      id: typeof s === 'string' ? s : s.id,
+      row: typeof s === 'string' ? s.charAt(0) : s.row || s.id?.charAt(0) || 'A',
+      number: typeof s === 'string' ? parseInt(s.slice(1)) || 1 : s.number || 1,
+      tier:
+        typeof s === 'object' && s.tier
+          ? s.tier
+          : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
+          ? 'BALCONY'
+          : 'SECOND_CLASS',
+      price:
+        typeof s === 'object' && s.price
+          ? s.price
+          : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
+          ? 147
+          : 84
+    }));
+  };
+
+  // Complete and finalize the booking once payment is confirmed
+  const finalizeBooking = async (orderId, paymentId, utrNumber = '') => {
+    const bookingId = upiOrder?.booking_id || `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+    const heldLockToken =
+      (lockToken && lockToken !== 'lock_init' ? lockToken : null) ||
+      seatLockManager.getHeldToken(currentShowKey) ||
+      `lock_${Date.now()}`;
+
+    const formattedSeatsList = getFormattedSeats();
+
+    const confirmedBooking = {
+      bookingId,
+      movie: {
+        id: movie?.id || 'mv-001',
+        title: movie?.title || show?.movieTitle || 'Movie Ticket',
+        posterUrl: movie?.posterUrl || show?.posterUrl || '/posters/pushpa2.jpg',
+        genre: movie?.genre || 'Action, Drama',
+        language: movie?.language || 'Telugu'
+      },
+      theatre: {
+        id: theatre?.id || 'th-001',
+        name: theatre?.name || show?.theatreName || 'Cinebook Cinema',
+        address: theatre?.address || 'Main Screen'
+      },
+      show: {
+        id: show?.id || 'sh-001',
+        time: show?.time || '11:00 AM',
+        format: show?.format || '2D Dolby Atmos',
+        language: show?.language || 'Telugu',
+        price: show?.price || 150
+      },
+      showDate,
+      seats: formattedSeatsList,
+      baseAmount: baseTicketPrice,
+      convenienceFee: flatConvenienceFee,
+      taxes: gstOnConvenienceFee,
+      totalAmount: totalPayable,
+      paymentId: paymentId || `upi_pay_${Date.now()}`,
+      orderId: orderId || `upi_ord_${Date.now()}`,
+      paymentMethod: 'UPI_QR',
+      utrNumber: utrNumber || `UPI-${Date.now()}`,
+      customerName: user?.name || 'Valued Cinema Guest',
+      customerEmail: user?.email || 'customer@cinebook.in',
+      customerPhone: user?.phone || '9848012345',
+      status: 'CONFIRMED',
+      bookedAt: new Date().toISOString()
+    };
+
+    // 1. Convert Seat Locks to Confirmed Bookings in local manager & broadcast
+    seatLockManager.confirmBooking(currentShowKey, seats, bookingId, show?.id);
+
+    // 2. Persist in Local Storage
+    const existingBookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
+    localStorage.setItem(
+      'cinebook_bookings',
+      JSON.stringify([confirmedBooking, ...existingBookings.filter((b) => b.bookingId !== bookingId)])
+    );
+    localStorage.setItem('cinebook_latest_booking', JSON.stringify(confirmedBooking));
+
+    // 3. Sync with Backend Database API (fail-safe)
+    try {
+      await bookingApi.createBooking({
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: showDate,
+        show_time: show?.time || '11:00 AM',
+        lock_token: heldLockToken,
+        booking_id: bookingId,
+        payment_id: paymentId || `upi_pay_${Date.now()}`,
+        order_id: orderId,
+        booking_status: 'CONFIRMED',
+        seats: formattedSeatsList,
+        base_amount: baseTicketPrice,
+        convenience_fee: flatConvenienceFee,
+        taxes: gstOnConvenienceFee,
+        total_amount: totalPayable,
+        customer_name: user?.name || 'Valued Cinema Guest',
+        customer_email: user?.email || 'customer@cinebook.in',
+        customer_phone: user?.phone || '9848012345'
+      });
+    } catch (backendErr) {
+      console.warn('Backend booking sync notice (local booking confirmed):', backendErr.message);
+    }
+
+    // Stop polling
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+
+    setPaymentSuccess(true);
+    setIsPolling(false);
+
+    if (typeof toast?.success === 'function') {
+      toast.success('UPI Payment verified successfully! Generating e-ticket...');
+    } else if (typeof addToast === 'function') {
+      addToast('UPI Payment verified successfully! Generating e-ticket...', 'success');
+    }
+
+    // Zero customer typing: automatically redirect to confirmation page after short celebration animation
+    setTimeout(() => {
+      setIsUpiModalOpen(false);
+      navigate(`/booking-confirmation/${bookingId}`, {
+        state: { booking: confirmedBooking },
+        replace: true
+      });
+    }, 1200);
+  };
+
+  // Start polling backend status every 2 seconds
+  const startStatusPolling = (orderId) => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    setIsPolling(true);
+
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const statusRes = await getUpiPaymentStatus(orderId);
+        if (statusRes.paid === true || statusRes.status === 'PAID') {
+          clearInterval(pollIntervalRef.current);
+          await finalizeBooking(orderId, statusRes.utr_number || `upi_${orderId}`, statusRes.utr_number);
+        }
+      } catch (pollErr) {
+        console.warn('UPI status poll check:', pollErr.message);
+      }
+    }, 2000);
+  };
+
+  // Open dynamic UPI QR payment modal
+  const handleOpenUpiPaymentModal = async () => {
     setError(null);
-    // Conflict Pre-check before opening modal
+    setLoading(true);
+
+    // 1. Conflict Pre-check before opening modal
     const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
     const isConflict = seats.some((s) => {
       const sId = typeof s === 'string' ? s : s?.id;
@@ -102,211 +276,113 @@ export default function CheckoutPage() {
       setError(msg);
       if (typeof toast?.error === 'function') toast.error(msg);
       else if (typeof addToast === 'function') addToast(msg, 'error');
+      setLoading(false);
       return;
     }
 
-    setIsCashuModalOpen(true);
-  };
+    try {
+      const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
+      const order = await createUpiQrOrder(
+        bookingId,
+        totalPayable,
+        movie?.title || 'Movie Ticket',
+        {
+          customer_name: user?.name || 'Valued Cinema Guest',
+          customer_email: user?.email || 'customer@cinebook.in',
+          customer_phone: user?.phone || '9848012345'
+        }
+      );
 
-  // Open Live External CASHU Gateway in New Browser Tab
-  const handleOpenExternalCashuTab = () => {
-    const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-    const gatewayUrl = 'https://www.cashu.com/cgi-bin/pcashu.cgi';
-    
-    // Create and submit hidden form to open CASHU in a new tab
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = gatewayUrl;
-    form.target = '_blank';
+      setUpiOrder(order);
+      setIsUpiModalOpen(true);
+      setSecondsRemaining(order.expires_in_seconds || 300);
+      setPaymentSuccess(false);
 
-    const params = {
-      merchant_id: 'CINEBOOK_SANDBOX',
-      token: 'simulated_cashu_token_2026',
-      display_text: `CineBook Tickets - ${movie?.title || 'Movie'}`,
-      currency: 'USD',
-      amount: usdAmount,
-      language: 'en',
-      session_id: bookingId,
-      txt1: user?.email || 'customer@cinebook.in'
-    };
+      // Start countdown timer
+      if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+      countdownTimerRef.current = setInterval(() => {
+        setSecondsRemaining((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownTimerRef.current);
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            setIsPolling(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    Object.entries(params).forEach(([key, val]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = val;
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-
-    if (typeof toast?.info === 'function') {
-      toast.info('Opened CASHU Gateway in a new tab. You can also complete payment here.');
-    } else if (typeof addToast === 'function') {
-      addToast('Opened CASHU Gateway in a new tab.', 'info');
+      // Start auto-polling
+      startStatusPolling(order.order_id);
+    } catch (err) {
+      console.error('Failed to create UPI QR order:', err);
+      const msg = err.message || 'Failed to initialize UPI QR payment session. Please try again.';
+      setError(msg);
+      if (typeof toast?.error === 'function') toast.error(msg);
+      else if (typeof addToast === 'function') addToast(msg, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Complete booking and confirm CASHU transaction
-  const handleAuthorizeCashuPayment = async () => {
-    setIsProcessingCashu(true);
-    setLoading(true);
-    setError(null);
+  // Copy UPI ID to clipboard
+  const handleCopyUpi = () => {
+    if (!upiOrder?.upi_id) return;
+    navigator.clipboard.writeText(upiOrder.upi_id);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+    if (typeof toast?.info === 'function') toast.info('UPI ID copied to clipboard');
+  };
 
+  // Instant simulation helper for test/demo mode
+  const handleSimulatePayment = async () => {
+    if (!upiOrder?.order_id) return;
+    setIsSimulating(true);
     try {
-      // 1. Conflict Pre-check
-      const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
-      const isConflict = seats.some((s) => {
-        const sId = typeof s === 'string' ? s : s?.id;
-        return statuses[sId]?.status === 'BOOKED';
-      });
-
-      if (isConflict) {
-        throw new Error('One or more selected seats have already been reserved by another customer.');
+      const res = await simulateUpiPaymentSuccess(upiOrder.order_id);
+      if (res.success) {
+        await finalizeBooking(upiOrder.order_id, res.utr_number, res.utr_number);
       }
-
-      // Simulate realistic network payment gateway authorization (1.2s)
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      // 2. Generate Unique IDs
-      const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-      const paymentId = `cashu_pay_${Date.now()}`;
-      const heldLockToken =
-        (lockToken && lockToken !== 'lock_init' ? lockToken : null) ||
-        seatLockManager.getHeldToken(currentShowKey) ||
-        `lock_${Date.now()}`;
-
-      // 3. Format seat objects
-      const formattedSeatsList = seats.map((s) => ({
-        id: typeof s === 'string' ? s : s.id,
-        row: typeof s === 'string' ? s.charAt(0) : s.row || s.id?.charAt(0) || 'A',
-        number: typeof s === 'string' ? parseInt(s.slice(1)) || 1 : s.number || 1,
-        tier:
-          typeof s === 'object' && s.tier
-            ? s.tier
-            : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
-            ? 'BALCONY'
-            : 'SECOND_CLASS',
-        price:
-          typeof s === 'object' && s.price
-            ? s.price
-            : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
-            ? 147
-            : 84
-      }));
-
-      // 4. Construct Confirmed Booking Record
-      const confirmedBooking = {
-        bookingId,
-        movie: {
-          id: movie?.id || 'mv-001',
-          title: movie?.title || show?.movieTitle || 'Movie Ticket',
-          posterUrl:
-            movie?.posterUrl ||
-            show?.posterUrl ||
-            '/posters/pushpa2.jpg',
-          genre: movie?.genre || 'Action, Drama',
-          language: movie?.language || 'Telugu'
-        },
-        theatre: {
-          id: theatre?.id || 'th-001',
-          name: theatre?.name || show?.theatreName || 'Cinebook Cinema',
-          address: theatre?.address || 'Main Screen'
-        },
-        show: {
-          id: show?.id || 'sh-001',
-          time: show?.time || '11:00 AM',
-          format: show?.format || '2D Dolby Atmos',
-          language: show?.language || 'Telugu',
-          price: show?.price || 150
-        },
-        showDate,
-        seats: formattedSeatsList,
-        baseAmount: baseTicketPrice,
-        convenienceFee: flatConvenienceFee,
-        taxes: gstOnConvenienceFee,
-        totalAmount: totalPayable,
-        paymentId,
-        orderId: `order_${Date.now()}`,
-        paymentMethod: 'CASHU_GATEWAY',
-        cashuMethod: cashuTab === 'card' ? 'CASHU_PREPAID_CARD' : 'CASHU_WALLET_ACCOUNT',
-        customerName: user?.name || 'Valued Cinema Guest',
-        customerEmail: user?.email || cashuAccount || 'customer@cinebook.in',
-        customerPhone: user?.phone || '9848012345',
-        status: 'CONFIRMED',
-        bookedAt: new Date().toISOString()
-      };
-
-      // 5. Convert Seat Locks to Confirmed Bookings in local manager & broadcast
-      seatLockManager.confirmBooking(currentShowKey, seats, bookingId, show?.id);
-
-      // 6. Persist in Local Storage
-      const existingBookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
-      localStorage.setItem(
-        'cinebook_bookings',
-        JSON.stringify([confirmedBooking, ...existingBookings.filter((b) => b.bookingId !== bookingId)])
-      );
-      localStorage.setItem('cinebook_latest_booking', JSON.stringify(confirmedBooking));
-
-      // 7. Sync with Backend Database API (fail-safe)
-      try {
-        await bookingApi.createBooking({
-          show_id: show?.id || 'sh-001',
-          movie_id: movie?.id || 'mv-001',
-          theatre_id: theatre?.id || 'th-001',
-          show_date: showDate,
-          show_time: show?.time || '11:00 AM',
-          lock_token: heldLockToken,
-          booking_id: bookingId,
-          payment_id: paymentId,
-          order_id: `order_${Date.now()}`,
-          booking_status: 'CONFIRMED',
-          seats: formattedSeatsList,
-          base_amount: baseTicketPrice,
-          convenience_fee: flatConvenienceFee,
-          taxes: gstOnConvenienceFee,
-          total_amount: totalPayable,
-          customer_name: user?.name || 'Valued Cinema Guest',
-          customer_email: user?.email || cashuAccount || 'customer@cinebook.in',
-          customer_phone: user?.phone || '9848012345'
-        });
-      } catch (backendErr) {
-        console.warn('Backend booking sync notice (local booking confirmed):', backendErr.message);
-      }
-
-      setIsCashuModalOpen(false);
-
-      // 8. Notify
-      if (typeof toast?.success === 'function') {
-        toast.success('CASHU Payment authorized! Generating your tickets...');
-      } else if (typeof addToast === 'function') {
-        addToast('CASHU Payment authorized! Generating your tickets...', 'success');
-      }
-
-      // 9. Immediately Navigate to Confirmation Screen
-      navigate(`/booking-confirmation/${bookingId}`, {
-        state: { booking: confirmedBooking },
-        replace: true
-      });
     } catch (err) {
-      console.error('CASHU Payment Error:', err);
-      const msg = err.message || 'CASHU payment authorization failed. Please try again.';
-      setError(msg);
-      if (typeof toast?.error === 'function') {
-        toast.error(msg);
-      } else if (typeof addToast === 'function') {
-        addToast(msg, 'error');
+      console.error('Simulation error:', err);
+      if (typeof toast?.error === 'function') toast.error(err.message || 'Simulation failed.');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  // Manual fallback UTR verification
+  const handleVerifyUtr = async (e) => {
+    e?.preventDefault();
+    if (!utrInput.trim() || utrInput.trim().length < 6) {
+      if (typeof toast?.error === 'function') toast.error('Please enter a valid 12-digit UPI Reference Number / UTR.');
+      return;
+    }
+
+    setIsVerifyingUtr(true);
+    try {
+      const res = await verifyUpiUtr(upiOrder.order_id, utrInput.trim(), upiOrder.booking_id);
+      if (res.success) {
+        await finalizeBooking(upiOrder.order_id, `upi_${utrInput.trim()}`, utrInput.trim());
       }
-      setIsProcessingCashu(false);
-      setLoading(false);
+    } catch (err) {
+      console.error('UTR Verification Error:', err);
+      const msg = err.response?.data?.detail || err.message || 'Invalid UTR or verification failed.';
+      if (typeof toast?.error === 'function') toast.error(msg);
+    } finally {
+      setIsVerifyingUtr(false);
     }
   };
 
   const formattedSeatsText = Array.isArray(seats)
     ? seats.map((s) => (typeof s === 'string' ? s : s?.id || s?.name || s?.number || '')).join(', ')
     : String(seats || '');
+
+  const formatTimer = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   return (
     <div className="min-h-screen bg-background text-text-primary pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors">
@@ -322,9 +398,9 @@ export default function CheckoutPage() {
         <div className="bg-surface border border-border rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-border pb-4">
             <h1 className="text-2xl font-bold text-text-primary">Booking Checkout</h1>
-            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full">
+            <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full">
               <ShieldCheck size={14} />
-              CASHU Secure Gateway
+              Direct Savings UPI Pay
             </span>
           </div>
 
@@ -357,12 +433,12 @@ export default function CheckoutPage() {
               <span className="font-semibold text-primary text-sm sm:text-base">{formattedSeatsText || 'Selected Seats'}</span>
             </div>
 
-            {/* Transparent Itemized Price Breakdown (Cashfree Compliance) */}
+            {/* Itemized Price Breakdown (GST SAC 998599 Compliant) */}
             <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-surface-elevated border border-border space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-border text-xs">
                 <span className="font-bold text-text-primary uppercase tracking-wider">Itemized Fare Breakdown</span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-bold">
-                  GST SAC 998599 Compliant
+                  0% Gateway Fee • Instant Bank Credit
                 </span>
               </div>
 
@@ -371,7 +447,7 @@ export default function CheckoutPage() {
                 <span className="flex items-center gap-1.5">
                   <Ticket className="w-3.5 h-3.5 text-text-muted" />
                   <span>Base Ticket Price ({seats.length} {seats.length === 1 ? 'Seat' : 'Seats'})</span>
-                  <span className="text-[10px] text-text-muted">(Includes Cinema GST)</span>
+                  <span className="text-[10px] text-text-muted">(Cinema Tax Included)</span>
                 </span>
                 <span className="font-bold text-text-primary">₹{baseTicketPrice}</span>
               </div>
@@ -401,251 +477,248 @@ export default function CheckoutPage() {
                 <div>
                   <span className="text-sm sm:text-base font-black text-text-primary block">Total Payable Amount</span>
                   <span className="text-[10px] text-text-muted block mt-0.5">
-                    Internet handling fee includes 18% GST (SAC 998599).
+                    Direct NPCI UPI Transfer to Savings Bank Account
                   </span>
                 </div>
                 <div className="text-right">
                   <span className="text-primary block text-2xl font-black">₹{totalPayable}</span>
-                  <span className="text-[10px] text-text-muted font-normal">Approx. ${usdAmount} USD</span>
+                  <span className="text-[10px] text-emerald-500 font-semibold">Zero Surcharge</span>
                 </div>
               </div>
             </div>
 
-            {/* Cashfree Security Trust Badge */}
-            <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                100% Secure Checkout | Cashfree Payments Partner
+            {/* UPI Supported Apps Banner */}
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-surface-elevated border border-border text-xs text-text-secondary">
+              <span className="flex items-center gap-2 font-medium">
+                <Smartphone className="w-4 h-4 text-primary shrink-0" />
+                <span>Supports all UPI Apps:</span>
+                <span className="font-bold text-text-primary">GPay • PhonePe • Paytm • BHIM • CRED</span>
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-text-muted font-normal">
-                <Lock className="w-3 h-3 text-primary" /> 256-Bit SSL Encrypted
+              <span className="flex items-center gap-1 text-[11px] text-emerald-500 font-semibold">
+                <Lock className="w-3 h-3" /> 100% Encrypted NPCI Protocol
               </span>
             </div>
           </div>
 
           <button
-            onClick={handleOpenCashuModal}
+            onClick={handleOpenUpiPaymentModal}
             disabled={loading}
             className="w-full py-4 bg-primary hover:bg-primary-hover text-white font-extrabold rounded-xl transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer text-base active:scale-98"
           >
-            <Wallet size={19} className="text-white" />
-            <span>Pay ₹{totalPayable} Securely</span>
-            <ChevronRight size={18} className="ml-1" />
+            {loading ? (
+              <>
+                <Loader2 size={19} className="animate-spin text-white" />
+                <span>Generating Dynamic UPI QR...</span>
+              </>
+            ) : (
+              <>
+                <QrCode size={19} className="text-white" />
+                <span>Pay ₹{totalPayable} via UPI QR Code</span>
+                <ChevronRight size={18} className="ml-1" />
+              </>
+            )}
           </button>
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* CASHU PAYMENT POPUP / TAB MODAL                           */}
+      {/* ZERO-TYPING DYNAMIC SAVINGS ACCOUNT UPI QR MODAL          */}
       {/* ========================================================= */}
-      {isCashuModalOpen && (
+      {isUpiModalOpen && upiOrder && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-[#0e1626] border border-amber-500/40 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            {/* CASHU Gateway Header */}
-            <div className="bg-[#080d18] border-b border-amber-500/30 px-6 py-4 flex items-center justify-between">
+          <div className="bg-[#0c121e] border border-primary/40 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] overflow-y-auto">
+            
+            {/* Modal Header */}
+            <div className="bg-[#080d17] border-b border-border/40 px-5 py-4 flex items-center justify-between sticky top-0 z-10">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center font-black text-black text-sm shadow-md">
-                  C
+                <div className="w-9 h-9 rounded-xl bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-black text-sm">
+                  <QrCode size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-amber-400 text-base tracking-wide">CASHU</h3>
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/30">
-                      Payment Gateway
+                    <h3 className="font-extrabold text-text-primary text-base tracking-wide">Scan & Pay via UPI</h3>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                      Zero Typing
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                    <Lock size={11} className="text-emerald-400" /> 256-Bit SSL Encrypted
+                  <p className="text-[11px] text-text-muted flex items-center gap-1">
+                    <Clock size={11} className="text-amber-400" />
+                    Seat hold expires in: <span className="font-bold text-amber-400 font-mono">{formatTimer(secondsRemaining)}</span>
                   </p>
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => !isProcessingCashu && setIsCashuModalOpen(false)}
-                disabled={isProcessingCashu}
+                onClick={() => {
+                  if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+                  if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+                  setIsUpiModalOpen(false);
+                }}
+                disabled={paymentSuccess}
                 aria-label="Close"
-                className="w-8 h-8 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-surface-elevated hover:bg-surface text-text-muted hover:text-text-primary flex items-center justify-center transition cursor-pointer"
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* Order Price & Merchant Summary */}
-            <div className="bg-amber-500/10 border-b border-amber-500/20 px-6 py-3.5 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-400 block font-medium">Merchant: CineBook Cinemas</span>
-                <span className="text-xs text-slate-200 font-semibold">{movie?.title || 'Movie Tickets'}</span>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-slate-400 block">Total Due</span>
-                <span className="text-lg font-bold text-amber-400">
-                  ₹{totalPayable} <span className="text-xs text-slate-400 font-normal">(${usdAmount} USD)</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Payment Method Tabs */}
-            <div className="p-6 space-y-5">
-              <div className="flex rounded-xl bg-[#060a12] p-1 border border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setCashuTab('wallet')}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    cashuTab === 'wallet'
-                      ? 'bg-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Wallet size={14} />
-                  <span>CASHU Wallet</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCashuTab('card')}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    cashuTab === 'card'
-                      ? 'bg-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <CreditCard size={14} />
-                  <span>Refill Card</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCashuTab('external')}
-                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                    cashuTab === 'external'
-                      ? 'bg-amber-500 text-black shadow-md'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <ExternalLink size={14} />
-                  <span>New Tab</span>
-                </button>
-              </div>
-
-              {/* Tab 1: CASHU Wallet Account */}
-              {cashuTab === 'wallet' && (
-                <div className="space-y-3 animate-in fade-in">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      CASHU Account (Email or Account ID)
-                    </label>
-                    <input
-                      type="text"
-                      value={cashuAccount}
-                      onChange={(e) => setCashuAccount(e.target.value)}
-                      placeholder="e.g. customer@cinebook.in"
-                      className="w-full bg-[#060a12] border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    />
+            {/* Dynamic QR Code & Amount Area */}
+            <div className="p-6 flex flex-col items-center space-y-5">
+              
+              {/* Payment Success Splash */}
+              {paymentSuccess ? (
+                <div className="py-8 flex flex-col items-center justify-center text-center space-y-3 animate-in zoom-in-95 duration-300">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/30 animate-bounce">
+                    <CheckCircle2 size={36} />
                   </div>
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      CASHU Password / PIN
-                    </label>
-                    <input
-                      type="password"
-                      value={cashuPassword}
-                      onChange={(e) => setCashuPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full bg-[#060a12] border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    />
-                  </div>
-                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-                    💡 Test sandbox credentials active. Click below to authorize instant payment.
-                  </div>
+                  <h3 className="text-xl font-black text-white">Payment Received!</h3>
+                  <p className="text-xs text-text-muted">Converting held seats & confirming your tickets...</p>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Amount Badge */}
+                  <div className="text-center">
+                    <span className="text-xs text-text-muted font-medium block">Total Payable Amount</span>
+                    <span className="text-3xl font-black text-primary tracking-tight">₹{upiOrder.amount.toFixed(2)}</span>
+                    <span className="text-[11px] text-text-muted block mt-0.5 font-medium">
+                      Payee: <span className="text-text-primary font-bold">{upiOrder.payee_name}</span>
+                    </span>
+                  </div>
 
-              {/* Tab 2: CASHU Refill / Prepaid Card */}
-              {cashuTab === 'card' && (
-                <div className="space-y-3 animate-in fade-in">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      16-Digit CASHU Card / Voucher Number
-                    </label>
-                    <input
-                      type="text"
-                      value={cashuCardNumber}
-                      onChange={(e) => setCashuCardNumber(e.target.value)}
-                      placeholder="4589 3200 9811 7642"
-                      className="w-full bg-[#060a12] border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none font-mono tracking-wider"
+                  {/* High Resolution Dynamic QR Code */}
+                  <div className="relative p-3.5 bg-white rounded-2xl shadow-xl shadow-black/40 border-4 border-primary/30 flex items-center justify-center">
+                    <QRCodeSVG
+                      value={upiOrder.qr_data || upiOrder.upi_intent_url}
+                      size={195}
+                      level="H"
+                      includeMargin={false}
                     />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center border border-slate-200">
+                        <span className="text-xs font-black text-primary">CB</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="text-xs font-semibold text-slate-300 block mb-1">
-                      4-Digit Card PIN
-                    </label>
-                    <input
-                      type="password"
-                      value={cashuCardPin}
-                      onChange={(e) => setCashuCardPin(e.target.value)}
-                      placeholder="8832"
-                      maxLength={4}
-                      className="w-full bg-[#060a12] border border-slate-700 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none font-mono"
-                    />
+                  {/* Live Auto-Polling Status Radar */}
+                  <div className="w-full p-3 rounded-2xl bg-surface-elevated border border-primary/20 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className="relative flex h-3 w-3 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                      </span>
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-text-primary">Waiting for payment...</p>
+                        <p className="text-[10px] text-text-muted">Auto-confirms immediately upon payment</p>
+                      </div>
+                    </div>
+                    <Loader2 size={16} className="animate-spin text-primary shrink-0" />
                   </div>
-                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-[11px] text-slate-400">
-                    💳 Supports CASHU Master Refill cards and instant digital vouchers.
+
+                  {/* Mobile Deep-link Intent Buttons */}
+                  <div className="w-full space-y-2">
+                    <p className="text-[11px] font-semibold text-text-muted text-center uppercase tracking-wider">
+                      Or Open Directly on Mobile App
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <a
+                        href={upiOrder.upi_intent_url}
+                        className="py-2.5 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                      >
+                        <span>GPay / PhonePe</span>
+                        <ExternalLink size={13} className="text-text-muted" />
+                      </a>
+                      <a
+                        href={upiOrder.upi_intent_url}
+                        className="py-2.5 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                      >
+                        <span>Paytm / Any UPI</span>
+                        <ExternalLink size={13} className="text-text-muted" />
+                      </a>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Savings UPI ID Copy Bar */}
+                  <div className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-elevated border border-border text-xs">
+                    <div className="truncate text-left pr-2">
+                      <span className="text-[10px] text-text-muted block">Savings Account UPI ID:</span>
+                      <span className="font-mono text-xs font-bold text-text-primary truncate block">
+                        {upiOrder.upi_id}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopyUpi}
+                      className="px-2.5 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0 transition"
+                    >
+                      {copiedUpi ? <Check size={13} /> : <Copy size={13} />}
+                      <span>{copiedUpi ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+
+                  {/* Test Mode Simulation Button for Instant Verification */}
+                  <div className="w-full pt-1 border-t border-border/40">
+                    <button
+                      type="button"
+                      onClick={handleSimulatePayment}
+                      disabled={isSimulating}
+                      className="w-full py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      {isSimulating ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-emerald-400" />
+                          <span>Simulating Instant Credit...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Zap size={14} className="text-emerald-400" />
+                          <span>Simulate UPI Payment (Instant Test Confirm)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Fallback 12-Digit UTR Input Accordion */}
+                  <div className="w-full text-center">
+                    {!showUtrFallback ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowUtrFallback(true)}
+                        className="text-[11px] text-text-muted hover:text-text-primary underline transition cursor-pointer"
+                      >
+                        Paid but not redirected? Click to verify 12-digit UTR manually
+                      </button>
+                    ) : (
+                      <form onSubmit={handleVerifyUtr} className="space-y-2 mt-2 p-3 bg-surface-elevated rounded-xl border border-border text-left">
+                        <label className="text-xs font-semibold text-text-secondary block">
+                          Enter 12-Digit UPI Reference / UTR Number:
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={utrInput}
+                            onChange={(e) => setUtrInput(e.target.value)}
+                            placeholder="e.g. 426811902847"
+                            maxLength={16}
+                            className="flex-1 bg-surface border border-border focus:border-primary rounded-xl px-3 py-2 text-xs text-text-primary font-mono outline-none"
+                          />
+                          <button
+                            type="submit"
+                            disabled={isVerifyingUtr || !utrInput.trim()}
+                            className="px-3.5 py-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl text-xs font-bold transition cursor-pointer shrink-0"
+                          >
+                            {isVerifyingUtr ? <Loader2 size={13} className="animate-spin" /> : 'Verify'}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-text-muted">
+                          Find the 12-digit UTR in your GPay / PhonePe / Paytm transaction receipt details.
+                        </p>
+                      </form>
+                    )}
+                  </div>
+                </>
               )}
-
-              {/* Tab 3: External Gateway Tab */}
-              {cashuTab === 'external' && (
-                <div className="space-y-3 animate-in fade-in text-center py-2">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
-                    <ExternalLink size={24} />
-                  </div>
-                  <h4 className="text-sm font-bold text-white">Open Live CASHU Gateway</h4>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Launch the official CASHU payment redirection portal in a separate browser tab to authenticate directly.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleOpenExternalCashuTab}
-                    className="mt-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 mx-auto cursor-pointer"
-                  >
-                    <span>Launch External Tab</span>
-                    <ExternalLink size={14} />
-                  </button>
-                </div>
-              )}
-
-              {/* Authorize & Pay Action */}
-              <button
-                type="button"
-                onClick={handleAuthorizeCashuPayment}
-                disabled={isProcessingCashu}
-                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 disabled:opacity-50 text-black font-extrabold rounded-xl transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer text-sm active:scale-98"
-              >
-                {isProcessingCashu ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin text-black" />
-                    <span>Authorizing CASHU Payment...</span>
-                  </>
-                ) : (
-                  <>
-                    <Lock size={16} className="text-black" />
-                    <span>Authorize & Pay ₹{totalPayable} (${usdAmount} USD)</span>
-                  </>
-                )}
-              </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => !isProcessingCashu && setIsCashuModalOpen(false)}
-                  disabled={isProcessingCashu}
-                  className="text-xs text-slate-400 hover:text-white transition underline cursor-pointer"
-                >
-                  Cancel and return to checkout
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -653,3 +726,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
+

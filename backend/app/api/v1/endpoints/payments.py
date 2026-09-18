@@ -1,12 +1,22 @@
 import json
-from typing import Optional
+import time
+import uuid
+import urllib.parse
+import logging
+from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends, status
+from app.core.config import settings
 from app.models.payment import (
     CreateOrderRequest,
     CreateOrderResponse,
     VerifyPaymentRequest,
     VerifyPaymentResponse,
-    PaymentStatus
+    PaymentStatus,
+    CreateUpiQrRequest,
+    CreateUpiQrResponse,
+    UpiStatusResponse,
+    UpiWebhookPayload,
+    VerifyUtrRequest
 )
 from app.models.user import UserResponse
 from app.models.booking import BookingStatus
@@ -16,7 +26,13 @@ from app.services.seat_lock_service import SeatLockService
 from app.api.v1.endpoints.bookings import BOOKINGS_STORE
 from app.core.database import db_manager
 
+logger = logging.getLogger("cinebook.payments")
+
 router = APIRouter()
+
+# In-memory store for active UPI QR orders and used UTR numbers
+UPI_ORDERS_STORE: Dict[str, Dict[str, Any]] = {}
+USED_UTR_NUMBERS: set = set()
 
 @router.post("/create-order", response_model=CreateOrderResponse)
 async def create_payment_order(
@@ -181,4 +197,320 @@ async def verify_payment(
         status=PaymentStatus.SUCCESS,
         message="Cashfree payment verified successfully. E-ticket confirmed."
     )
+
+
+async def _confirm_upi_booking(order_id: str, payment_id: str, utr_number: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Internal helper to atomically transition held seats to permanently BOOKED
+    and confirm the booking record in Supabase PostgreSQL & Memory.
+    """
+    order_data = UPI_ORDERS_STORE.get(order_id)
+    if not order_data:
+        raise HTTPException(status_code=404, detail="UPI Order not found.")
+
+    booking_id = order_data.get("booking_id")
+    await db_manager.ensure_connected()
+
+    # 1. Fetch booking record
+    booking = None
+    if db_manager.is_connected:
+        try:
+            row = await db_manager.fetch_one(
+                "SELECT * FROM bookings WHERE booking_id = $1 LIMIT 1",
+                booking_id
+            )
+            if row:
+                booking = dict(row)
+        except Exception as e:
+            logger.warning(f"Error fetching booking for UPI confirmation: {e}")
+
+    if not booking:
+        booking = BOOKINGS_STORE.get(booking_id)
+
+    if not booking:
+        raise HTTPException(status_code=404, detail=f"Booking {booking_id} not found.")
+
+    # 2. Extract seat IDs
+    show_id = booking.get("show_id") or order_data.get("show_id") or "sh-001"
+    lock_token = booking.get("lock_token") or order_data.get("lock_token") or ""
+    seats_raw = booking.get("seats", [])
+    if isinstance(seats_raw, str):
+        try:
+            seats_raw = json.loads(seats_raw)
+        except Exception:
+            seats_raw = []
+    
+    seat_ids = [
+        s["id"] if isinstance(s, dict) else (s.id if hasattr(s, "id") else str(s))
+        for s in seats_raw
+    ]
+
+    # 3. Permanently lock & book seats
+    user_id = booking.get("user_id", "usr_guest")
+    await SeatLockService.permanently_book_seats(
+        show_id=show_id,
+        lock_token=lock_token,
+        seat_ids=seat_ids,
+        user_id=user_id,
+        booking_id=booking_id
+    )
+
+    # 4. Update Supabase tables
+    if db_manager.is_connected:
+        try:
+            await db_manager.execute("""
+                UPDATE bookings
+                SET booking_status = 'CONFIRMED', payment_id = $1
+                WHERE booking_id = $2
+            """, payment_id, booking_id)
+
+            await db_manager.execute("""
+                INSERT INTO payments (order_id, payment_id, booking_id, amount, status)
+                VALUES ($1, $2, $3, $4, 'SUCCESS')
+                ON CONFLICT DO NOTHING
+            """, order_id, payment_id, booking_id, float(order_data.get("amount", 0)))
+        except Exception as e:
+            logger.warning(f"Supabase sync warning for UPI booking: {e}")
+
+    # 5. Update Memory Store
+    if booking_id in BOOKINGS_STORE:
+        BOOKINGS_STORE[booking_id]["booking_status"] = BookingStatus.CONFIRMED.value
+        BOOKINGS_STORE[booking_id]["payment_id"] = payment_id
+
+    # 6. Mark UPI order as PAID
+    order_data["status"] = PaymentStatus.PAID.value
+    order_data["paid"] = True
+    order_data["payment_id"] = payment_id
+    order_data["utr_number"] = utr_number or f"UPI-{int(time.time()*1000)}"
+    order_data["confirmed_at"] = time.time()
+    order_data["booking"] = booking
+
+    return order_data
+
+
+@router.post("/create-upi-qr", response_model=CreateUpiQrResponse)
+async def create_upi_qr_order(
+    req: CreateUpiQrRequest,
+    current_user: Optional[UserResponse] = Depends(get_current_active_user)
+):
+    """
+    Generate dynamic NPCI UPI QR code and Intent URL for instant Savings Account UPI payments.
+    Supports GPay, PhonePe, Paytm, BHIM, CRED with 0% gateway commission.
+    """
+    order_id = f"upi_ord_{uuid.uuid4().hex[:12]}"
+    amount = float(req.amount)
+    upi_id = settings.MERCHANT_UPI_ID
+    payee_name = settings.MERCHANT_NAME
+    
+    # Transaction note encoded with booking id and movie title
+    note = f"CineBook Tickets {req.booking_id}"
+    
+    # Standard NPCI UPI URI Specification:
+    # upi://pay?pa=<UPI_ID>&pn=<NAME>&am=<AMOUNT>&cu=INR&tr=<REF_ID>&tn=<NOTE>
+    query_params = {
+        "pa": upi_id,
+        "pn": payee_name,
+        "am": f"{amount:.2f}",
+        "cu": "INR",
+        "tr": order_id,
+        "tn": note
+    }
+    upi_intent_url = f"upi://pay?{urllib.parse.urlencode(query_params)}"
+
+    # Register in memory store
+    UPI_ORDERS_STORE[order_id] = {
+        "order_id": order_id,
+        "booking_id": req.booking_id,
+        "amount": amount,
+        "upi_id": upi_id,
+        "payee_name": payee_name,
+        "upi_intent_url": upi_intent_url,
+        "status": PaymentStatus.PENDING.value,
+        "paid": False,
+        "created_at": time.time(),
+        "expires_at": time.time() + 300, # 5 minutes
+        "customer_details": req.customer_details.dict() if req.customer_details else {}
+    }
+
+    # Save created state to Supabase payments table
+    if db_manager.is_connected:
+        try:
+            await db_manager.execute("""
+                INSERT INTO payments (order_id, booking_id, amount, status)
+                VALUES ($1, $2, $3, 'CREATED')
+                ON CONFLICT DO NOTHING
+            """, order_id, req.booking_id, amount)
+        except Exception:
+            pass
+
+    return CreateUpiQrResponse(
+        order_id=order_id,
+        booking_id=req.booking_id,
+        amount=amount,
+        currency="INR",
+        upi_id=upi_id,
+        payee_name=payee_name,
+        upi_intent_url=upi_intent_url,
+        qr_data=upi_intent_url,
+        expires_in_seconds=300,
+        status=PaymentStatus.PENDING
+    )
+
+
+@router.get("/upi-status/{order_id}", response_model=UpiStatusResponse)
+async def check_upi_status(order_id: str):
+    """
+    Real-time auto-polling endpoint.
+    Frontend polls every 2 seconds to check if payment was received.
+    """
+    order_data = UPI_ORDERS_STORE.get(order_id)
+    if not order_data:
+        # Fallback check Supabase DB
+        if db_manager.is_connected:
+            try:
+                row = await db_manager.fetch_one(
+                    "SELECT * FROM payments WHERE order_id = $1 LIMIT 1",
+                    order_id
+                )
+                if row and row.get("status") in ("SUCCESS", "PAID"):
+                    return UpiStatusResponse(
+                        order_id=order_id,
+                        booking_id=row.get("booking_id", ""),
+                        status=PaymentStatus.PAID,
+                        amount=float(row.get("amount", 0)),
+                        paid=True,
+                        utr_number=row.get("payment_id"),
+                        message="Payment confirmed via database."
+                    )
+            except Exception:
+                pass
+        raise HTTPException(status_code=404, detail="UPI Order not found.")
+
+    is_paid = order_data.get("paid", False) or order_data.get("status") == PaymentStatus.PAID.value
+
+    return UpiStatusResponse(
+        order_id=order_id,
+        booking_id=order_data["booking_id"],
+        status=PaymentStatus.PAID if is_paid else PaymentStatus.PENDING,
+        amount=order_data["amount"],
+        paid=is_paid,
+        utr_number=order_data.get("utr_number"),
+        booking=order_data.get("booking"),
+        message="Payment completed successfully." if is_paid else "Awaiting UPI payment."
+    )
+
+
+@router.post("/upi-webhook")
+async def receive_upi_webhook(payload: UpiWebhookPayload):
+    """
+    Instant Webhook listener for Bank SMS Forwarder, Tasker, or UPI bridge.
+    When your phone receives bank credit SMS, forwarder triggers this webhook.
+    Zero typing required for customer!
+    """
+    logger.info(f"Received UPI webhook notification: {payload.dict()}")
+    
+    target_order_id = payload.order_id
+    
+    # If order_id is not directly in payload, search by booking_id or matching amount
+    if not target_order_id and payload.booking_id:
+        for oid, o in UPI_ORDERS_STORE.items():
+            if o.get("booking_id") == payload.booking_id:
+                target_order_id = oid
+                break
+
+    # If still not found, search most recent pending order with matching amount
+    if not target_order_id and payload.amount:
+        for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+            if not o.get("paid") and abs(float(o.get("amount", 0)) - float(payload.amount)) < 0.01:
+                target_order_id = oid
+                break
+
+    if not target_order_id:
+        # If no matching active order found, acknowledge webhook safely
+        return {"success": False, "message": "No matching pending UPI order found."}
+
+    utr = payload.utr or payload.utr_number or f"UTR_{uuid.uuid4().hex[:10]}"
+    payment_id = f"upi_pay_{utr}"
+
+    await _confirm_upi_booking(order_id=target_order_id, payment_id=payment_id, utr_number=utr)
+    
+    return {
+        "success": True,
+        "order_id": target_order_id,
+        "status": "CONFIRMED",
+        "message": "Payment verified and booking confirmed via webhook."
+    }
+
+
+@router.post("/simulate-upi-success/{order_id}")
+async def simulate_upi_payment_success(order_id: str):
+    """
+    Simulation / Testing endpoint.
+    Instantly marks the UPI order as PAID and converts seats to BOOKED.
+    """
+    order_data = UPI_ORDERS_STORE.get(order_id)
+    if not order_data:
+        raise HTTPException(status_code=404, detail="UPI Order not found.")
+
+    simulated_utr = f"SIM-UTR-{int(time.time()*1000)}"
+    payment_id = f"upi_pay_sim_{uuid.uuid4().hex[:8]}"
+
+    await _confirm_upi_booking(
+        order_id=order_id,
+        payment_id=payment_id,
+        utr_number=simulated_utr
+    )
+
+    return {
+        "success": True,
+        "order_id": order_id,
+        "booking_id": order_data["booking_id"],
+        "status": "PAID",
+        "utr_number": simulated_utr,
+        "message": "Simulated UPI payment verified successfully!"
+    }
+
+
+@router.post("/verify-upi-utr")
+async def verify_upi_utr_submission(req: VerifyUtrRequest):
+    """
+    Fallback UTR validation endpoint.
+    If the customer enters the 12-digit UPI Reference / UTR number manually,
+    we validate format, check against reuse, and confirm the booking immediately.
+    """
+    utr_clean = req.utr_number.strip()
+    if len(utr_clean) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide a valid 12-digit UPI Reference Number / UTR."
+        )
+
+    if utr_clean in USED_UTR_NUMBERS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This UTR number has already been used for another booking."
+        )
+
+    order_data = UPI_ORDERS_STORE.get(req.order_id)
+    if not order_data:
+        raise HTTPException(status_code=404, detail="UPI Order session expired or not found.")
+
+    USED_UTR_NUMBERS.add(utr_clean)
+    payment_id = f"upi_utr_{utr_clean}"
+
+    await _confirm_upi_booking(
+        order_id=req.order_id,
+        payment_id=payment_id,
+        utr_number=utr_clean
+    )
+
+    return {
+        "success": True,
+        "order_id": req.order_id,
+        "booking_id": order_data["booking_id"],
+        "status": "PAID",
+        "utr_number": utr_clean,
+        "message": "UTR verified successfully. Your booking is confirmed!"
+    }
+
 

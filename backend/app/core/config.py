@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     # Concurrency Seat Lock Duration (seconds)
     SEAT_LOCK_DURATION_SECONDS: int = 300 # 5 minutes
     
+    # Direct UPI QR Code Payment Settings
+    MERCHANT_UPI_ID: str = os.getenv("MERCHANT_UPI_ID", "kancharladhanush2003@okaxis")
+    MERCHANT_NAME: str = os.getenv("MERCHANT_NAME", "CineBook Cinema")
+    UPI_WEBHOOK_SECRET: str = os.getenv("UPI_WEBHOOK_SECRET", "cinebook_upi_secret_2026")
+    
     # Resend / Email Configuration
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")

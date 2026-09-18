@@ -45,3 +45,49 @@ class VerifyPaymentResponse(BaseModel):
     payment_id: Optional[str] = None
     status: PaymentStatus
     message: str
+
+# --- Direct UPI QR Code Models ---
+
+class CreateUpiQrRequest(BaseModel):
+    booking_id: str
+    amount: float
+    movie_title: Optional[str] = "Movie Ticket"
+    customer_details: Optional[CustomerDetails] = None
+
+class CreateUpiQrResponse(BaseModel):
+    order_id: str
+    booking_id: str
+    amount: float
+    currency: str = "INR"
+    upi_id: str
+    payee_name: str
+    upi_intent_url: str
+    qr_data: str
+    expires_in_seconds: int = 300
+    status: PaymentStatus = PaymentStatus.PENDING
+
+class UpiStatusResponse(BaseModel):
+    order_id: str
+    booking_id: str
+    status: PaymentStatus
+    amount: float
+    paid: bool
+    utr_number: Optional[str] = None
+    booking: Optional[Dict[str, Any]] = None
+    message: str
+
+class UpiWebhookPayload(BaseModel):
+    order_id: Optional[str] = None
+    booking_id: Optional[str] = None
+    utr: Optional[str] = None
+    utr_number: Optional[str] = None
+    amount: Optional[float] = None
+    status: Optional[str] = "SUCCESS"
+    raw_message: Optional[str] = None
+    secret: Optional[str] = None
+
+class VerifyUtrRequest(BaseModel):
+    order_id: str
+    booking_id: Optional[str] = None
+    utr_number: str
+
