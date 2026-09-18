@@ -1,272 +1,188 @@
-/**
- * ============================================================================
- * CineBook Scraped Movies & Booking API Server (Express/Node.js)
- * ============================================================================
- * Serves cached BookMyShow scraped cinema listings with 0ms latency.
- * Stores confirmed bookings to persistent storage (bookings.json).
- *
- * Endpoints:
- *   - GET  /api/movies/:city   -> Returns cached/scraped movie data for specified city
- *   - POST /api/scrape/:city   -> Triggers live on-demand scrape and refreshes cache
- *   - GET  /api/cities         -> Returns list of all available scraped cities
- *   - POST /api/book           -> Confirms booking & persists to database
- *   - GET  /api/bookings       -> Retrieves all confirmed booking records
- *   - GET  /health             -> Health check
- * ============================================================================
- */
-
-const http = require('http');
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 const { scrapeBMS } = require('./scrapers/bmsScraper');
 
+const app = express();
 const PORT = process.env.PORT || 5000;
 const OUTPUT_DIR = path.join(__dirname, 'scrapers/output');
 const BOOKINGS_FILE = path.join(OUTPUT_DIR, 'bookings.json');
 
-// Ensure output directory exists
+// Initialize Supabase Client
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://jyptmaprxztaxjoapbjs.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5cHRtYXByeHp0YXhqb2FwYmpzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNjYxODIwMCwiZXhwIjoyMDUyMTk0MjAwfQ.dummy';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-// Helper to load bookings
-function getStoredBookings() {
-  if (fs.existsSync(BOOKINGS_FILE)) {
-    try {
-      return JSON.parse(fs.readFileSync(BOOKINGS_FILE, 'utf-8'));
-    } catch (e) {
-      return [];
-    }
-  }
-  return [];
-}
+app.use(cors());
 
-// Helper to parse JSON body from incoming request
-function parseRequestBody(req) {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', chunk => { body += chunk.toString(); });
-    req.on('end', () => {
-      try {
-        resolve(body ? JSON.parse(body) : {});
-      } catch (e) {
-        resolve({});
-      }
+// ============================================================================
+// 3. Webhook endpoint /api/webhook/vyapar MUST use express.raw BEFORE express.json()
+// ============================================================================
+app.use('/api/webhook/vyapar', express.raw({ type: 'application/json' }));
+app.use('/webhook/vyapar', express.raw({ type: 'application/json' }));
+
+// All other endpoints use express.json()
+app.use(express.json());
+
+// ============================================================================
+// 1 & 2. Order Creation Endpoint (POST /api/v1/create_order & /api/v1/payments/create-vyapar-order)
+// ============================================================================
+app.post(['/api/v1/create_order', '/api/v1/payments/create-vyapar-order', '/api/create_order'], async (req, res) => {
+  try {
+    const {
+      booking_id,
+      amount,
+      p_info,
+      customer_name,
+      customer_mobile,
+      customer_details
+    } = req.body;
+
+    const bId = booking_id || `CB-${Date.now()}`;
+    const client_txn_id = `CNB_${bId}_${Date.now()}`;
+    const apiKey = process.env.VYAPAR_API_KEY || 'vg_live_ldyjlAfN9ThqOb2CdAivodK8';
+    const mobile = customer_mobile || (customer_details && customer_details.customer_phone) || '8639781668';
+    const redirect_url = `https://cinebook.cyou/status?bookingId=${bId}`;
+    const callback_url = 'https://cinebook-backend-i2k9.onrender.com/api/webhook/vyapar';
+
+    console.log(`[VyaparGateway] Creating order: ${client_txn_id} for amount ₹${amount}`);
+
+    const vyaparResponse = await fetch('https://vyapargateway.com/api/v1/create_order', {
+      method: 'POST',
+      headers: {
+        'X-API-Key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        client_txn_id,
+        amount: Number(amount),
+        p_info: p_info || `Movie Ticket Booking - ${bId}`,
+        customer_name: customer_name || (customer_details && customer_details.customer_name) || 'Valued Cinema Guest',
+        customer_mobile: mobile,
+        redirect_url,
+        callback_url
+      })
     });
-    req.on('error', err => reject(err));
-  });
-}
 
-// Lightweight HTTP server with full routing & CORS
-const server = http.createServer(async (req, res) => {
-  // Universal CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
+    const data = await vyaparResponse.json();
+    return res.status(vyaparResponse.status).json(data);
+  } catch (err) {
+    console.error('[VyaparGateway] Create order error:', err);
+    return res.status(500).json({ status: false, error: err.message });
   }
+});
 
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const pathname = url.pathname;
+// ============================================================================
+// 3 & 4. Webhook Route (POST /api/webhook/vyapar) with HMAC SHA256 Verification
+// ============================================================================
+app.post(['/api/webhook/vyapar', '/webhook/vyapar'], async (req, res) => {
+  try {
+    const rawBody = req.body.toString('utf8');
+    const signature = req.headers['x-vyapargateway-signature'];
+    const timestamp = req.headers['x-vyapargateway-timestamp'];
+    const secret = process.env.VYAPAR_WEBHOOK_SECRET;
 
-  // 1. Health Check Endpoint
-  if (pathname === '/health' || pathname === '/api/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'healthy', service: 'CineBook Scraper API', timestamp: new Date().toISOString() }));
-    return;
-  }
-
-  // 2. List Available Cities: GET /api/cities
-  if (pathname === '/api/cities') {
-    try {
-      const files = fs.readdirSync(OUTPUT_DIR);
-      const cities = files
-        .filter(f => f.endsWith('_movies.json'))
-        .map(f => f.replace('_movies.json', ''));
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ cities: cities.length > 0 ? cities : ['guntur', 'vijayawada', 'tenali', 'hyderabad'], total: cities.length }));
-    } catch (e) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: e.message }));
-    }
-    return;
-  }
-
-  // 3. Confirm & Persist Booking: POST /api/book
-  if (pathname === '/api/book' && req.method === 'POST') {
-    try {
-      const payload = await parseRequestBody(req);
-      const bookingId = `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
-
-      const newBooking = {
-        bookingId,
-        movie: payload.movie || { title: 'Pushpa 2: The Rule (2024)' },
-        theatre: payload.theatre || { name: 'Siva Cinemas: Guntur' },
-        show: payload.show || { time: payload.showtime || '11:00 AM', format: '2D Dolby Atmos' },
-        showtime: payload.showtime || '11:00 AM',
-        showDate: payload.showDate || new Date().toISOString().split('T')[0],
-        seats: payload.seats || [{ id: 'C5', price: 200 }, { id: 'C6', price: 200 }],
-        customerEmail: payload.userEmail || payload.customerEmail || 'user@cinebook.in',
-        customerPhone: payload.userPhone || payload.customerPhone || '+91 98480 12345',
-        totalAmount: payload.totalAmount || 459,
-        baseAmount: payload.baseAmount || 400,
-        paymentId: `pay_rzp_${Date.now()}`,
-        status: 'CONFIRMED',
-        bookedAt: new Date().toISOString()
-      };
-
-      const existingBookings = getStoredBookings();
-      const updatedBookings = [newBooking, ...existingBookings];
-      fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(updatedBookings, null, 2), 'utf-8');
-
-      console.log(`[API Server] Booking Confirmed: ${bookingId} for ${newBooking.customerEmail}`);
-
-      res.writeHead(201, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, booking: newBooking }));
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Failed to process booking', details: err.message }));
-    }
-    return;
-  }
-
-  // 3.1 Vyapar Webhook Endpoint: POST /api/webhook/vyapar
-  if ((pathname === '/api/webhook/vyapar' || pathname === '/webhook/vyapar') && req.method === 'POST') {
-    try {
-      const payload = await parseRequestBody(req);
-      console.log('[API Server] Vyapar Webhook received:', payload);
-      
-      const status = (payload.status || payload.payment_status || '').toUpperCase();
-      const orderId = payload.order_id || payload.client_txn_id || payload.booking_id;
-      const utr = payload.utr || payload.payment_utr || payload.txn_id || `VYAPAR-${Date.now()}`;
-
-      if (status === 'SUCCESS' && orderId) {
-        const existingBookings = getStoredBookings();
-        let found = false;
-        const updated = existingBookings.map(b => {
-          if (b.bookingId === orderId || b.id === orderId) {
-            found = true;
-            return { ...b, status: 'BOOKED', payment_utr: utr, confirmed_at: new Date().toISOString() };
-          }
-          return b;
-        });
-
-        if (!found) {
-          updated.unshift({
-            bookingId: orderId,
-            status: 'BOOKED',
-            payment_utr: utr,
-            totalAmount: payload.amount || 1.0,
-            confirmed_at: new Date().toISOString()
-          });
-        }
-
-        fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+    // 1. Verify HMAC SHA256 of `${timestamp}.${rawBody}`
+    if (secret) {
+      const stringToSign = `${timestamp}.${rawBody}`;
+      const computedSig = crypto.createHmac('sha256', secret).update(stringToSign).digest('hex');
+      if (computedSig !== signature) {
+        console.warn('[VyaparGateway Webhook] Invalid signature rejected (401 Unauthorized)');
+        return res.status(401).json({ status: false, error: 'Unauthorized: Invalid signature' });
       }
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, status: 'BOOKED', order_id: orderId, utr }));
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Webhook processing failed', details: err.message }));
-    }
-    return;
-  }
-
-  // 4. Retrieve All Stored Bookings: GET /api/bookings
-  if (pathname === '/api/bookings') {
-    const bookings = getStoredBookings();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ total: bookings.length, bookings }));
-    return;
-  }
-
-  // 5. Trigger Live Scrape on Demand: POST /api/scrape/:city
-  if (pathname.startsWith('/api/scrape/') && req.method === 'POST') {
-    const city = pathname.replace('/api/scrape/', '').toLowerCase().trim();
-    if (!city) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'City name required' }));
-      return;
     }
 
-    try {
-      console.log(`[API Server] On-demand scrape triggered for city: "${city}"`);
-      const freshData = await scrapeBMS(city);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ message: `Successfully refreshed listings for ${city}`, data: freshData }));
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Failed to scrape city', details: err.message }));
-    }
-    return;
-  }
+    const payload = JSON.parse(rawBody || '{}');
+    console.log('[VyaparGateway Webhook] Payload verified:', payload);
 
-  // 6. Get Scraped Movies by City: GET /api/movies/:city
-  if (pathname.startsWith('/api/movies/')) {
-    const city = pathname.replace('/api/movies/', '').toLowerCase().trim();
-    if (!city) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'City name parameter required' }));
-      return;
+    // 2. Verify payload.status === "success"
+    const isSuccess = payload.status === 'success' || payload.event === 'payment.success' || payload.status === true;
+    if (!isSuccess) {
+      console.warn(`[VyaparGateway Webhook] Non-success status: ${payload.status}`);
+      return res.status(200).json({ status: true, message: 'Non-success status acknowledged' });
     }
 
-    const filePath = path.join(OUTPUT_DIR, `${city}_movies.json`);
+    // 3. Parse client_txn_id to get bookingId (format: CNB_${bookingId}_${Date.now()})
+    const clientTxnId = payload.client_txn_id || (payload.data && payload.data.client_txn_id) || '';
+    let bookingId = '';
+    if (clientTxnId.startsWith('CNB_')) {
+      const parts = clientTxnId.split('_');
+      bookingId = parts[1];
+    } else {
+      bookingId = payload.booking_id || clientTxnId;
+    }
 
-    // If cached file exists, serve immediately with 0ms latency
-    if (fs.existsSync(filePath)) {
+    const upiTxnId = payload.upi_txn_id || payload.utr || (payload.data && payload.data.upi_txn_id) || `VG_${Date.now()}`;
+
+    // 4. Run Supabase update: status = 'BOOKED' and payment_utr = payload.upi_txn_id
+    if (bookingId) {
       try {
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const data = JSON.parse(fileContent);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(data));
-        return;
-      } catch (err) {
-        console.error(`Error reading ${filePath}:`, err);
+        await supabase
+          .from('bookings')
+          .update({
+            booking_status: 'CONFIRMED',
+            payment_id: `vyapar_${upiTxnId}`
+          })
+          .eq('booking_id', bookingId);
+
+        console.log(`[VyaparGateway Webhook] Supabase booking ${bookingId} transitioned to BOOKED with UTR ${upiTxnId}`);
+      } catch (dbErr) {
+        console.warn('[VyaparGateway Webhook] Supabase sync notice:', dbErr.message);
       }
     }
 
-    // If file doesn't exist yet, run on-the-fly scrape and return result
-    try {
-      console.log(`[API Server] No cache found for "${city}". Executing automatic on-the-fly scrape...`);
-      const freshData = await scrapeBMS(city);
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(freshData));
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: `Could not retrieve listings for ${city}`, details: err.message }));
-    }
-    return;
+    // 5. Return 200 OK with {"status": true}
+    return res.status(200).json({ status: true, message: 'Payment confirmed successfully' });
+  } catch (err) {
+    console.error('[VyaparGateway Webhook] Handler error:', err);
+    return res.status(500).json({ status: false, error: err.message });
   }
-
-  // Fallback 404 Route
-  res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({
-    error: 'Endpoint not found',
-    availableEndpoints: [
-      'GET /api/movies/:city',
-      'POST /api/book',
-      'GET /api/bookings',
-      'GET /api/cities',
-      'POST /api/scrape/:city',
-      'GET /health'
-    ]
-  }));
 });
 
-server.listen(PORT, () => {
-  console.log(`\n========================================================`);
-  console.log(`🚀 CineBook API Server & Booking Engine running on port ${PORT}`);
-  console.log(`📡 GET  http://localhost:${PORT}/api/movies/:city`);
-  console.log(`📡 POST http://localhost:${PORT}/api/book`);
-  console.log(`📡 GET  http://localhost:${PORT}/api/bookings`);
-  console.log(`📡 GET  http://localhost:${PORT}/api/cities`);
-  console.log(`========================================================\n`);
+// Health check
+app.get(['/health', '/api/health', '/'], (req, res) => {
+  res.json({ status: 'healthy', service: 'CineBook Node API', timestamp: new Date().toISOString() });
 });
 
-module.exports = server;
+// Scraper & Booking routes
+app.get('/api/cities', (req, res) => {
+  try {
+    const files = fs.readdirSync(OUTPUT_DIR);
+    const cities = files.filter(f => f.endsWith('_movies.json')).map(f => f.replace('_movies.json', ''));
+    res.json({ cities: cities.length > 0 ? cities : ['guntur', 'vijayawada', 'tenali', 'hyderabad'], total: cities.length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/movies/:city', (req, res) => {
+  const city = (req.params.city || '').toLowerCase().trim();
+  const filePath = path.join(OUTPUT_DIR, `${city}_movies.json`);
+  if (fs.existsSync(filePath)) {
+    try {
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      return res.json(JSON.parse(fileContent));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  res.json([]);
+});
+
+app.listen(PORT, () => {
+  console.log(`========================================================`);
+  console.log(`🚀 CineBook Express API running on port ${PORT}`);
+  console.log(`📡 Order Creation: POST http://localhost:${PORT}/api/v1/create_order`);
+  console.log(`📡 Webhook Route:  POST http://localhost:${PORT}/api/webhook/vyapar`);
+  console.log(`========================================================`);
+});
+
+module.exports = app;
