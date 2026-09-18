@@ -400,36 +400,64 @@ async def check_upi_status(order_id: str):
     )
 
 
+import re
+
 @router.post("/upi-webhook")
 async def receive_upi_webhook(payload: UpiWebhookPayload):
     """
-    Instant Webhook listener for Bank SMS Forwarder, Tasker, or UPI bridge.
-    When your phone receives bank credit SMS, forwarder triggers this webhook.
-    Zero typing required for customer!
+    Instant Webhook listener for Bank SMS Forwarder, Tasker, MacroDroid, or UPI bridge.
+    Supports structured JSON or raw incoming bank SMS text from any Indian Bank.
+    Extracts amount and 12-digit UTR automatically and confirms booking with zero customer typing.
     """
     logger.info(f"Received UPI webhook notification: {payload.dict()}")
     
+    extracted_amount = payload.amount
+    extracted_utr = payload.utr or payload.utr_number
+
+    # Smart regex parsing for raw bank SMS if provided
+    if payload.raw_message:
+        raw_txt = payload.raw_message
+        # Extract Amount: e.g. "credited by Rs 300.00", "Rs. 150 deposited", "INR 300.00", "₹300"
+        amt_match = re.search(r'(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)', raw_txt, re.IGNORECASE)
+        if amt_match and not extracted_amount:
+            try:
+                extracted_amount = float(amt_match.group(1).replace(',', ''))
+            except Exception:
+                pass
+
+        # Extract 12-digit UTR / UPI Ref: e.g. "UPI Ref 426811902847", "Ref No: 426811902847", "UPI/426811902847"
+        utr_match = re.search(r'(?:Ref|Ref\s*No|UPI\s*Ref|UTR|Txn\s*ID)[\s/:]*(\d{8,16})', raw_txt, re.IGNORECASE)
+        if utr_match and not extracted_utr:
+            extracted_utr = utr_match.group(1)
+        elif not extracted_utr:
+            # Fallback search for any 12-digit continuous sequence
+            any_12_digit = re.search(r'\b(\d{12})\b', raw_txt)
+            if any_12_digit:
+                extracted_utr = any_12_digit.group(1)
+
     target_order_id = payload.order_id
     
-    # If order_id is not directly in payload, search by booking_id or matching amount
+    # 1. Search by booking_id
     if not target_order_id and payload.booking_id:
         for oid, o in UPI_ORDERS_STORE.items():
             if o.get("booking_id") == payload.booking_id:
                 target_order_id = oid
                 break
 
-    # If still not found, search most recent pending order with matching amount
-    if not target_order_id and payload.amount:
+    # 2. Search most recent pending order with matching amount
+    if not target_order_id and extracted_amount:
         for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
-            if not o.get("paid") and abs(float(o.get("amount", 0)) - float(payload.amount)) < 0.01:
+            if not o.get("paid") and abs(float(o.get("amount", 0)) - float(extracted_amount)) < 0.50:
                 target_order_id = oid
                 break
 
     if not target_order_id:
-        # If no matching active order found, acknowledge webhook safely
-        return {"success": False, "message": "No matching pending UPI order found."}
+        return {
+            "success": False,
+            "message": "No matching pending UPI order found for this amount."
+        }
 
-    utr = payload.utr or payload.utr_number or f"UTR_{uuid.uuid4().hex[:10]}"
+    utr = extracted_utr or f"UTR_{uuid.uuid4().hex[:10]}"
     payment_id = f"upi_pay_{utr}"
 
     await _confirm_upi_booking(order_id=target_order_id, payment_id=payment_id, utr_number=utr)
@@ -438,7 +466,61 @@ async def receive_upi_webhook(payload: UpiWebhookPayload):
         "success": True,
         "order_id": target_order_id,
         "status": "CONFIRMED",
+        "utr_number": utr,
+        "amount": extracted_amount,
         "message": "Payment verified and booking confirmed via webhook."
+    }
+
+
+@router.get("/admin/pending-upi-orders")
+async def get_admin_pending_upi_orders():
+    """
+    Admin Endpoint: Lists all live active UPI payment orders awaiting confirmation.
+    Allows cinema staff to monitor and verify payments in real time.
+    """
+    now = time.time()
+    active_orders = []
+    for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+        active_orders.append({
+            "order_id": oid,
+            "booking_id": o.get("booking_id"),
+            "amount": o.get("amount"),
+            "status": o.get("status"),
+            "paid": o.get("paid", False),
+            "created_at": o.get("created_at"),
+            "expires_in_seconds": max(0, int(o.get("expires_at", 0) - now)),
+            "customer": o.get("customer_details", {}),
+            "utr_number": o.get("utr_number")
+        })
+    return {"orders": active_orders, "total": len(active_orders)}
+
+
+@router.post("/admin/confirm-upi-order/{order_id}")
+async def admin_manually_confirm_upi_order(order_id: str):
+    """
+    Admin Fail-Safe Endpoint:
+    Allows cinema admin to 1-click confirm any booking if the customer paid but bank SMS failed.
+    """
+    order_data = UPI_ORDERS_STORE.get(order_id)
+    if not order_data:
+        raise HTTPException(status_code=404, detail="UPI Order not found.")
+
+    admin_utr = f"ADMIN-CONFIRM-{int(time.time()*1000)}"
+    payment_id = f"upi_pay_admin_{uuid.uuid4().hex[:8]}"
+
+    await _confirm_upi_booking(
+        order_id=order_id,
+        payment_id=payment_id,
+        utr_number=admin_utr
+    )
+
+    return {
+        "success": True,
+        "order_id": order_id,
+        "booking_id": order_data["booking_id"],
+        "status": "PAID",
+        "utr_number": admin_utr,
+        "message": "Admin confirmed UPI payment successfully. Booking confirmed!"
     }
 
 
@@ -512,5 +594,6 @@ async def verify_upi_utr_submission(req: VerifyUtrRequest):
         "utr_number": utr_clean,
         "message": "UTR verified successfully. Your booking is confirmed!"
     }
+
 
 
