@@ -20,7 +20,7 @@ from app.models.payment import (
 )
 from app.models.user import UserResponse
 from app.models.booking import BookingStatus
-from app.api.deps import get_current_active_user
+from app.api.deps import get_current_active_user, get_optional_user
 from app.services.payment_service import PaymentService
 from app.services.seat_lock_service import SeatLockService
 from app.api.v1.endpoints.bookings import BOOKINGS_STORE
@@ -37,7 +37,7 @@ USED_UTR_NUMBERS: set = set()
 @router.post("/create-order", response_model=CreateOrderResponse)
 async def create_payment_order(
     req: CreateOrderRequest,
-    current_user: Optional[UserResponse] = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """Create Cashfree PG v3 order entity for an active booking session"""
     cust_details = req.customer_details.dict() if req.customer_details else {}
@@ -291,7 +291,7 @@ async def _confirm_upi_booking(order_id: str, payment_id: str, utr_number: Optio
 @router.post("/create-upi-qr", response_model=CreateUpiQrResponse)
 async def create_upi_qr_order(
     req: CreateUpiQrRequest,
-    current_user: Optional[UserResponse] = Depends(get_current_active_user)
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """
     Generate dynamic NPCI UPI QR code and Intent URL for instant Savings Account UPI payments.
