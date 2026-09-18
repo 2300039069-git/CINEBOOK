@@ -305,15 +305,18 @@ async def create_upi_qr_order(
     # Transaction note encoded with booking id and movie title
     note = f"CineBook Tickets {req.booking_id}"
     
-    # Standard NPCI UPI URI Specification:
-    # upi://pay?pa=<UPI_ID>&pn=<NAME>&am=<AMOUNT>&cu=INR&tr=<REF_ID>&tn=<NOTE>
+    # Standard NPCI UPI URI Specification matching PhonePe merchant QR:
+    # upi://pay?pa=<UPI_ID>&pn=<NAME>&am=<AMOUNT>&cu=INR&tr=<REF_ID>&tn=<NOTE>&mc=0000&mode=02&purpose=00
     query_params = {
         "pa": upi_id,
         "pn": payee_name,
         "am": f"{amount:.2f}",
         "cu": "INR",
         "tr": order_id,
-        "tn": note
+        "tn": note,
+        "mc": "0000",
+        "mode": "02",
+        "purpose": "00"
     }
     upi_intent_url = f"upi://pay?{urllib.parse.urlencode(query_params)}"
 
