@@ -78,7 +78,7 @@ class VyaparService:
                     
                     return {
                         "success": True,
-                        "gateway": "vyapar_v2",
+                        "gateway": "vyapar",
                         "status": "PENDING",
                         "order_id": order_data.get("order_id"),
                         "client_txn_id": client_txn_id,
@@ -88,52 +88,26 @@ class VyaparService:
                         "upi_string": order_data.get("upi_string"),
                         "upi_intent": order_data.get("upi_intent", {}),
                         "payment_url": order_data.get("payment_url"),
-                        "merchant_upi_id": order_data.get("merchant_upi_id", "BHARATPE2J0J0S7M9F14832@unitype"),
+                        "merchant_upi_id": order_data.get("merchant_upi_id"),
                         "merchant_name": order_data.get("merchant_name", "Cinebook"),
                         "expires_in_seconds": 480
                     }
                 else:
-                    logger.warning(f"VyaparGateway create_order response: {resp.status_code} - {resp.text}")
+                    logger.error(f"VyaparGateway create_order error: {resp.status_code} - {resp.text}")
+                    return {
+                        "success": False,
+                        "status": "FAILED",
+                        "error": data.get("detail") or data.get("msg") or "VyaparGateway order creation failed",
+                        "booking_id": booking_id
+                    }
         except Exception as api_err:
             logger.error(f"VyaparGateway API request failed: {api_err}")
-
-        # Resilient Direct Dynamic UPI Intent to BharatPe Merchant Account
-        merchant_upi = getattr(settings, "MERCHANT_UPI_ID", "BHARATPE2J0J0S7M9F14832@unitype")
-        merchant_name = getattr(settings, "MERCHANT_NAME", "Cinebook")
-        upi_params = {
-            "pa": merchant_upi,
-            "pn": merchant_name,
-            "am": f"{amount:.2f}",
-            "cu": "INR",
-            "tr": client_txn_id,
-            "tn": p_info,
-            "mc": "0000",
-            "mode": "02",
-            "purpose": "00"
-        }
-        upi_str = f"upi://pay?{urllib.parse.urlencode(upi_params)}"
-
-        return {
-            "success": True,
-            "gateway": "vyapar_direct",
-            "status": "PENDING",
-            "order_id": client_txn_id,
-            "client_txn_id": client_txn_id,
-            "booking_id": booking_id,
-            "amount": float(amount),
-            "qr_code": None,
-            "upi_string": upi_str,
-            "upi_intent": {
-                "phonepe_link": f"phonepe://pay?{urllib.parse.urlencode(upi_params)}",
-                "gpay_link": f"tez://upi/pay?{urllib.parse.urlencode(upi_params)}",
-                "paytm_link": f"paytmmp://pay?{urllib.parse.urlencode(upi_params)}",
-                "bhim_link": upi_str
-            },
-            "payment_url": None,
-            "merchant_upi_id": merchant_upi,
-            "merchant_name": merchant_name,
-            "expires_in_seconds": 480
-        }
+            return {
+                "success": False,
+                "status": "FAILED",
+                "error": str(api_err),
+                "booking_id": booking_id
+            }
 
     @classmethod
     def verify_webhook_signature(
