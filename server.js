@@ -135,6 +135,49 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 3.1 Vyapar Webhook Endpoint: POST /api/webhook/vyapar
+  if ((pathname === '/api/webhook/vyapar' || pathname === '/webhook/vyapar') && req.method === 'POST') {
+    try {
+      const payload = await parseRequestBody(req);
+      console.log('[API Server] Vyapar Webhook received:', payload);
+      
+      const status = (payload.status || payload.payment_status || '').toUpperCase();
+      const orderId = payload.order_id || payload.client_txn_id || payload.booking_id;
+      const utr = payload.utr || payload.payment_utr || payload.txn_id || `VYAPAR-${Date.now()}`;
+
+      if (status === 'SUCCESS' && orderId) {
+        const existingBookings = getStoredBookings();
+        let found = false;
+        const updated = existingBookings.map(b => {
+          if (b.bookingId === orderId || b.id === orderId) {
+            found = true;
+            return { ...b, status: 'BOOKED', payment_utr: utr, confirmed_at: new Date().toISOString() };
+          }
+          return b;
+        });
+
+        if (!found) {
+          updated.unshift({
+            bookingId: orderId,
+            status: 'BOOKED',
+            payment_utr: utr,
+            totalAmount: payload.amount || 1.0,
+            confirmed_at: new Date().toISOString()
+          });
+        }
+
+        fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(updated, null, 2), 'utf-8');
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, status: 'BOOKED', order_id: orderId, utr }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Webhook processing failed', details: err.message }));
+    }
+    return;
+  }
+
   // 4. Retrieve All Stored Bookings: GET /api/bookings
   if (pathname === '/api/bookings') {
     const bookings = getStoredBookings();

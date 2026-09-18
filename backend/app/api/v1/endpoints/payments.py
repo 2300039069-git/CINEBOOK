@@ -864,5 +864,48 @@ async def receive_instamojo_webhook(post_data: Dict[str, Any]):
     return {"success": True, "message": "Instamojo payment verified and booking confirmed."}
 
 
+@router.post("/webhook/vyapar")
+@router.post("/vyapar-webhook")
+async def receive_vyapar_webhook(post_data: Dict[str, Any]):
+    """
+    Instant Webhook listener for VyaparGateway payment confirmation.
+    Transitions seat and booking state from LOCKED -> BOOKED immediately and idempotently.
+    """
+    logger.info(f"Received VyaparGateway webhook payload: {post_data}")
+    
+    # 1. Normalize status
+    status_raw = str(post_data.get("status") or post_data.get("payment_status") or "").upper()
+    if status_raw not in ["SUCCESS", "PAID", "COMPLETED", "SUCCESSFUL"]:
+        logger.warning(f"Ignored non-success Vyapar webhook status: {status_raw}")
+        return {"success": True, "message": f"Non-success status acknowledged: {status_raw}"}
+
+    # 2. Extract order_id / booking_id
+    order_id = post_data.get("order_id") or post_data.get("client_txn_id") or post_data.get("txnid") or post_data.get("merchant_order_id")
+    booking_id = post_data.get("booking_id") or order_id
+    utr_number = str(post_data.get("utr") or post_data.get("payment_utr") or post_data.get("bank_ref_no") or post_data.get("txn_id") or post_data.get("ref_id") or f"VYAPAR_{int(time.time()*1000)}")
+    payment_id = f"vyapar_{utr_number}"
+
+    if not order_id and not booking_id:
+        raise HTTPException(status_code=400, detail="Missing order_id or booking_id in webhook payload.")
+
+    # 3. Confirm booking atomically
+    target_order_id = order_id or f"upi_ord_{booking_id}"
+    confirmed_order = await _confirm_upi_booking(
+        order_id=target_order_id,
+        payment_id=payment_id,
+        utr_number=utr_number,
+        booking_id=booking_id
+    )
+
+    return {
+        "success": True,
+        "status": "BOOKED",
+        "booking_id": booking_id,
+        "utr": utr_number,
+        "message": "VyaparGateway payment verified and seats permanently booked."
+    }
+
+
+
 
 

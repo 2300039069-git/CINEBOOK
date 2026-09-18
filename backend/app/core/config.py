@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "kancharladhanush2003@gmail.com")
     GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "yuwz szcf ocvy socc")
     
+    # VyaparGateway Payment Gateway
+    VYAPAR_WEBHOOK_SECRET: Optional[str] = os.getenv("VYAPAR_WEBHOOK_SECRET", "")
+    VYAPAR_MERCHANT_ID: Optional[str] = os.getenv("VYAPAR_MERCHANT_ID", "")
+
     # Instamojo Payment Gateway Settings
     INSTAMOJO_CLIENT_ID: Optional[str] = os.getenv("INSTAMOJO_CLIENT_ID", "")
     INSTAMOJO_CLIENT_SECRET: Optional[str] = os.getenv("INSTAMOJO_CLIENT_SECRET", "")

@@ -106,3 +106,16 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(api_router, prefix="/v1")
 app.include_router(api_router, prefix="")
 
+# Explicit alias for Vyapar webhook across all standard paths
+@app.post("/api/webhook/vyapar", tags=["Payments"])
+@app.post("/webhook/vyapar", tags=["Payments"])
+@app.post("/api/v1/webhook/vyapar", tags=["Payments"])
+async def vyapar_webhook_alias(req: Request):
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    from app.api.v1.endpoints.payments import receive_vyapar_webhook
+    return await receive_vyapar_webhook(body)
+
+
