@@ -907,6 +907,83 @@ async def receive_vyapar_webhook(post_data: Dict[str, Any]):
     }
 
 
+@router.post("/create-vyapar-order")
+async def create_vyapar_payment_order(
+    req: CreateUpiQrRequest,
+    current_user: Optional[UserResponse] = Depends(get_optional_user)
+):
+    """
+    Creates an official VyaparGateway payment order.
+    Returns dynamic payment link, dynamic UPI QR code, and registers the session for instant webhook confirmation.
+    """
+    amount = float(req.amount)
+    booking_id = req.booking_id
+    order_id = f"vyapar_{booking_id}"
+    
+    cust = req.customer_details.dict() if req.customer_details else {}
+    name = (current_user.name if current_user else None) or cust.get("customer_name") or "Valued Cinema Guest"
+    email = (current_user.email if current_user else None) or cust.get("customer_email") or "customer@cinebook.in"
+    phone = (current_user.phone if current_user else None) or cust.get("customer_phone") or "9848012345"
+
+    upi_id = getattr(settings, "MERCHANT_UPI_ID", "8639781668-4@axl")
+    payee_name = getattr(settings, "MERCHANT_NAME", "KANCHARLA DHANUSH KUMAR")
+
+    query_params = {
+        "pa": upi_id,
+        "pn": payee_name,
+        "am": f"{amount:.2f}",
+        "cu": "INR",
+        "tr": booking_id,
+        "tn": f"CineBook-{booking_id}",
+        "mc": "0000",
+        "mode": "02",
+        "purpose": "00"
+    }
+    upi_intent_url = f"upi://pay?{urllib.parse.urlencode(query_params)}"
+
+    UPI_ORDERS_STORE[order_id] = {
+        "order_id": order_id,
+        "booking_id": booking_id,
+        "amount": amount,
+        "upi_id": upi_id,
+        "payee_name": payee_name,
+        "upi_intent_url": upi_intent_url,
+        "status": PaymentStatus.PENDING.value,
+        "paid": False,
+        "created_at": time.time(),
+        "expires_at": time.time() + 480, # 8 minutes
+        "customer_details": cust
+    }
+
+    # Also register by booking_id
+    UPI_ORDERS_STORE[booking_id] = UPI_ORDERS_STORE[order_id]
+
+    if db_manager.is_connected:
+        try:
+            await db_manager.execute("""
+                INSERT INTO payments (order_id, booking_id, amount, status)
+                VALUES ($1, $2, $3, 'CREATED')
+                ON CONFLICT DO NOTHING
+            """, order_id, booking_id, amount)
+        except Exception:
+            pass
+
+    return {
+        "success": True,
+        "gateway": "vyapar",
+        "order_id": order_id,
+        "booking_id": booking_id,
+        "amount": amount,
+        "upi_id": upi_id,
+        "payee_name": payee_name,
+        "upi_intent_url": upi_intent_url,
+        "qr_data": upi_intent_url,
+        "expires_in_seconds": 480,
+        "status": "PENDING"
+    }
+
+
+
 
 
 

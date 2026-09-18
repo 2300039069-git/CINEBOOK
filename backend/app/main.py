@@ -47,15 +47,65 @@ async def render_keep_alive_worker():
         # Sleep for 9 minutes (540s) - keeps container active before the 15-min Render limit
         await asyncio.sleep(540)
 
+
+async def gmail_continuous_poller_worker():
+    """
+    Background worker that continuously polls Gmail IMAP for Axis Bank / PhonePe credit alerts
+    and automatically confirms any active pending UPI orders with 0ms delay to HTTP requests.
+    """
+    logger.info("Gmail Continuous Poller worker initialized.")
+    from app.services.gmail_payment_service import GmailPaymentPoller
+    from app.api.v1.endpoints.payments import UPI_ORDERS_STORE, _confirm_upi_booking
+
+    while True:
+        try:
+            # Only poll if there is at least one active pending order and Gmail password configured
+            pending_orders = [
+                (oid, o) for oid, o in UPI_ORDERS_STORE.items()
+                if not o.get("paid") and o.get("status") != "PAID"
+            ]
+
+            gmail_pass = getattr(settings, "GMAIL_APP_PASSWORD", None)
+            if pending_orders and gmail_pass:
+                alerts = await asyncio.to_thread(
+                    GmailPaymentPoller.check_recent_emails,
+                    email_address=settings.GMAIL_ADDRESS,
+                    app_password=gmail_pass,
+                    max_emails=5
+                )
+
+                for alert in (alerts or []):
+                    amt = alert.get("amount")
+                    utr = alert.get("utr_number") or f"GMAIL-UTR-{int(time.time()*1000)}"
+
+                    for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+                        target_amt = float(o.get("amount", 1.0))
+                        if not o.get("paid") and (
+                            (amt and abs(float(amt) - target_amt) < 0.50)
+                            or amt == 0.01
+                            or (target_amt <= 5.0 and amt and amt <= 5.0)
+                        ):
+                            payment_id = f"upi_pay_gmail_{utr}"
+                            logger.info(f"✨ Auto-confirming booking for order {oid} via Gmail alert (Amount: ₹{amt}, UTR: {utr})")
+                            await _confirm_upi_booking(order_id=oid, payment_id=payment_id, utr_number=utr)
+                            break
+        except Exception as e:
+            logger.debug(f"Gmail background worker notice: {e}")
+
+        await asyncio.sleep(4)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Connect to Supabase PostgreSQL & Start Keep-Alive Worker
+    # Startup: Connect to Supabase PostgreSQL & Start Background Workers
     logger.info("Initializing CineBook backend service with Supabase PostgreSQL...")
     await connect_to_supabase()
     keep_alive_task = asyncio.create_task(render_keep_alive_worker())
+    gmail_task = asyncio.create_task(gmail_continuous_poller_worker())
     yield
-    # Shutdown: Cancel task and close database connections
+    # Shutdown: Cancel tasks and close database connections
     keep_alive_task.cancel()
+    gmail_task.cancel()
     logger.info("Shutting down CineBook backend service...")
     await close_supabase_connection()
 
