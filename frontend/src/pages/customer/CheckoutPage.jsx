@@ -68,9 +68,10 @@ export default function CheckoutPage() {
   const [isVerifyingUtr, setIsVerifyingUtr] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Refs for polling and timer intervals
+  // Refs for polling, countdown, and 5-second panic-free UTR auto-reveal
   const pollIntervalRef = useRef(null);
   const countdownTimerRef = useRef(null);
+  const fiveSecTimerRef = useRef(null);
 
   const bookingDetails = location.state || {};
   const movie = bookingDetails.movie || selectedMovie || {
@@ -109,6 +110,7 @@ export default function CheckoutPage() {
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+      if (fiveSecTimerRef.current) clearTimeout(fiveSecTimerRef.current);
     };
   }, []);
 
@@ -218,9 +220,10 @@ export default function CheckoutPage() {
       console.warn('Backend booking sync notice (local booking confirmed):', backendErr.message);
     }
 
-    // Stop polling
+    // Stop polling and timers
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+    if (fiveSecTimerRef.current) clearTimeout(fiveSecTimerRef.current);
 
     setPaymentSuccess(true);
     setIsPolling(false);
@@ -251,6 +254,7 @@ export default function CheckoutPage() {
         const statusRes = await getUpiPaymentStatus(orderId);
         if (statusRes.paid === true || statusRes.status === 'PAID') {
           clearInterval(pollIntervalRef.current);
+          if (fiveSecTimerRef.current) clearTimeout(fiveSecTimerRef.current);
           await finalizeBooking(orderId, statusRes.utr_number || `upi_${orderId}`, statusRes.utr_number);
         }
       } catch (pollErr) {
@@ -295,16 +299,17 @@ export default function CheckoutPage() {
 
       setUpiOrder(order);
       setIsUpiModalOpen(true);
+      setShowUtrFallback(false);
+      setUtrInput('');
       setSecondsRemaining(order.expires_in_seconds || 300);
       setPaymentSuccess(false);
 
-      // Start countdown timer
+      // Start countdown timer (5 minutes total seat hold)
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = setInterval(() => {
         setSecondsRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(countdownTimerRef.current);
-            // When 5 minutes expire without auto-confirmation, automatically switch to UTR input screen
             setShowUtrFallback(true);
             return 0;
           }
@@ -312,7 +317,15 @@ export default function CheckoutPage() {
         });
       }, 1000);
 
-      // Start auto-polling
+      // 5-Second Panic-Free Auto-Reveal: If payment is not auto-confirmed within 5s,
+      // seamlessly reveal the 12-digit UTR input field so the user never panics,
+      // while background auto-polling continues running in parallel!
+      if (fiveSecTimerRef.current) clearTimeout(fiveSecTimerRef.current);
+      fiveSecTimerRef.current = setTimeout(() => {
+        setShowUtrFallback(true);
+      }, 5000);
+
+      // Start auto-polling (every 2 seconds)
       startStatusPolling(order.order_id);
     } catch (err) {
       console.error('Failed to create UPI QR order:', err);
@@ -553,6 +566,7 @@ export default function CheckoutPage() {
                 onClick={() => {
                   if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
                   if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+                  if (fiveSecTimerRef.current) clearTimeout(fiveSecTimerRef.current);
                   setIsUpiModalOpen(false);
                 }}
                 disabled={paymentSuccess}
@@ -610,7 +624,7 @@ export default function CheckoutPage() {
                       </span>
                       <div className="text-left">
                         <p className="text-xs font-bold text-text-primary">Waiting for payment...</p>
-                        <p className="text-[10px] text-text-muted">Listening for PhonePe / GPay / Paytm / Bank Alert</p>
+                        <p className="text-[10px] text-text-muted">Listening for PhonePe / GPay / Paytm / SMS / Email Alert</p>
                       </div>
                     </div>
                     <Loader2 size={16} className="animate-spin text-primary shrink-0" />
@@ -624,6 +638,7 @@ export default function CheckoutPage() {
                     <div className="grid grid-cols-3 gap-2">
                       <a
                         href={upiOrder.upi_intent_url}
+                        onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-purple-400 font-extrabold">PhonePe</span>
@@ -631,6 +646,7 @@ export default function CheckoutPage() {
                       </a>
                       <a
                         href={upiOrder.upi_intent_url}
+                        onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-blue-400 font-extrabold">Google Pay</span>
@@ -638,6 +654,7 @@ export default function CheckoutPage() {
                       </a>
                       <a
                         href={upiOrder.upi_intent_url}
+                        onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-sky-400 font-extrabold">Paytm / BHIM</span>
@@ -647,6 +664,7 @@ export default function CheckoutPage() {
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <a
                         href={upiOrder.upi_intent_url}
+                        onClick={() => setShowUtrFallback(true)}
                         className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
                       >
                         <span>CRED UPI</span>
@@ -654,6 +672,7 @@ export default function CheckoutPage() {
                       </a>
                       <a
                         href={upiOrder.upi_intent_url}
+                        onClick={() => setShowUtrFallback(true)}
                         className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
                       >
                         <span>Any UPI App</span>
@@ -702,7 +721,7 @@ export default function CheckoutPage() {
                     </button>
                   </div>
 
-                  {/* Automatic 5-Minute Redirect & Manual 12-Digit UTR Input Form */}
+                  {/* 5-Second Panic-Free Auto-Reveal & Manual 12-Digit UTR Input Form */}
                   <div className="w-full text-center">
                     {!showUtrFallback && secondsRemaining > 0 ? (
                       <button
@@ -714,12 +733,17 @@ export default function CheckoutPage() {
                       </button>
                     ) : (
                       <form onSubmit={handleVerifyUtr} className="space-y-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left animate-in fade-in duration-300">
-                        <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-                          <Info size={15} className="shrink-0" />
-                          <span>Enter 12-Digit UPI Reference (UTR)</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                            <Info size={15} className="shrink-0" />
+                            <span>Enter 12-Digit UPI Reference (UTR)</span>
+                          </div>
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
+                            Auto-Polling Active
+                          </span>
                         </div>
                         <p className="text-[11px] text-text-secondary leading-relaxed">
-                          Bank notification taking a moment? Paste the 12-digit <strong>UPI Ref / UTR number</strong> from your PhonePe, Google Pay, or Paytm receipt to confirm instantly!
+                          Paid on PhonePe, GPay, or Paytm? Paste the 12-digit <strong>UPI Ref / UTR number</strong> from your payment receipt to confirm instantly if bank alerts take a moment!
                         </p>
                         <div className="flex gap-2">
                           <input
