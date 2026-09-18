@@ -472,6 +472,78 @@ async def receive_upi_webhook(payload: UpiWebhookPayload):
     }
 
 
+@router.post("/email-webhook")
+async def receive_bank_email_webhook(email_data: Dict[str, Any]):
+    """
+    Automated Email Verification Endpoint.
+    When your Bank (Axis, HDFC, ICICI, SBI, etc.) sends a Credit Alert email,
+    an email forwarder or Cloudflare Email Worker posts the email content here.
+    Automatically extracts amount & UTR, marks the seat BOOKED, and confirms the ticket!
+    """
+    logger.info(f"Received Bank Email Webhook: {email_data}")
+    
+    # Combine subject and body text for regex parsing
+    subject = str(email_data.get("subject", "") or "")
+    body = str(email_data.get("body", "") or email_data.get("text", "") or email_data.get("html", "") or "")
+    combined_text = f"{subject} {body}"
+
+    # 1. Extract Amount (e.g., "₹300.00", "Rs. 300", "INR 300.00", "credited with Rs 300")
+    extracted_amount = None
+    if email_data.get("amount"):
+        try:
+            extracted_amount = float(email_data["amount"])
+        except Exception:
+            pass
+
+    if not extracted_amount:
+        amt_match = re.search(r'(?:Rs\.?|INR|₹|credited\s+with\s+(?:Rs\.?|INR|₹)?)\s*([\d,]+(?:\.\d{1,2})?)', combined_text, re.IGNORECASE)
+        if amt_match:
+            try:
+                extracted_amount = float(amt_match.group(1).replace(',', ''))
+            except Exception:
+                pass
+
+    # 2. Extract 12-Digit UTR / UPI Reference Number
+    extracted_utr = email_data.get("utr") or email_data.get("utr_number")
+    if not extracted_utr:
+        utr_match = re.search(r'(?:UPI\s*Ref|Ref\s*No|UTR|Txn\s*ID|Reference\s*Number)[\s/:]*(\d{8,16})', combined_text, re.IGNORECASE)
+        if utr_match:
+            extracted_utr = utr_match.group(1)
+        else:
+            any_12 = re.search(r'\b(\d{12})\b', combined_text)
+            if any_12:
+                extracted_utr = any_12.group(1)
+
+    # 3. Match with active pending UPI orders
+    target_order_id = email_data.get("order_id")
+    if not target_order_id and extracted_amount:
+        for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+            if not o.get("paid") and abs(float(o.get("amount", 0)) - float(extracted_amount)) < 0.50:
+                target_order_id = oid
+                break
+
+    if not target_order_id:
+        return {
+            "success": False,
+            "message": f"Bank email received for amount ₹{extracted_amount}, but no matching active pending order was found."
+        }
+
+    utr = extracted_utr or f"EMAIL-UTR-{int(time.time()*1000)}"
+    payment_id = f"upi_pay_email_{utr}"
+
+    await _confirm_upi_booking(order_id=target_order_id, payment_id=payment_id, utr_number=utr)
+
+    return {
+        "success": True,
+        "order_id": target_order_id,
+        "status": "CONFIRMED",
+        "amount": extracted_amount,
+        "utr_number": utr,
+        "message": "Bank credit email parsed successfully. Booking confirmed with zero customer typing!"
+    }
+
+
+
 @router.get("/admin/pending-upi-orders")
 async def get_admin_pending_upi_orders():
     """
