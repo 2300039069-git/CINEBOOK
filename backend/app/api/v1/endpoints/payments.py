@@ -556,6 +556,63 @@ async def receive_bank_email_webhook(email_data: Dict[str, Any]):
     }
 
 
+from app.services.gmail_payment_service import GmailPaymentPoller
+
+@router.post("/check-gmail-alerts")
+async def check_gmail_payment_alerts(
+    email_address: Optional[str] = None,
+    app_password: Optional[str] = None
+):
+    """
+    Automated Gmail Alert Checker:
+    Directly checks kancharladhanush2003@gmail.com for recent credit alert emails
+    from Axis Bank, PhonePe, GPay, etc., extracts amount and UTR, and confirms matching active bookings.
+    """
+    target_email = email_address or settings.GMAIL_ADDRESS
+    target_pass = app_password or settings.GMAIL_APP_PASSWORD
+
+    if not target_pass:
+        return {
+            "success": False,
+            "configured": False,
+            "email": target_email,
+            "message": "GMAIL_APP_PASSWORD is not set yet. Please provide a 16-character Google App Password to enable direct IMAP scanning."
+        }
+
+    alerts = GmailPaymentPoller.check_recent_emails(
+        email_address=target_email,
+        app_password=target_pass,
+        max_emails=10
+    )
+
+    confirmed_orders = []
+    for alert in alerts:
+        amt = alert.get("amount")
+        utr = alert.get("utr_number") or f"GMAIL-UTR-{int(time.time()*1000)}"
+
+        # Find matching pending UPI order
+        for oid, o in sorted(UPI_ORDERS_STORE.items(), key=lambda x: x[1].get("created_at", 0), reverse=True):
+            if not o.get("paid") and amt and abs(float(o.get("amount", 0)) - float(amt)) < 0.50:
+                payment_id = f"upi_pay_gmail_{utr}"
+                await _confirm_upi_booking(order_id=oid, payment_id=payment_id, utr_number=utr)
+                confirmed_orders.append({
+                    "order_id": oid,
+                    "booking_id": o.get("booking_id"),
+                    "amount": amt,
+                    "utr_number": utr
+                })
+                break
+
+    return {
+        "success": True,
+        "configured": True,
+        "email": target_email,
+        "alerts_found": len(alerts),
+        "alerts": alerts,
+        "confirmed_orders": confirmed_orders,
+        "message": f"Scanned {len(alerts)} payment alert(s) and confirmed {len(confirmed_orders)} booking(s)."
+    }
+
 
 @router.get("/admin/pending-upi-orders")
 async def get_admin_pending_upi_orders():

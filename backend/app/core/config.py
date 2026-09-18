@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     MERCHANT_NAME: str = os.getenv("MERCHANT_NAME", "KANCHARLA DHANUSH KUMAR")
     UPI_WEBHOOK_SECRET: str = os.getenv("UPI_WEBHOOK_SECRET", "cinebook_upi_secret_2026")
     
+    # Automated Gmail Payment Alert Poller
+    GMAIL_ADDRESS: str = os.getenv("GMAIL_ADDRESS", "kancharladhanush2003@gmail.com")
+    GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "")
+    
     # Resend / Email Configuration
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")
