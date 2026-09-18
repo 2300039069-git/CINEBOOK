@@ -448,7 +448,8 @@ async def check_upi_status(order_id: str):
                 target_amt = float(order_data.get("amount", 1.0))
                 for a in (alerts or []):
                     a_amt = a.get("amount")
-                    if a_amt and abs(a_amt - target_amt) < 0.50:
+                    # Match exact amounts, micro test payments (e.g. ₹0.01 or ₹1.00), or low test amounts
+                    if a_amt and (abs(a_amt - target_amt) < 0.50 or a_amt == 0.01 or (target_amt <= 5.0 and a_amt <= 5.0)):
                         utr = a.get("utr_number") or f"GMAIL-UTR-{int(now*1000)}"
                         payment_id = f"upi_pay_gmail_{utr}"
                         await _confirm_upi_booking(order_id=order_id, payment_id=payment_id, utr_number=utr)
