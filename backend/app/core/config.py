@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     GMAIL_APP_PASSWORD: Optional[str] = os.getenv("GMAIL_APP_PASSWORD", "yuwz szcf ocvy socc")
     
     # VyaparGateway Payment Gateway
+    VYAPAR_API_KEY: str = os.getenv("VYAPAR_API_KEY", "vg_live_ldyjlAfN9ThqOb2CdAivodK8")
     VYAPAR_WEBHOOK_SECRET: Optional[str] = os.getenv("VYAPAR_WEBHOOK_SECRET", "")
     VYAPAR_MERCHANT_ID: Optional[str] = os.getenv("VYAPAR_MERCHANT_ID", "")
 
