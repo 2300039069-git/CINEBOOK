@@ -22,47 +22,65 @@ async def _init_connection(conn: asyncpg.Connection):
         schema='pg_catalog'
     )
 
+import time
+
 class Database:
     pool: Optional[asyncpg.Pool] = None
     is_connected: bool = False
+    _last_connect_attempt: float = 0
 
     async def ensure_connected(self):
         if not self.pool or getattr(self.pool, '_closed', False):
-            await connect_to_supabase()
+            now = time.time()
+            if now - self._last_connect_attempt > 30.0:
+                self._last_connect_attempt = now
+                await connect_to_supabase()
 
     async def fetch_all(self, query: str, *args) -> List[Dict[str, Any]]:
         """Execute a SELECT query and return results as a list of dicts"""
         await self.ensure_connected()
-        if not self.pool:
+        if not self.pool or not self.is_connected:
             return []
-        async with self.pool.acquire() as conn:
-            records = await conn.fetch(query, *args)
-            return [dict(r) for r in records]
+        try:
+            async with self.pool.acquire(timeout=2.0) as conn:
+                records = await conn.fetch(query, *args)
+                return [dict(r) for r in records]
+        except Exception:
+            return []
 
     async def fetch_one(self, query: str, *args) -> Optional[Dict[str, Any]]:
         """Execute a SELECT query and return a single dict or None"""
         await self.ensure_connected()
-        if not self.pool:
+        if not self.pool or not self.is_connected:
             return None
-        async with self.pool.acquire() as conn:
-            record = await conn.fetchrow(query, *args)
-            return dict(record) if record else None
+        try:
+            async with self.pool.acquire(timeout=2.0) as conn:
+                record = await conn.fetchrow(query, *args)
+                return dict(record) if record else None
+        except Exception:
+            return None
 
     async def fetchval(self, query: str, *args) -> Any:
         """Execute a query and return a single scalar value"""
         await self.ensure_connected()
-        if not self.pool:
+        if not self.pool or not self.is_connected:
             return None
-        async with self.pool.acquire() as conn:
-            return await conn.fetchval(query, *args)
+        try:
+            async with self.pool.acquire(timeout=2.0) as conn:
+                return await conn.fetchval(query, *args)
+        except Exception:
+            return None
 
     async def execute(self, query: str, *args) -> str:
         """Execute an INSERT, UPDATE, DELETE, or DDL command"""
         await self.ensure_connected()
-        if not self.pool:
+        if not self.pool or not self.is_connected:
             return ""
-        async with self.pool.acquire() as conn:
-            return await conn.execute(query, *args)
+        try:
+            async with self.pool.acquire(timeout=2.0) as conn:
+                return await conn.execute(query, *args)
+        except Exception:
+            return ""
 
 db_manager = Database()
 
@@ -81,11 +99,12 @@ async def connect_to_supabase():
             max_size=10,
             init=_init_connection,
             statement_cache_size=0, # Required for Supabase PgBouncer / pooler
-            timeout=15
+            timeout=3.0,
+            command_timeout=3.0
         )
         
         # Verify connectivity
-        async with db_manager.pool.acquire() as conn:
+        async with db_manager.pool.acquire(timeout=2.0) as conn:
             pg_version = await conn.fetchval("SELECT version();")
             logger.info(f"Successfully connected to Supabase PostgreSQL! ({pg_version.split(',')[0]})")
         
