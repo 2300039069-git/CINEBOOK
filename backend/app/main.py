@@ -208,11 +208,7 @@ app.include_router(api_router, prefix="")
 @app.post("/webhook/vyapar", tags=["Payments"])
 @app.post("/api/v1/webhook/vyapar", tags=["Payments"])
 async def vyapar_webhook_alias(req: Request):
-    try:
-        body = await req.json()
-    except Exception:
-        body = {}
     from app.api.v1.endpoints.payments import receive_vyapar_webhook
-    return await receive_vyapar_webhook(body)
+    return await receive_vyapar_webhook(req)
 
 

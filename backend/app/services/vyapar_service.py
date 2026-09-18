@@ -1,0 +1,173 @@
+import os
+import hmac
+import hashlib
+import time
+import logging
+import httpx
+import urllib.parse
+from typing import Dict, Any, Optional
+from app.core.config import settings
+
+logger = logging.getLogger("cinebook.vyapar_service")
+
+class VyaparService:
+    """
+    Official VyaparGateway API v2.1.0 Integration Service.
+    Handles dynamic order creation with BharatPe merchant routing and HMAC-SHA256 webhook signature verification.
+    """
+
+    BASE_URL = "https://vyapargateway.com/api/v1"
+
+    @classmethod
+    def get_api_key(cls) -> str:
+        return getattr(settings, "VYAPAR_API_KEY", "") or os.getenv("VYAPAR_API_KEY", "vg_live_ldyjlAfN9ThqOb2CdAivodK8")
+
+    @classmethod
+    def get_webhook_secret(cls) -> str:
+        return getattr(settings, "VYAPAR_WEBHOOK_SECRET", "") or os.getenv("VYAPAR_WEBHOOK_SECRET", "")
+
+    @classmethod
+    async def create_order(
+        cls,
+        booking_id: str,
+        amount: float,
+        customer_name: str = "Valued Cinema Guest",
+        customer_phone: str = "8639781668",
+        customer_email: str = "customer@cinebook.in",
+        movie_title: str = "Movie Ticket"
+    ) -> Dict[str, Any]:
+        """
+        Creates a dynamic payment order using official VyaparGateway API v2.1.0 specification.
+        Returns base64 QR image, UPI string, and native mobile deep links for PhonePe, GPay, Paytm, BHIM.
+        """
+        api_key = cls.get_api_key()
+        callback_url = "https://cinebook-backend-i2k9.onrender.com/api/webhook/vyapar"
+        redirect_url = f"https://cinebook.cyou/status?bookingId={booking_id}"
+        client_txn_id = f"CNB_{booking_id}_{int(time.time()*1000)}"
+        p_info = f"Movie Ticket Booking - {booking_id}"
+
+        headers = {
+            "X-API-Key": api_key,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "client_txn_id": client_txn_id,
+            "amount": round(float(amount), 2),
+            "p_info": p_info,
+            "customer_name": customer_name,
+            "customer_mobile": customer_phone,
+            "redirect_url": redirect_url,
+            "callback_url": callback_url
+        }
+
+        logger.info(f"Sending order creation to VyaparGateway: {client_txn_id} (Amount: ₹{amount})")
+
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                resp = await client.post(
+                    f"{cls.BASE_URL}/create_order",
+                    headers=headers,
+                    json=payload
+                )
+
+                data = resp.json() if resp.text else {}
+                if resp.status_code in (200, 201) and data.get("status") is True:
+                    order_data = data.get("data", {})
+                    logger.info(f"VyaparGateway order generated successfully: {order_data.get('order_id')}")
+                    
+                    return {
+                        "success": True,
+                        "gateway": "vyapar_v2",
+                        "status": "PENDING",
+                        "order_id": order_data.get("order_id"),
+                        "client_txn_id": client_txn_id,
+                        "booking_id": booking_id,
+                        "amount": float(order_data.get("amount", amount)),
+                        "qr_code": order_data.get("qr_code"),
+                        "upi_string": order_data.get("upi_string"),
+                        "upi_intent": order_data.get("upi_intent", {}),
+                        "payment_url": order_data.get("payment_url"),
+                        "merchant_upi_id": order_data.get("merchant_upi_id", "BHARATPE2J0J0S7M9F14832@unitype"),
+                        "merchant_name": order_data.get("merchant_name", "Cinebook"),
+                        "expires_in_seconds": 480
+                    }
+                else:
+                    logger.warning(f"VyaparGateway create_order response: {resp.status_code} - {resp.text}")
+        except Exception as api_err:
+            logger.error(f"VyaparGateway API request failed: {api_err}")
+
+        # Resilient Direct Dynamic UPI Intent to BharatPe Merchant Account
+        merchant_upi = getattr(settings, "MERCHANT_UPI_ID", "BHARATPE2J0J0S7M9F14832@unitype")
+        merchant_name = getattr(settings, "MERCHANT_NAME", "Cinebook")
+        upi_params = {
+            "pa": merchant_upi,
+            "pn": merchant_name,
+            "am": f"{amount:.2f}",
+            "cu": "INR",
+            "tr": client_txn_id,
+            "tn": p_info,
+            "mc": "0000",
+            "mode": "02",
+            "purpose": "00"
+        }
+        upi_str = f"upi://pay?{urllib.parse.urlencode(upi_params)}"
+
+        return {
+            "success": True,
+            "gateway": "vyapar_direct",
+            "status": "PENDING",
+            "order_id": client_txn_id,
+            "client_txn_id": client_txn_id,
+            "booking_id": booking_id,
+            "amount": float(amount),
+            "qr_code": None,
+            "upi_string": upi_str,
+            "upi_intent": {
+                "phonepe_link": f"phonepe://pay?{urllib.parse.urlencode(upi_params)}",
+                "gpay_link": f"tez://upi/pay?{urllib.parse.urlencode(upi_params)}",
+                "paytm_link": f"paytmmp://pay?{urllib.parse.urlencode(upi_params)}",
+                "bhim_link": upi_str
+            },
+            "payment_url": None,
+            "merchant_upi_id": merchant_upi,
+            "merchant_name": merchant_name,
+            "expires_in_seconds": 480
+        }
+
+    @classmethod
+    def verify_webhook_signature(
+        cls,
+        raw_body_bytes: bytes,
+        signature: Optional[str],
+        timestamp: Optional[str]
+    ) -> bool:
+        """
+        Official VyaparGateway v2.1.0 HMAC-SHA256 Webhook Signature Verification.
+        Formula: HMAC_SHA256(secret, `${timestamp}.${raw_body_string}`)
+        """
+        secret = cls.get_webhook_secret()
+        if not secret:
+            logger.info("VYAPAR_WEBHOOK_SECRET not set, allowing webhook pass-through.")
+            return True
+
+        if not signature or not timestamp:
+            logger.warning("Missing X-VyaparGateway-Signature or X-VyaparGateway-Timestamp header.")
+            return False
+
+        try:
+            raw_body_str = raw_body_bytes.decode("utf-8")
+            string_to_sign = f"{timestamp}.{raw_body_str}"
+            computed_sig = hmac.new(
+                secret.encode("utf-8"),
+                string_to_sign.encode("utf-8"),
+                hashlib.sha256
+            ).hexdigest()
+
+            is_valid = hmac.compare_digest(computed_sig, signature)
+            if not is_valid:
+                logger.warning(f"Vyapar webhook signature mismatch: computed={computed_sig}, received={signature}")
+            return is_valid
+        except Exception as sig_err:
+            logger.error(f"Webhook signature verification error: {sig_err}")
+            return False

@@ -3,8 +3,9 @@ import time
 import uuid
 import urllib.parse
 import logging
-from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Depends, status
+from typing import Optional, Dict, Any, Union
+from fastapi import APIRouter, HTTPException, Depends, status, Request
+from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.models.payment import (
     CreateOrderRequest,
@@ -23,6 +24,7 @@ from app.models.booking import BookingStatus
 from app.api.deps import get_current_active_user, get_optional_user
 from app.services.payment_service import PaymentService
 from app.services.seat_lock_service import SeatLockService
+from app.services.vyapar_service import VyaparService
 from app.api.v1.endpoints.bookings import BOOKINGS_STORE
 from app.core.database import db_manager
 
@@ -393,20 +395,31 @@ async def create_upi_qr_order(
 @router.get("/upi-status/{order_id}", response_model=UpiStatusResponse)
 async def check_upi_status(order_id: str):
     """
-    Real-time auto-polling endpoint.
-    Frontend polls every 2 seconds to check if payment was received.
+    Real-time auto-polling endpoint for VyaparGateway / UPI.
+    Frontend polls every 2 seconds to check if payment was confirmed.
     Fast, non-blocking response (<10ms).
     """
     order_data = UPI_ORDERS_STORE.get(order_id)
     if not order_data:
-        # Fallback check Supabase DB
+        # Search by order_id, client_txn_id, or booking_id across active store
+        for oid, o in UPI_ORDERS_STORE.items():
+            if (
+                o.get("order_id") == order_id or
+                o.get("client_txn_id") == order_id or
+                o.get("booking_id") == order_id
+            ):
+                order_data = o
+                break
+
+    if not order_data:
+        # Fallback check Supabase PostgreSQL DB
         if db_manager.is_connected:
             try:
                 row = await db_manager.fetch_one(
-                    "SELECT * FROM payments WHERE order_id = $1 LIMIT 1",
+                    "SELECT * FROM payments WHERE order_id = $1 OR booking_id = $1 LIMIT 1",
                     order_id
                 )
-                if row and row.get("status") in ("SUCCESS", "PAID"):
+                if row and row.get("status") in ("SUCCESS", "PAID", "CONFIRMED", "BOOKED"):
                     return UpiStatusResponse(
                         order_id=order_id,
                         booking_id=row.get("booking_id", ""),
@@ -427,13 +440,16 @@ async def check_upi_status(order_id: str):
             message="Awaiting UPI payment."
         )
 
-    is_paid = order_data.get("paid", False) or order_data.get("status") == PaymentStatus.PAID.value
+    is_paid = (
+        order_data.get("paid", False) or
+        order_data.get("status") in (PaymentStatus.PAID.value, "PAID", "CONFIRMED", "BOOKED", "SUCCESS")
+    )
 
     return UpiStatusResponse(
         order_id=order_id,
-        booking_id=order_data["booking_id"],
+        booking_id=order_data.get("booking_id", f"CB-{order_id[-6:]}"),
         status=PaymentStatus.PAID if is_paid else PaymentStatus.PENDING,
-        amount=order_data["amount"],
+        amount=order_data.get("amount", 1.0),
         paid=is_paid,
         utr_number=order_data.get("utr_number"),
         booking=order_data.get("booking"),
@@ -839,44 +855,115 @@ async def receive_instamojo_webhook(post_data: Dict[str, Any]):
 
 @router.post("/webhook/vyapar")
 @router.post("/vyapar-webhook")
-async def receive_vyapar_webhook(post_data: Dict[str, Any]):
+async def receive_vyapar_webhook(request: Request):
     """
-    Instant Webhook listener for VyaparGateway payment confirmation.
+    Official VyaparGateway API v2.1.0 Instant Webhook listener.
+    Performs raw byte HMAC-SHA256 signature verification:
+    Formula: HMAC_SHA256(secret, `${timestamp}.${raw_body_string}`)
     Transitions seat and booking state from LOCKED -> BOOKED immediately and idempotently.
     """
-    logger.info(f"Received VyaparGateway webhook payload: {post_data}")
-    
-    # 1. Normalize status
-    status_raw = str(post_data.get("status") or post_data.get("payment_status") or "").upper()
-    if status_raw not in ["SUCCESS", "PAID", "COMPLETED", "SUCCESSFUL"]:
-        logger.warning(f"Ignored non-success Vyapar webhook status: {status_raw}")
-        return {"success": True, "message": f"Non-success status acknowledged: {status_raw}"}
+    try:
+        raw_body_bytes = await request.body()
+    except Exception:
+        raw_body_bytes = b""
 
-    # 2. Extract order_id / booking_id
-    order_id = post_data.get("order_id") or post_data.get("client_txn_id") or post_data.get("txnid") or post_data.get("merchant_order_id")
-    booking_id = post_data.get("booking_id") or order_id
-    utr_number = str(post_data.get("utr") or post_data.get("payment_utr") or post_data.get("bank_ref_no") or post_data.get("txn_id") or post_data.get("ref_id") or f"VYAPAR_{int(time.time()*1000)}")
+    # Extract signature and timestamp headers
+    signature = request.headers.get("X-VyaparGateway-Signature") or request.headers.get("x-vyapargateway-signature")
+    timestamp = request.headers.get("X-VyaparGateway-Timestamp") or request.headers.get("x-vyapargateway-timestamp")
+    order_id_hdr = request.headers.get("X-VyaparGateway-Order-Id") or request.headers.get("x-vyapargateway-order-id")
+
+    # Verify HMAC-SHA256 signature if secret is configured
+    is_valid_sig = VyaparService.verify_webhook_signature(
+        raw_body_bytes=raw_body_bytes,
+        signature=signature,
+        timestamp=timestamp
+    )
+    if not is_valid_sig:
+        logger.warning("Vyapar webhook signature verification failed!")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid VyaparGateway webhook signature."
+        )
+
+    try:
+        post_data = json.loads(raw_body_bytes.decode("utf-8")) if raw_body_bytes else {}
+    except Exception:
+        post_data = {}
+
+    logger.info(f"Received verified VyaparGateway webhook payload: {post_data}")
+
+    # Check status and event
+    status_raw = str(post_data.get("status") or post_data.get("payment_status") or post_data.get("data", {}).get("status") or "").lower()
+    event_raw = str(post_data.get("event") or post_data.get("data", {}).get("event") or "").lower()
+
+    if status_raw not in ["success", "paid", "completed", "successful", "true"] and event_raw != "payment.success":
+        logger.warning(f"Ignored non-success Vyapar webhook: status={status_raw}, event={event_raw}")
+        return JSONResponse(status_code=200, content={"status": True, "message": f"Non-success status acknowledged: {status_raw}"})
+
+    client_txn_id = (
+        post_data.get("client_txn_id") or
+        post_data.get("data", {}).get("client_txn_id") or
+        ""
+    )
+    order_id = (
+        post_data.get("order_id") or
+        post_data.get("data", {}).get("order_id") or
+        order_id_hdr or
+        client_txn_id
+    )
+
+    # Extract booking_id from client_txn_id (format: CNB_${bookingId}_${timestamp} or CB-...)
+    booking_id = None
+    if client_txn_id:
+        if client_txn_id.startswith("CNB_"):
+            parts = client_txn_id.split("_")
+            if len(parts) >= 2:
+                booking_id = parts[1]
+        elif "CB-" in client_txn_id:
+            cb_match = re.search(r'(CB-[\w\-]+)', client_txn_id)
+            if cb_match:
+                booking_id = cb_match.group(1)
+
+    if not booking_id:
+        booking_id = post_data.get("booking_id") or post_data.get("data", {}).get("booking_id")
+
+    # If still not resolved, lookup in memory store
+    if not booking_id and order_id and order_id in UPI_ORDERS_STORE:
+        booking_id = UPI_ORDERS_STORE[order_id].get("booking_id")
+
+    utr_number = str(
+        post_data.get("upi_txn_id") or
+        post_data.get("utr") or
+        post_data.get("payment_utr") or
+        post_data.get("bank_ref_no") or
+        post_data.get("txn_id") or
+        post_data.get("data", {}).get("upi_txn_id") or
+        post_data.get("data", {}).get("utr") or
+        f"VG_{int(time.time()*1000)}"
+    )
     payment_id = f"vyapar_{utr_number}"
 
-    if not order_id and not booking_id:
-        raise HTTPException(status_code=400, detail="Missing order_id or booking_id in webhook payload.")
-
-    # 3. Confirm booking atomically
-    target_order_id = order_id or f"upi_ord_{booking_id}"
-    confirmed_order = await _confirm_upi_booking(
+    target_order_id = order_id or client_txn_id or f"upi_ord_{booking_id}"
+    await _confirm_upi_booking(
         order_id=target_order_id,
         payment_id=payment_id,
         utr_number=utr_number,
         booking_id=booking_id
     )
 
-    return {
-        "success": True,
-        "status": "BOOKED",
-        "booking_id": booking_id,
-        "utr": utr_number,
-        "message": "VyaparGateway payment verified and seats permanently booked."
-    }
+    logger.info(f"✨ VyaparGateway payment verified! Booking {booking_id} transitioned to BOOKED with UTR {utr_number}")
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "status": True,
+            "success": True,
+            "booking_id": booking_id,
+            "order_id": order_id,
+            "utr": utr_number,
+            "message": "VyaparGateway payment verified and seats permanently booked."
+        }
+    )
 
 
 @router.post("/create-vyapar-order")
@@ -885,50 +972,51 @@ async def create_vyapar_payment_order(
     current_user: Optional[UserResponse] = Depends(get_optional_user)
 ):
     """
-    Creates an official VyaparGateway payment order.
-    Returns dynamic payment link, dynamic UPI QR code, and registers the session for instant webhook confirmation.
+    Creates an official VyaparGateway API v2.1.0 payment order.
+    Returns dynamic base64 QR image, UPI URI string, and native UPI app intent links (PhonePe, GPay, Paytm, BHIM).
+    Routes payments directly to BharatPe merchant account (BHARATPE2J0J0S7M9F14832@unitype).
     """
     amount = float(req.amount)
     booking_id = req.booking_id
-    order_id = f"vyapar_{booking_id}"
     
     cust = req.customer_details.dict() if req.customer_details else {}
     name = (current_user.name if current_user else None) or cust.get("customer_name") or "Valued Cinema Guest"
     email = (current_user.email if current_user else None) or cust.get("customer_email") or "customer@cinebook.in"
-    phone = (current_user.phone if current_user else None) or cust.get("customer_phone") or "9848012345"
+    phone = (current_user.phone if current_user else None) or cust.get("customer_phone") or "8639781668"
 
-    upi_id = getattr(settings, "MERCHANT_UPI_ID", "8639781668-4@axl")
-    payee_name = getattr(settings, "MERCHANT_NAME", "KANCHARLA DHANUSH KUMAR")
+    order_result = await VyaparService.create_order(
+        booking_id=booking_id,
+        amount=amount,
+        customer_name=name,
+        customer_phone=phone,
+        customer_email=email,
+        movie_title="Movie Ticket"
+    )
 
-    query_params = {
-        "pa": upi_id,
-        "pn": payee_name,
-        "am": f"{amount:.2f}",
-        "cu": "INR",
-        "tr": booking_id,
-        "tn": f"CineBook-{booking_id}",
-        "mc": "0000",
-        "mode": "02",
-        "purpose": "00"
-    }
-    upi_intent_url = f"upi://pay?{urllib.parse.urlencode(query_params)}"
+    order_id = order_result.get("order_id") or f"vg_{booking_id}"
+    client_txn_id = order_result.get("client_txn_id") or f"CNB_{booking_id}_{int(time.time()*1000)}"
 
-    UPI_ORDERS_STORE[order_id] = {
+    order_record = {
+        **order_result,
         "order_id": order_id,
+        "client_txn_id": client_txn_id,
         "booking_id": booking_id,
         "amount": amount,
-        "upi_id": upi_id,
-        "payee_name": payee_name,
-        "upi_intent_url": upi_intent_url,
         "status": PaymentStatus.PENDING.value,
         "paid": False,
         "created_at": time.time(),
-        "expires_at": time.time() + 480, # 8 minutes
-        "customer_details": cust
+        "expires_at": time.time() + 480, # 8 minutes lock duration
+        "customer_details": {
+            "customer_name": name,
+            "customer_email": email,
+            "customer_phone": phone
+        }
     }
 
-    # Also register by booking_id
-    UPI_ORDERS_STORE[booking_id] = UPI_ORDERS_STORE[order_id]
+    # Register in memory store across order_id, client_txn_id, and booking_id for reliable instant lookup
+    UPI_ORDERS_STORE[order_id] = order_record
+    UPI_ORDERS_STORE[client_txn_id] = order_record
+    UPI_ORDERS_STORE[booking_id] = order_record
 
     if db_manager.is_connected:
         try:
@@ -940,19 +1028,7 @@ async def create_vyapar_payment_order(
         except Exception:
             pass
 
-    return {
-        "success": True,
-        "gateway": "vyapar",
-        "order_id": order_id,
-        "booking_id": booking_id,
-        "amount": amount,
-        "upi_id": upi_id,
-        "payee_name": payee_name,
-        "upi_intent_url": upi_intent_url,
-        "qr_data": upi_intent_url,
-        "expires_in_seconds": 480,
-        "status": "PENDING"
-    }
+    return order_result
 
 
 

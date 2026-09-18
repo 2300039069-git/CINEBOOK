@@ -293,10 +293,10 @@ export default function CheckoutPage() {
       setIsUpiModalOpen(true);
       setShowUtrFallback(false);
       setUtrInput('');
-      setSecondsRemaining(order.expires_in_seconds || 300);
+      setSecondsRemaining(order.expires_in_seconds || 480);
       setPaymentSuccess(false);
 
-      // Start countdown timer (5 minutes total seat hold)
+      // Start countdown timer (8 minutes total atomic seat hold)
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
       countdownTimerRef.current = setInterval(() => {
         setSecondsRemaining((prev) => {
@@ -332,11 +332,11 @@ export default function CheckoutPage() {
 
   // Copy UPI ID to clipboard
   const handleCopyUpi = () => {
-    if (!upiOrder?.upi_id) return;
-    navigator.clipboard.writeText(upiOrder.upi_id);
+    const upiToCopy = upiOrder?.merchant_upi_id || upiOrder?.upi_id || 'BHARATPE2J0J0S7M9F14832@unitype';
+    navigator.clipboard.writeText(upiToCopy);
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2000);
-    if (typeof toast?.info === 'function') toast.info('UPI ID copied to clipboard');
+    if (typeof toast?.info === 'function') toast.info('Merchant UPI ID copied to clipboard');
   };
 
   // Instant simulation helper for test/demo mode
@@ -588,24 +588,34 @@ export default function CheckoutPage() {
                     <span className="text-xs text-text-muted font-medium block">Total Payable Amount</span>
                     <span className="text-3xl font-black text-primary tracking-tight">₹{upiOrder.amount.toFixed(2)}</span>
                     <span className="text-[11px] text-text-muted block mt-0.5 font-medium">
-                      Payee: <span className="text-text-primary font-bold">{upiOrder.payee_name}</span>
+                      Payee: <span className="text-text-primary font-bold">{upiOrder.merchant_name || upiOrder.payee_name || "Cinebook"}</span>
                     </span>
                   </div>
 
-                  {/* High Resolution Dynamic QR Code */}
-                  <div className="relative p-3.5 bg-white rounded-2xl shadow-xl shadow-black/40 border-4 border-primary/30 flex items-center justify-center">
-                    <QRCodeSVG
-                      value={upiOrder.qr_data || upiOrder.upi_intent_url}
-                      size={195}
-                      level="H"
-                      includeMargin={false}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center border border-slate-200">
-                        <span className="text-xs font-black text-primary">CB</span>
+                  {/* High Resolution Dynamic QR Code (Vyapar base64 or SVG) */}
+                  {upiOrder.qr_code ? (
+                    <div className="relative p-2.5 bg-white rounded-2xl shadow-xl shadow-black/40 border-4 border-primary/30 flex items-center justify-center">
+                      <img
+                        src={upiOrder.qr_code}
+                        alt="VyaparGateway BharatPe QR"
+                        className="w-[195px] h-[195px] object-contain rounded-xl"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative p-3.5 bg-white rounded-2xl shadow-xl shadow-black/40 border-4 border-primary/30 flex items-center justify-center">
+                      <QRCodeSVG
+                        value={upiOrder.upi_string || upiOrder.qr_data || upiOrder.upi_intent_url}
+                        size={195}
+                        level="H"
+                        includeMargin={false}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center border border-slate-200">
+                          <span className="text-xs font-black text-primary">CB</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Live Auto-Polling Status Radar */}
                   <div className="w-full p-3 rounded-2xl bg-surface-elevated border border-primary/20 flex items-center justify-between gap-3">
@@ -616,7 +626,7 @@ export default function CheckoutPage() {
                       </span>
                       <div className="text-left">
                         <p className="text-xs font-bold text-text-primary">Waiting for payment...</p>
-                        <p className="text-[10px] text-text-muted">Listening for PhonePe / GPay / Paytm / SMS / Email Alert</p>
+                        <p className="text-[10px] text-text-muted">Listening for PhonePe / GPay / Paytm / SMS / Webhook Alert</p>
                       </div>
                     </div>
                     <Loader2 size={16} className="animate-spin text-primary shrink-0" />
@@ -629,41 +639,41 @@ export default function CheckoutPage() {
                     </p>
                     <div className="grid grid-cols-3 gap-2">
                       <a
-                        href={upiOrder.upi_intent_url}
+                        href={upiOrder.upi_intent?.phonepe_link || upiOrder.upi_intent_url || upiOrder.upi_string}
                         onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-purple-400 font-extrabold">PhonePe</span>
-                        <span className="text-[9px] text-text-muted">Instant</span>
+                        <span className="text-[9px] text-text-muted">Direct App</span>
                       </a>
                       <a
-                        href={upiOrder.upi_intent_url}
+                        href={upiOrder.upi_intent?.gpay_link || upiOrder.upi_intent_url || upiOrder.upi_string}
                         onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-blue-400 font-extrabold">Google Pay</span>
-                        <span className="text-[9px] text-text-muted">Instant</span>
+                        <span className="text-[9px] text-text-muted">Direct App</span>
                       </a>
                       <a
-                        href={upiOrder.upi_intent_url}
+                        href={upiOrder.upi_intent?.paytm_link || upiOrder.upi_intent_url || upiOrder.upi_string}
                         onClick={() => setShowUtrFallback(true)}
                         className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
                         <span className="text-sky-400 font-extrabold">Paytm / BHIM</span>
-                        <span className="text-[9px] text-text-muted">Instant</span>
+                        <span className="text-[9px] text-text-muted">Direct App</span>
                       </a>
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <a
-                        href={upiOrder.upi_intent_url}
+                        href={upiOrder.upi_intent?.bhim_link || upiOrder.upi_string || upiOrder.upi_intent_url}
                         onClick={() => setShowUtrFallback(true)}
                         className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
                       >
-                        <span>CRED UPI</span>
+                        <span>BHIM UPI</span>
                         <ExternalLink size={12} className="text-text-muted" />
                       </a>
                       <a
-                        href={upiOrder.upi_intent_url}
+                        href={upiOrder.upi_string || upiOrder.upi_intent_url}
                         onClick={() => setShowUtrFallback(true)}
                         className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
                       >
@@ -673,12 +683,12 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Savings UPI ID Copy Bar */}
+                  {/* Savings / BharatPe UPI ID Copy Bar */}
                   <div className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-elevated border border-border text-xs">
                     <div className="truncate text-left pr-2">
-                      <span className="text-[10px] text-text-muted block">Direct Payee UPI ID:</span>
+                      <span className="text-[10px] text-text-muted block">Direct Payee UPI ID (BharatPe):</span>
                       <span className="font-mono text-xs font-bold text-text-primary truncate block">
-                        {upiOrder.upi_id}
+                        {upiOrder.merchant_upi_id || upiOrder.upi_id || "BHARATPE2J0J0S7M9F14832@unitype"}
                       </span>
                     </div>
                     <button
