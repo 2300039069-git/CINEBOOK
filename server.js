@@ -58,7 +58,7 @@ app.post(['/api/webhook/vyapar', '/webhook/vyapar'], express.raw({ type: 'applic
 
       if (bookingId) {
         try {
-          await supabase
+          const { data: bData } = await supabase
             .from('bookings')
             .update({
               status: 'BOOKED',
@@ -67,7 +67,32 @@ app.post(['/api/webhook/vyapar', '/webhook/vyapar'], express.raw({ type: 'applic
               payment_id: `vyapar_${upiTxnId}`,
               confirmed_at: new Date().toISOString()
             })
-            .eq('booking_id', bookingId);
+            .eq('booking_id', bookingId)
+            .select();
+
+          const bookingRecord = bData && bData[0];
+          if (bookingRecord) {
+            const showId = bookingRecord.show_id;
+            let seatsList = bookingRecord.seats || [];
+            if (typeof seatsList === 'string') {
+              try { seatsList = JSON.parse(seatsList); } catch (e) {}
+            }
+            if (Array.isArray(seatsList)) {
+              for (const s of seatsList) {
+                const sId = typeof s === 'string' ? s : (s.id || s.seat_id);
+                if (sId) {
+                  const seatRowId = `${showId}:${sId}`;
+                  await supabase.from('seats').upsert({
+                    id: seatRowId,
+                    show_id: showId,
+                    seat_id: sId,
+                    status: 'BOOKED',
+                    updated_at: new Date().toISOString()
+                  });
+                }
+              }
+            }
+          }
 
           console.log(`[VyaparGateway Webhook] Supabase booking ${bookingId} transitioned to BOOKED with UTR ${upiTxnId}`);
         } catch (dbErr) {
@@ -161,7 +186,7 @@ app.get(['/api/check-status/:orderId', '/check-status/:orderId', '/api/v1/paymen
       const bId = clientTxnId.startsWith('CNB_') ? clientTxnId.split('_')[1] : (orderInfo.booking_id || clientTxnId);
       if (bId) {
         try {
-          await supabase
+          const { data: bData } = await supabase
             .from('bookings')
             .update({
               status: 'BOOKED',
@@ -170,7 +195,32 @@ app.get(['/api/check-status/:orderId', '/check-status/:orderId', '/api/v1/paymen
               payment_id: `vyapar_${utr}`,
               confirmed_at: new Date().toISOString()
             })
-            .eq('booking_id', bId);
+            .eq('booking_id', bId)
+            .select();
+
+          const bookingRecord = bData && bData[0];
+          if (bookingRecord) {
+            const showId = bookingRecord.show_id;
+            let seatsList = bookingRecord.seats || [];
+            if (typeof seatsList === 'string') {
+              try { seatsList = JSON.parse(seatsList); } catch (e) {}
+            }
+            if (Array.isArray(seatsList)) {
+              for (const s of seatsList) {
+                const sId = typeof s === 'string' ? s : (s.id || s.seat_id);
+                if (sId) {
+                  const seatRowId = `${showId}:${sId}`;
+                  await supabase.from('seats').upsert({
+                    id: seatRowId,
+                    show_id: showId,
+                    seat_id: sId,
+                    status: 'BOOKED',
+                    updated_at: new Date().toISOString()
+                  });
+                }
+              }
+            }
+          }
 
           console.log(`[Active Check] Supabase updated to BOOKED for ${bId} with UTR ${utr}`);
         } catch (e) {

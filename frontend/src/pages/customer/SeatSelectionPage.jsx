@@ -15,8 +15,9 @@ import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../da
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { useToast } from '../../context/ToastContext';
-import { seatLockManager, getShowKey, getTabId } from '../../services/seatLockManager';
+import { seatLockManager, getShowKey, getTabId, getTabLockToken } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
+import { supabase } from '../../services/supabaseClient';
 import SeatGrid from '../../components/booking/SeatGrid';
 import { LoginModal } from '../../components/auth/LoginModal';
 import { Button } from '../../components/ui/Button';
@@ -212,8 +213,8 @@ const SeatSelectionPage = () => {
     // 1. Initial fetch
     fetchLatestLayout();
 
-    // 2. High-speed real-time polling (every 1500ms) for instantaneous cross-account / cross-browser seat sync
-    const pollTimer = setInterval(fetchLatestLayout, 1500);
+    // 2. High-speed real-time polling fallback
+    const pollTimer = setInterval(fetchLatestLayout, 3000);
 
     // 3. Local cross-tab broadcast listener (0ms instant cross-window sync)
     const unsubscribe = seatLockManager.subscribe((event) => {
@@ -225,10 +226,109 @@ const SeatSelectionPage = () => {
       }
     });
 
+    // 4. Supabase Realtime Subscription (<10ms instant multi-client / cross-browser sync)
+    const channel = supabase
+      .channel(`realtime:seats:${show.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seats' },
+        (payload) => {
+          if (!isMounted) return;
+          const updatedSeat = payload.new || payload.old;
+          if (!updatedSeat) return;
+          if (updatedSeat.show_id && updatedSeat.show_id !== show.id) return;
+
+          const seatId = updatedSeat.seat_id || (updatedSeat.id && updatedSeat.id.includes(':') ? updatedSeat.id.split(':')[1] : updatedSeat.id);
+          if (!seatId) return;
+
+          const currentToken = getTabLockToken();
+          const isMine = updatedSeat.lock_token === currentToken || (updatedSeat.user_id && user && updatedSeat.user_id === user.id);
+          const isOtherLocked = !isMine && updatedSeat.status === 'LOCKED';
+
+          setLiveStatuses((prev) => ({
+            ...prev,
+            [seatId]: {
+              status: updatedSeat.status === 'AVAILABLE' ? 'AVAILABLE' : (isMine ? 'AVAILABLE' : updatedSeat.status),
+              isLockedByOtherTab: isOtherLocked,
+              isLockedByCurrentTab: isMine,
+              lockToken: updatedSeat.lock_token,
+              expiresAt: updatedSeat.expires_at ? new Date(updatedSeat.expires_at).getTime() : Date.now() + 8 * 60 * 1000
+            }
+          }));
+
+          if (isOtherLocked || updatedSeat.status === 'BOOKED') {
+            const currentSelected = selectedSeatsRef.current || [];
+            if (currentSelected.some((s) => s.id === seatId)) {
+              toast.conflict(`Seat ${seatId} was just reserved by another customer.`);
+              toggleSeatSelection({ id: seatId }, currentShowKey, show.id);
+            }
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seat_locks' },
+        (payload) => {
+          if (!isMounted) return;
+          const lock = payload.new || payload.old;
+          if (!lock || (lock.show_id && lock.show_id !== show.id)) return;
+          const seatId = lock.seat_id;
+          if (!seatId) return;
+
+          const currentToken = getTabLockToken();
+          const isMine = lock.lock_token === currentToken || (lock.user_id && user && lock.user_id === user.id);
+          const isOtherLocked = !isMine && (lock.status === 'LOCKED' || payload.eventType === 'INSERT' || payload.eventType === 'UPDATE');
+
+          if (payload.eventType === 'DELETE') {
+            setLiveStatuses((prev) => ({
+              ...prev,
+              [seatId]: {
+                status: 'AVAILABLE',
+                isLockedByOtherTab: false,
+                isLockedByCurrentTab: false
+              }
+            }));
+          } else {
+            setLiveStatuses((prev) => ({
+              ...prev,
+              [seatId]: {
+                status: lock.status === 'BOOKED' ? 'BOOKED' : (isMine ? 'AVAILABLE' : 'LOCKED'),
+                isLockedByOtherTab: isOtherLocked,
+                isLockedByCurrentTab: isMine,
+                lockToken: lock.lock_token,
+                expiresAt: lock.expires_at ? new Date(lock.expires_at).getTime() : Date.now() + 8 * 60 * 1000
+              }
+            }));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'booked_seats' },
+        (payload) => {
+          if (!isMounted) return;
+          const rec = payload.new;
+          if (!rec || (rec.show_id && rec.show_id !== show.id)) return;
+          const seatId = rec.seat_id;
+          if (!seatId) return;
+
+          setLiveStatuses((prev) => ({
+            ...prev,
+            [seatId]: {
+              status: 'BOOKED',
+              isLockedByOtherTab: false,
+              isLockedByCurrentTab: false
+            }
+          }));
+        }
+      )
+      .subscribe();
+
     return () => {
       isMounted = false;
       clearInterval(pollTimer);
       unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [show.id, currentShowKey]);
 

@@ -41,7 +41,7 @@ const SeatGrid = ({
         {/* State Badges */}
         <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
+            <div className="w-4 h-4 rounded-md bg-white dark:bg-slate-800 border border-emerald-500/50 shadow-xs"></div>
             <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Available</span>
           </div>
           <div className="flex items-center gap-2">
@@ -51,13 +51,13 @@ const SeatGrid = ({
             <span className="text-slate-900 dark:text-slate-100 font-bold text-xs">Selected</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-500 flex items-center justify-center text-[10px]">
+            <div className="w-4 h-4 rounded-md bg-amber-500/20 border border-amber-500 text-amber-500 flex items-center justify-center text-[10px]">
               <Clock className="w-2.5 h-2.5" />
             </div>
-            <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Locked</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold text-xs">Locked (Seat in progress)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-md bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 opacity-40 flex items-center justify-center text-[10px] text-slate-500">
+            <div className="w-4 h-4 rounded-md bg-rose-500/10 dark:bg-slate-900 border border-rose-500/30 opacity-60 flex items-center justify-center text-[10px] text-rose-500">
               ✕
             </div>
             <span className="text-slate-600 dark:text-slate-400 font-medium text-xs">Sold Out</span>
@@ -66,7 +66,7 @@ const SeatGrid = ({
 
         <div className="flex items-center gap-1.5 text-[11px] text-primary font-semibold">
           <ShieldCheck className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-          <span>Atomic Seat Lock Active</span>
+          <span>Realtime Seat Lock Active</span>
         </div>
       </div>
 
@@ -115,25 +115,27 @@ const SeatGrid = ({
                                 isSelected
                                   ? `${seat.id} — Selected (Click to remove)`
                                   : isLocked
-                                  ? `${seat.id} — Locked by another customer`
+                                  ? `${seat.id} — Seat in progress (Held by another customer)`
                                   : isBooked
                                   ? `${seat.id} — Sold Out`
-                                  : `${seat.id} — ₹${seat.price}`
+                                  : `${seat.id} — ₹${seat.price} (Available)`
                               }
                               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center select-none relative ${
                                 isSelected
-                                  ? 'bg-gradient-to-br from-primary to-red-700 text-white shadow-md shadow-primary/30 ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-[#161B26] scale-110 active:scale-95 cursor-pointer z-10 font-black'
+                                  ? 'bg-gradient-to-br from-primary to-red-700 text-white shadow-md shadow-primary/30 ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-[#161B26] scale-110 active:scale-95 cursor-pointer z-10 font-black pointer-events-auto'
                                   : isLocked
-                                  ? 'bg-amber-500/20 border border-amber-500/50 text-amber-500 cursor-not-allowed opacity-80 shadow-xs'
+                                  ? 'bg-amber-500/20 dark:bg-amber-500/25 border border-amber-500 text-amber-500 dark:text-amber-400 cursor-not-allowed pointer-events-none opacity-90 shadow-xs'
                                   : isBooked
-                                  ? 'bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 opacity-20 cursor-not-allowed text-slate-400'
-                                  : 'bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 hover:border-primary hover:text-primary text-slate-800 dark:text-slate-100 hover:scale-105 active:scale-95 cursor-pointer shadow-xs'
+                                  ? 'bg-rose-500/10 dark:bg-slate-900 border border-rose-500/30 dark:border-slate-800 opacity-40 cursor-not-allowed pointer-events-none text-rose-500 dark:text-slate-500 line-through'
+                                  : 'bg-white dark:bg-slate-800/80 border border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-slate-800 dark:text-slate-100 hover:text-emerald-600 hover:scale-105 active:scale-95 cursor-pointer shadow-xs pointer-events-auto'
                               }`}
                             >
                               {isSelected ? (
                                 <CinebookSeat3D size="md" />
                               ) : isLocked ? (
                                 <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                              ) : isBooked ? (
+                                '✕'
                               ) : (
                                 seat.number
                               )}

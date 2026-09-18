@@ -24,6 +24,7 @@ import {
 import { MOVIES, THEATRES } from '../../data/mockData';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
 import { seatLockManager, getShowKey as getGlobalShowKey } from '../../services/seatLockManager';
+import { supabase } from '../../services/supabaseClient';
 import api from '../../services/api';
 
 // Base Screen 1 Seat Layout Template
@@ -87,9 +88,11 @@ const PartnerCounterPosPage = () => {
     `cinebook_booked_${theatreId || 'th-gtr-001'}_${movieId || 'mov-pushpa-2'}_${showId || 'sh-1'}_${date || 'today'}`;
 
   const [bookedSeatsSet, setBookedSeatsSet] = useState(new Set());
+  const [lockedSeatsSet, setLockedSeatsSet] = useState(new Set());
 
-  // Load booked seats when theatre, movie, show, or date changes
+  // Load booked seats and subscribe to realtime Postgres changes when theatre, movie, show, or date changes
   useEffect(() => {
+    let isMounted = true;
     const key = getShowKey(selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate);
     const saved = localStorage.getItem(key);
     let initialList = [];
@@ -107,7 +110,6 @@ const PartnerCounterPosPage = () => {
           });
         });
       });
-      // Save initial baseline
       try {
         localStorage.setItem(key, JSON.stringify(initialList));
       } catch (e) {}
@@ -115,6 +117,112 @@ const PartnerCounterPosPage = () => {
 
     setBookedSeatsSet(new Set(initialList));
     setSelectedSeats([]); // Clear current selection on show change
+
+    // Fetch latest live layout from API
+    api.get(`/seats/${selectedShow.id}/layout`).then((res) => {
+      if (!isMounted || !res?.tiers) return;
+      const booked = new Set(initialList);
+      const locked = new Set();
+      res.tiers.forEach((t) => {
+        (t.rows || []).forEach((r) => {
+          (r.seats || []).forEach((s) => {
+            if (s.status === 'BOOKED') booked.add(s.id);
+            else if (s.status === 'LOCKED') locked.add(s.id);
+          });
+        });
+      });
+      setBookedSeatsSet(booked);
+      setLockedSeatsSet(locked);
+    }).catch(() => {});
+
+    // Supabase Realtime Channel
+    const channel = supabase
+      .channel(`realtime:counter:${selectedShow.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seats' },
+        (payload) => {
+          if (!isMounted) return;
+          const updated = payload.new || payload.old;
+          if (!updated || (updated.show_id && updated.show_id !== selectedShow.id)) return;
+          const sId = updated.seat_id || (updated.id && updated.id.includes(':') ? updated.id.split(':')[1] : updated.id);
+          if (!sId) return;
+
+          if (updated.status === 'BOOKED') {
+            setBookedSeatsSet((prev) => new Set([...prev, sId]));
+            setLockedSeatsSet((prev) => {
+              const next = new Set(prev);
+              next.delete(sId);
+              return next;
+            });
+          } else if (updated.status === 'LOCKED') {
+            setLockedSeatsSet((prev) => new Set([...prev, sId]));
+          } else if (updated.status === 'AVAILABLE') {
+            setLockedSeatsSet((prev) => {
+              const next = new Set(prev);
+              next.delete(sId);
+              return next;
+            });
+            setBookedSeatsSet((prev) => {
+              const next = new Set(prev);
+              next.delete(sId);
+              return next;
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'seat_locks' },
+        (payload) => {
+          if (!isMounted) return;
+          const lock = payload.new || payload.old;
+          if (!lock || (lock.show_id && lock.show_id !== selectedShow.id)) return;
+          const sId = lock.seat_id;
+          if (!sId) return;
+
+          if (payload.eventType === 'DELETE') {
+            setLockedSeatsSet((prev) => {
+              const next = new Set(prev);
+              next.delete(sId);
+              return next;
+            });
+          } else if (lock.status === 'LOCKED') {
+            setLockedSeatsSet((prev) => new Set([...prev, sId]));
+          } else if (lock.status === 'BOOKED') {
+            setBookedSeatsSet((prev) => new Set([...prev, sId]));
+            setLockedSeatsSet((prev) => {
+              const next = new Set(prev);
+              next.delete(sId);
+              return next;
+            });
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'booked_seats' },
+        (payload) => {
+          if (!isMounted) return;
+          const rec = payload.new;
+          if (!rec || (rec.show_id && rec.show_id !== selectedShow.id)) return;
+          const sId = rec.seat_id;
+          if (!sId) return;
+
+          setBookedSeatsSet((prev) => new Set([...prev, sId]));
+          setLockedSeatsSet((prev) => {
+            const next = new Set(prev);
+            next.delete(sId);
+            return next;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
   }, [selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate]);
 
   // Counter transaction history loaded from localStorage
@@ -423,18 +531,22 @@ const PartnerCounterPosPage = () => {
                           {row.seats.map((seatNum) => {
                             const seatId = `${row.rowLetter}${seatNum}`;
                             const isBlocked = bookedSeatsSet.has(seatId);
-                            const isCounterHeld = row.counterHeld.includes(seatNum) && !isBlocked;
+                            const isLocked = !isBlocked && lockedSeatsSet.has(seatId);
+                            const isCounterHeld = row.counterHeld.includes(seatNum) && !isBlocked && !isLocked;
                             const isSelected = selectedSeats.some((s) => s.id === seatId);
+                            const isDisabled = isBlocked || isLocked;
 
                             return (
                               <React.Fragment key={seatNum}>
                                 <button
                                   type="button"
-                                  disabled={isBlocked}
-                                  onClick={() => handleToggleSeat(seatId, tier.name, tier.price, isBlocked)}
+                                  disabled={isDisabled}
+                                  onClick={() => handleToggleSeat(seatId, tier.name, tier.price, isDisabled)}
                                   title={
                                     isBlocked
                                       ? `Seat ${seatId} is BLOCKED / ALREADY BOOKED`
+                                      : isLocked
+                                      ? `Seat ${seatId} — Seat in progress (Online user hold)`
                                       : isCounterHeld
                                       ? `Seat ${seatId} (Counter Quota) - ₹${tier.price}`
                                       : `Seat ${seatId} - ₹${tier.price}`
@@ -442,6 +554,8 @@ const PartnerCounterPosPage = () => {
                                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center relative cursor-pointer ${
                                     isBlocked
                                       ? 'bg-surface-elevated border border-border text-text-muted cursor-not-allowed opacity-40 line-through'
+                                      : isLocked
+                                      ? 'bg-amber-500/25 border border-amber-500 text-amber-500 cursor-not-allowed opacity-90 shadow-xs'
                                       : isSelected
                                       ? 'bg-accent text-white shadow-sm scale-110 ring-2 ring-accent'
                                       : isCounterHeld
@@ -449,7 +563,7 @@ const PartnerCounterPosPage = () => {
                                       : 'bg-surface-elevated border border-border text-text-secondary hover:border-amber-500 hover:scale-105'
                                   }`}
                                 >
-                                  {isBlocked ? '✕' : isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
+                                  {isBlocked ? '✕' : isLocked ? '🔒' : isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
                                 </button>
                                 {seatNum === 4 || seatNum === row.seats.length - 4 ? <div className="w-3 sm:w-4" /> : null}
                               </React.Fragment>

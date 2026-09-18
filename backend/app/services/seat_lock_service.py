@@ -50,11 +50,18 @@ class SeatLockService:
         db_locks: Dict[str, dict] = {}
         if db_manager.is_connected:
             try:
-                # 0. Purge expired locks in database on query time
+                # 0. Purge expired locks in database on query time and broadcast AVAILABLE
                 await db_manager.execute(
                     "DELETE FROM seat_locks WHERE expires_at <= $1 AND status = 'LOCKED';",
                     now
                 )
+                try:
+                    await db_manager.execute(
+                        "UPDATE seats SET status = 'AVAILABLE', lock_token = NULL, user_id = NULL, updated_at = NOW() WHERE expires_at <= $1 AND status = 'LOCKED';",
+                        now
+                    )
+                except Exception:
+                    pass
 
                 # 1. Permanently booked seats from booked_seats table and confirmed bookings table
                 booked_rows = await db_manager.fetch_all(
@@ -288,6 +295,24 @@ class SeatLockService:
                             """,
                             show_id, seat_id, user_id, lock_token, now, expires_at
                         )
+                        # Sync to seats table for instant Supabase Realtime broadcast
+                        seat_row_id = f"{show_id}:{seat_id}"
+                        await db_manager.execute(
+                            """
+                            INSERT INTO seats (
+                                id, show_id, seat_id, status, lock_token, user_id, locked_at, expires_at, updated_at
+                            ) VALUES (
+                                $1, $2, $3, 'LOCKED', $4, $5, $6, $7, NOW()
+                            ) ON CONFLICT (id) DO UPDATE SET
+                                status = 'LOCKED',
+                                lock_token = EXCLUDED.lock_token,
+                                user_id = EXCLUDED.user_id,
+                                locked_at = EXCLUDED.locked_at,
+                                expires_at = EXCLUDED.expires_at,
+                                updated_at = NOW();
+                            """,
+                            seat_row_id, show_id, seat_id, lock_token, user_id, now, expires_at
+                        )
                 except Exception as e:
                     logger.error(f"Supabase lock error: {e}")
                     raise HTTPException(
@@ -328,9 +353,25 @@ class SeatLockService:
                             "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND seat_id = ANY($3) AND status = 'LOCKED';",
                             show_id, lock_token, seat_ids
                         )
+                        for s_id in seat_ids:
+                            seat_row_id = f"{show_id}:{s_id}"
+                            await db_manager.execute(
+                                """
+                                UPDATE seats SET status = 'AVAILABLE', lock_token = NULL, user_id = NULL, updated_at = NOW()
+                                WHERE id = $1 AND status != 'BOOKED';
+                                """,
+                                seat_row_id
+                            )
                     else:
                         await db_manager.execute(
                             "DELETE FROM seat_locks WHERE show_id = $1 AND lock_token = $2 AND status = 'LOCKED';",
+                            show_id, lock_token
+                        )
+                        await db_manager.execute(
+                            """
+                            UPDATE seats SET status = 'AVAILABLE', lock_token = NULL, user_id = NULL, updated_at = NOW()
+                            WHERE show_id = $1 AND lock_token = $2 AND status != 'BOOKED';
+                            """,
                             show_id, lock_token
                         )
                         await db_manager.execute(
@@ -575,7 +616,7 @@ class SeatLockService:
                             detail=f"Seat {seat_id} was booked by another customer before your payment completed."
                         )
 
-                # Update seat_locks status to BOOKED
+                # Update seat_locks status to BOOKED and sync seats table
                 for seat_id in seat_ids:
                     await db_manager.execute(
                         """
@@ -591,6 +632,21 @@ class SeatLockService:
                             expires_at = EXCLUDED.expires_at;
                         """,
                         show_id, seat_id, user_id, lock_token, now, max_dt
+                    )
+                    seat_row_id = f"{show_id}:{seat_id}"
+                    await db_manager.execute(
+                        """
+                        INSERT INTO seats (
+                            id, show_id, seat_id, status, lock_token, user_id, locked_at, expires_at, updated_at
+                        ) VALUES (
+                            $1, $2, $3, 'BOOKED', $4, $5, $6, $7, NOW()
+                        ) ON CONFLICT (id) DO UPDATE SET
+                            status = 'BOOKED',
+                            lock_token = EXCLUDED.lock_token,
+                            user_id = EXCLUDED.user_id,
+                            updated_at = NOW();
+                        """,
+                        seat_row_id, show_id, seat_id, lock_token, user_id, now, max_dt
                     )
 
             # 3. Store in Memory

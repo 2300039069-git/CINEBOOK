@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     CASHFREE_ENV: str = os.getenv("CASHFREE_ENV", "sandbox")
     
     # Concurrency Seat Lock Duration (seconds)
-    SEAT_LOCK_DURATION_SECONDS: int = 300 # 5 minutes
+    SEAT_LOCK_DURATION_SECONDS: int = 480 # 8 minutes atomic hold
     
     # Direct UPI QR Code Payment Settings (PhonePe / Axis Bank QR)
     MERCHANT_UPI_ID: str = os.getenv("MERCHANT_UPI_ID", "8639781668-4@axl")
