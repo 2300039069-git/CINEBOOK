@@ -261,299 +261,19 @@ export const INITIAL_CANTEEN_ORDERS = [
   }
 ];
 
-// USER-SPECIFIED THEATRES FOR GUNTUR, VIJAYAWADA & TENALI
+// // USER-SPECIFIED THEATRE: SIVA CINEMAS ONLY
 export const THEATRES = [
-  // --- GUNTUR THEATRES (7 THEATRES) ---
   {
     id: 'th-gtr-001',
     name: 'Siva Cinemas',
     slug: 'siva-cinemas-guntur',
     city: 'guntur',
     address: 'Near Old Bus Stand, Guntur',
-    facilities: ['4K Laser Projection', 'Dolby Atmos', 'Plush Pushback Seats', 'Parking'],
+    facilities: ['4K Laser Projection', 'Dolby Atmos', 'Plush Pushback Seats', 'Parking', 'Canteen'],
     distance: '1.2 km away',
     cancellationPolicy: 'Refundable up to 2 hours before showtime',
     screens: [
-      { id: 'scr-gtr-01', name: 'Screen 1 4K Laser', sound: 'Dolby Atmos', totalSeats: 280 }
-    ]
-  },
-  {
-    id: 'th-gtr-002',
-    name: 'Studio 81 Cinemas',
-    slug: 'studio-81-cinemas-guntur',
-    city: 'guntur',
-    address: 'Arundelpet Main Road, Guntur',
-    facilities: ['RGB 4K Laser', 'Dolby 7.1 Surround', 'Luxury Loungers', 'Cafeteria'],
-    distance: '2.0 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-02', name: 'Audi 1', sound: 'Dolby 7.1', totalSeats: 220 }
-    ]
-  },
-  {
-    id: 'th-gtr-003',
-    name: 'Bhaskar Cinemas',
-    slug: 'bhaskar-cinemas-guntur',
-    city: 'guntur',
-    address: 'Kothapet, Main Road, Guntur',
-    facilities: ['4K Digital Projection', 'Dolby Atmos 64-Channel', 'Air Conditioned'],
-    distance: '1.8 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-03', name: 'Main Screen', sound: 'Dolby Atmos', totalSeats: 310 }
-    ]
-  },
-  {
-    id: 'th-gtr-004',
-    name: 'GS Cinemas',
-    slug: 'gs-cinemas-guntur',
-    city: 'guntur',
-    address: 'Brodipet 4/2, Guntur',
-    facilities: ['4K Laser 3D', 'Dolby Atmos', 'Pushback Premium Seats'],
-    distance: '1.5 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-04', name: 'Audi 1 (Dolby)', sound: 'Dolby Atmos', totalSeats: 250 }
-    ]
-  },
-  {
-    id: 'th-gtr-005',
-    name: 'Naz / Hollywood Theater Complex',
-    slug: 'naz-hollywood-complex-guntur',
-    city: 'guntur',
-    address: 'Naaz Centre, GT Road, Guntur',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos 7.1', 'Balcony & First Class', 'Food Court'],
-    distance: '0.9 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-05', name: 'Hollywood Screen', sound: 'Dolby Atmos', totalSeats: 350 },
-      { id: 'scr-gtr-06', name: 'Bollywood Screen', sound: 'Dolby 7.1', totalSeats: 300 }
-    ]
-  },
-  {
-    id: 'th-gtr-006',
-    name: 'Saraswathi Theatre',
-    slug: 'saraswathi-theatre-guntur',
-    city: 'guntur',
-    address: 'Brodipet 2nd Line, Guntur',
-    facilities: ['Qube 4K Projection', 'Dolby Digital Surround', 'Parking'],
-    distance: '1.4 km away',
-    cancellationPolicy: 'Refundable up to 3 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-07', name: 'Main Hall', sound: 'Dolby 7.1', totalSeats: 290 }
-    ]
-  },
-  {
-    id: 'th-gtr-007',
-    name: 'Sri Lakshmi Cinema Hall',
-    slug: 'sri-lakshmi-cinema-guntur',
-    city: 'guntur',
-    address: 'Nallapadu Road, Guntur',
-    facilities: ['4K Digital Projection', 'Dolby Surround Sound', 'AC Balcony'],
-    distance: '3.1 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-gtr-08', name: 'Screen 1', sound: 'Dolby Surround', totalSeats: 260 }
-    ]
-  },
-
-  // --- VIJAYAWADA THEATRES (8 THEATRES) ---
-  {
-    id: 'th-vja-001',
-    name: 'G3 Raj Yuvraj',
-    slug: 'g3-raj-yuvraj-vijayawada',
-    city: 'vijayawada',
-    address: 'Gandhi Nagar, Vijayawada',
-    facilities: ['4K Laser 3D', 'Dolby Atmos 7.1', 'Recliners', 'Cafeteria'],
-    distance: '1.6 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-01', name: 'Raj Screen (Dolby Atmos)', sound: 'Dolby Atmos', totalSeats: 320 },
-      { id: 'scr-vja-02', name: 'Yuvraj Screen', sound: 'Dolby 7.1', totalSeats: 260 }
-    ]
-  },
-  {
-    id: 'th-vja-002',
-    name: 'Ravi Cinemas',
-    slug: 'ravi-cinemas-vijayawada',
-    city: 'vijayawada',
-    address: 'Governorpet, Vijayawada',
-    facilities: ['4K Digital Cinema', 'Dolby Surround Sound', 'Parking'],
-    distance: '1.0 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-03', name: 'Screen 1', sound: 'Dolby 7.1', totalSeats: 270 }
-    ]
-  },
-  {
-    id: 'th-vja-003',
-    name: 'Apsara Theatre',
-    slug: 'apsara-theatre-vijayawada',
-    city: 'vijayawada',
-    address: 'Gandhi Nagar, Vijayawada',
-    facilities: ['4K Laser', 'Dolby Digital', 'AC Seating'],
-    distance: '1.8 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-04', name: 'Main Audi', sound: 'Dolby 7.1', totalSeats: 290 }
-    ]
-  },
-  {
-    id: 'th-vja-004',
-    name: 'Durga Kala Mandir',
-    slug: 'durga-kala-mandir-vijayawada',
-    city: 'vijayawada',
-    address: 'Eluru Road, Governorpet, Vijayawada',
-    facilities: ['4K Projection', 'Dolby Atmos', 'Balcony Class'],
-    distance: '1.3 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-05', name: 'Screen 1 Atmos', sound: 'Dolby Atmos', totalSeats: 310 }
-    ]
-  },
-  {
-    id: 'th-vja-005',
-    name: 'Alankar Theatre',
-    slug: 'alankar-theatre-vijayawada',
-    city: 'vijayawada',
-    address: 'Alankar Centre, MG Road, Vijayawada',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos', 'Premium Recliners'],
-    distance: '2.0 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-06', name: 'Alankar 4K', sound: 'Dolby Atmos', totalSeats: 340 }
-    ]
-  },
-  {
-    id: 'th-vja-006',
-    name: 'Annapurna Theatre',
-    slug: 'annapurna-theatre-vijayawada',
-    city: 'vijayawada',
-    address: 'Bunder Road, Patamata, Vijayawada',
-    facilities: ['Qube 4K', 'Dolby 7.1', 'Food Court'],
-    distance: '3.5 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-07', name: 'Main Hall', sound: 'Dolby 7.1', totalSeats: 280 }
-    ]
-  },
-  {
-    id: 'th-vja-007',
-    name: 'Sailaja Theatre',
-    slug: 'sailaja-theatre-vijayawada',
-    city: 'vijayawada',
-    address: 'Prakasam Road, Governorpet, Vijayawada',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Recliners'],
-    distance: '1.1 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-08', name: 'Main Screen 4K', sound: 'Dolby Atmos', totalSeats: 350 }
-    ]
-  },
-  {
-    id: 'th-vja-008',
-    name: 'Jayaram Theatre',
-    slug: 'jayaram-theatre-vijayawada',
-    city: 'vijayawada',
-    address: 'Governorpet, Vijayawada',
-    facilities: ['4K Digital Projection', 'Dolby Digital', 'AC Seating'],
-    distance: '1.2 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-vja-09', name: 'Main Audi', sound: 'Dolby Digital', totalSeats: 260 }
-    ]
-  },
-
-  // --- TENALI THEATRES (7 THEATRES) ---
-  {
-    id: 'th-tnl-001',
-    name: 'Asha Cinemas',
-    slug: 'asha-cinemas-tenali',
-    city: 'tenali',
-    address: 'Near Old Bus Stand, Main Road, Tenali',
-    facilities: ['4K Laser Projection', 'Dolby Atmos', 'Pushback Seats'],
-    distance: '0.9 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-01', name: 'Asha Screen 1', sound: 'Dolby Atmos', totalSeats: 280 }
-    ]
-  },
-  {
-    id: 'th-tnl-002',
-    name: 'Sangameswara Cinemas',
-    slug: 'sangameswara-cinemas-tenali',
-    city: 'tenali',
-    address: 'Station Road, Tenali',
-    facilities: ['4K Digital 3D', 'Dolby 7.1', 'Parking'],
-    distance: '0.7 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-02', name: 'Main Hall', sound: 'Dolby 7.1', totalSeats: 290 }
-    ]
-  },
-  {
-    id: 'th-tnl-003',
-    name: 'Lakshmi Complex',
-    slug: 'lakshmi-complex-tenali',
-    city: 'tenali',
-    address: 'Ganganamma Temple Street, Tenali',
-    facilities: ['4K Projection', 'Dolby Digital', 'AC Hall'],
-    distance: '1.2 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-03', name: 'Lakshmi Screen', sound: 'Dolby Surround', totalSeats: 250 }
-    ]
-  },
-  {
-    id: 'th-tnl-004',
-    name: 'SV Cinemas (Priya Complex)',
-    slug: 'sv-cinemas-priya-complex-tenali',
-    city: 'tenali',
-    address: 'Bose Road, Tenali',
-    facilities: ['Barco 4K Laser', 'Dolby Atmos 64-Channel', 'Pushback Seats'],
-    distance: '1.3 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-04', name: 'Priya Screen 1', sound: 'Dolby Atmos', totalSeats: 320 }
-    ]
-  },
-  {
-    id: 'th-tnl-005',
-    name: 'Pemmasani Theatre',
-    slug: 'pemmasani-theatre-tenali',
-    city: 'tenali',
-    address: 'Railway Station Road, Tenali',
-    facilities: ['Qube 4K Projection', 'Dolby 7.1', 'Parking'],
-    distance: '0.8 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-05', name: 'Main Audi', sound: 'Dolby 7.1', totalSeats: 270 }
-    ]
-  },
-  {
-    id: 'th-tnl-006',
-    name: 'Swaraj Theatre',
-    slug: 'swaraj-theatre-tenali',
-    city: 'tenali',
-    address: 'Morrispet, Tenali',
-    facilities: ['4K Digital Projection', 'Dolby Digital', 'AC Seating'],
-    distance: '1.5 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-06', name: 'Swaraj Screen', sound: 'Dolby Digital', totalSeats: 240 }
-    ]
-  },
-  {
-    id: 'th-tnl-007',
-    name: 'V-Max Theatre',
-    slug: 'v-max-theatre-tenali',
-    city: 'tenali',
-    address: 'Near Gandhi Statue, Main Road, Tenali',
-    facilities: ['Laser 4K 3D', 'Dolby Atmos', 'Cafeteria'],
-    distance: '1.0 km away',
-    cancellationPolicy: 'Refundable up to 2 hours before showtime',
-    screens: [
-      { id: 'scr-tnl-07', name: 'V-Max Screen', sound: 'Dolby Atmos', totalSeats: 300 }
+      { id: 'scr-gtr-01', name: 'Screen 1 4K Laser', sound: 'Dolby Atmos', totalSeats: 449 }
     ]
   }
 ];
@@ -564,44 +284,17 @@ export const EVENTS = [
     title: 'Telugu Comedy Fest — Live Standup Special',
     category: 'Standup Comedy',
     city: 'guntur',
-    venue: 'Sri Venkateswara Vignana Mandiram, Guntur',
+    venue: 'Siva Cinemas Special Event Hall, Guntur',
     date: '2025-03-22',
     time: '19:00',
     bannerUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop',
     priceStarting: 499,
     description: 'An evening of non-stop Telugu comedy, relatable middle-class humor, and hilarious storytelling.',
     isFeatured: true
-  },
-  {
-    id: 'eve-002',
-    title: 'Anirudh Live in Concert — Hukum Tour',
-    category: 'Music Concert',
-    city: 'vijayawada',
-    venue: 'Indira Gandhi Municipal Stadium, MG Road, Vijayawada',
-    date: '2025-04-12',
-    time: '18:30',
-    bannerUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop',
-    priceStarting: 999,
-    description: 'Rockstar Anirudh Ravichander live in Andhra Pradesh with explosive visual effects, bass, and chartbuster Telugu hits.',
-    isFeatured: true
-  },
-  {
-    id: 'eve-003',
-    title: 'Tenali Cultural & Drama Mahotsav',
-    category: 'Cultural Theatre',
-    city: 'tenali',
-    venue: 'Tenali Ramakrishna Cultural Auditorium, Tenali',
-    date: '2025-03-29',
-    time: '18:00',
-    bannerUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop',
-    priceStarting: 299,
-    description: 'Celebrating the rich cultural legacy of the Paris of Andhra with mythological plays, classical music, and dance.',
-    isFeatured: true
   }
 ];
 
 export const SAMPLE_SHOWTIMES = [
-  // --- GUNTUR SHOWTIMES ---
   {
     id: 'sh-gtr-01',
     movieId: 'mov-pushpa-2',
@@ -635,10 +328,10 @@ export const SAMPLE_SHOWTIMES = [
   {
     id: 'sh-gtr-03',
     movieId: 'mov-kalki-2898',
-    theatreId: 'th-gtr-005',
-    theatreName: 'Naz / Hollywood Theater Complex',
-    screenName: 'Hollywood Screen',
-    format: 'IMAX 3D',
+    theatreId: 'th-gtr-001',
+    theatreName: 'Siva Cinemas',
+    screenName: 'Screen 1 4K Laser',
+    format: '4K Dolby Atmos',
     language: 'Telugu',
     time: '06:15 PM',
     slot: 'First Show',
@@ -650,178 +343,192 @@ export const SAMPLE_SHOWTIMES = [
   {
     id: 'sh-gtr-04',
     movieId: 'mov-og-2025',
-    theatreId: 'th-gtr-002',
-    theatreName: 'Studio 81 Cinemas',
-    screenName: 'Audi 1',
+    theatreId: 'th-gtr-001',
+    theatreName: 'Siva Cinemas',
+    screenName: 'Screen 1 4K Laser',
     format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '09:30 PM',
-    slot: 'Second Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'AVAILABLE',
-    fillingFast: false
-  },
-  {
-    id: 'sh-gtr-05',
-    movieId: 'mov-og-2025',
-    theatreId: 'th-gtr-004',
-    theatreName: 'GS Cinemas',
-    screenName: 'Audi 1 (Dolby)',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '06:00 PM',
-    slot: 'First Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'AVAILABLE',
-    fillingFast: false
-  },
-  {
-    id: 'sh-gtr-06',
-    movieId: 'mov-pushpa-2',
-    theatreId: 'th-gtr-006',
-    theatreName: 'Saraswathi Theatre',
-    screenName: 'Main Hall',
-    format: '2D',
     language: 'Telugu',
     time: '09:45 PM',
     slot: 'Second Show',
     date: '2026-09-02',
     price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'FILLING_FAST',
-    fillingFast: true
-  },
-
-  // --- VIJAYAWADA SHOWTIMES ---
-  {
-    id: 'sh-vja-01',
-    movieId: 'mov-pushpa-2',
-    theatreId: 'th-vja-001',
-    theatreName: 'G3 Raj Yuvraj',
-    screenName: 'Raj Screen (Dolby Atmos)',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '11:15 AM',
-    slot: 'Morning Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
     availability: 'AVAILABLE',
     fillingFast: false
-  },
-  {
-    id: 'sh-vja-02',
-    movieId: 'mov-devara-1',
-    theatreId: 'th-vja-005',
-    theatreName: 'Alankar Theatre',
-    screenName: 'Alankar 4K',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '02:15 PM',
-    slot: 'Matinee Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'FILLING_FAST',
-    fillingFast: true
-  },
-  {
-    id: 'sh-vja-03',
-    movieId: 'mov-kalki-2898',
-    theatreId: 'th-vja-007',
-    theatreName: 'Sailaja Theatre',
-    screenName: 'Main Screen 4K',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '06:30 PM',
-    slot: 'First Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'ALMOST_FULL',
-    fillingFast: true
-  },
-
-  // --- TENALI SHOWTIMES ---
-  {
-    id: 'sh-tnl-01',
-    movieId: 'mov-pushpa-2',
-    theatreId: 'th-tnl-001',
-    theatreName: 'Asha Cinemas',
-    screenName: 'Asha Screen 1',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '11:15 AM',
-    slot: 'Morning Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'AVAILABLE',
-    fillingFast: false
-  },
-  {
-    id: 'sh-tnl-02',
-    movieId: 'mov-devara-1',
-    theatreId: 'th-tnl-004',
-    theatreName: 'SV Cinemas (Priya Complex)',
-    screenName: 'Priya Screen 1',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '02:45 PM',
-    slot: 'Matinee Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'FILLING_FAST',
-    fillingFast: true
-  },
-  {
-    id: 'sh-tnl-03',
-    movieId: 'mov-kalki-2898',
-    theatreId: 'th-tnl-007',
-    theatreName: 'V-Max Theatre',
-    screenName: 'V-Max Screen',
-    format: '4K Dolby Atmos',
-    language: 'Telugu',
-    time: '07:00 PM',
-    slot: 'First Show',
-    date: '2026-09-02',
-    price: { BALCONY: 147, SECOND_CLASS: 84 },
-    availability: 'ALMOST_FULL',
-    fillingFast: true
   }
 ];
 
-// Dual-Quota Aware Seat Layout Generator (Real-time Supabase Synchronized)
+// Exact Siva Cinemas 449-Seat Seating Layout Generator (BookMyShow Blueprint)
 export const generateSeatLayout = (showId) => {
-  const tiers = [
-    { name: 'BALCONY', tier: 'BALCONY', label: 'Balcony Class', price: 1, rows: ['A', 'B', 'C', 'D'] },
-    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 1, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
-  ];
+  const tiers = [];
 
-  const seatsPerRow = 14;
-  const layout = [];
+  // ----------------------------------------------------
+  // TIER 1: BALCONY CLASS (319 Seats, 14 Rows A to P)
+  // ----------------------------------------------------
+  const balconyRows = [];
 
-  tiers.forEach((tier) => {
-    const tierRows = [];
-    tier.rows.forEach((rowLetter) => {
-      const seats = [];
-      for (let i = 1; i <= seatsPerRow; i++) {
-        const seatId = `${rowLetter}${i}`;
+  // Row A: Topmost row
+  // Left: 1-6, Center: 7-15, Right: 16-23
+  const rA_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rA_seats.push({ id: `A${s}`, number: s, row: 'A', rowLetter: 'A', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 7; s <= 15; s++) {
+    rA_seats.push({ id: `A${s}`, number: s, row: 'A', rowLetter: 'A', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 15, is_aisle_after: s === 15 });
+  }
+  for (let s = 16; s <= 23; s++) {
+    rA_seats.push({ id: `A${s}`, number: s, row: 'A', rowLetter: 'A', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'A', row_letter: 'A', seats: rA_seats });
 
-        seats.push({
-          id: seatId,
-          number: i,
-          row: rowLetter,
-          rowLetter: rowLetter,
-          tier: tier.name,
-          price: tier.price,
-          quota: 'APP_INVENTORY',
-          status: 'AVAILABLE',
-          isAisleAfter: i === 3 || i === 11,
-          is_aisle_after: i === 3 || i === 11
-        });
-      }
-      tierRows.push({ rowLetter, row_letter: rowLetter, seats });
-    });
-    layout.push({ ...tier, rows: tierRows });
+  // Row B: Left (1-6), Center (8-14), Right (19-24)
+  const rB_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rB_seats.push({ id: `B${s}`, number: s, row: 'B', rowLetter: 'B', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 8; s <= 14; s++) {
+    rB_seats.push({ id: `B${s}`, number: s, row: 'B', rowLetter: 'B', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 14, is_aisle_after: s === 14 });
+  }
+  for (let s = 19; s <= 24; s++) {
+    rB_seats.push({ id: `B${s}`, number: s, row: 'B', rowLetter: 'B', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'B', row_letter: 'B', seats: rB_seats });
+
+  // Row C: Left (1-6), Right (19-24)
+  const rC_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rC_seats.push({ id: `C${s}`, number: s, row: 'C', rowLetter: 'C', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 19; s <= 24; s++) {
+    rC_seats.push({ id: `C${s}`, number: s, row: 'C', rowLetter: 'C', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'C', row_letter: 'C', seats: rC_seats });
+
+  // Rows D, E, F: Left (1-6), Center (7-18), Right (19-24)
+  ['D', 'E', 'F'].forEach((rLet) => {
+    const r_seats = [];
+    for (let s = 1; s <= 6; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+    }
+    for (let s = 7; s <= 18; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 18, is_aisle_after: s === 18 });
+    }
+    for (let s = 19; s <= 24; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+    }
+    balconyRows.push({ rowLetter: rLet, row_letter: rLet, seats: r_seats });
   });
 
-  return layout;
+  // Row G (bottom of upper balcony): Left (2-6), Center (7-18), Right (19-24)
+  const rG_seats = [];
+  for (let s = 2; s <= 6; s++) {
+    rG_seats.push({ id: `G${s}`, number: s, row: 'G', rowLetter: 'G', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 7; s <= 18; s++) {
+    rG_seats.push({ id: `G${s}`, number: s, row: 'G', rowLetter: 'G', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 18, is_aisle_after: s === 18 });
+  }
+  for (let s = 19; s <= 24; s++) {
+    rG_seats.push({ id: `G${s}`, number: s, row: 'G', rowLetter: 'G', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'G', row_letter: 'G', seats: rG_seats });
+
+  // Lower Balcony: Rows H, J, K, L, M
+  ['H', 'J', 'K', 'L', 'M'].forEach((rLet) => {
+    const r_seats = [];
+    for (let s = 1; s <= 6; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+    }
+    for (let s = 7; s <= 18; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 18, is_aisle_after: s === 18 });
+    }
+    for (let s = 19; s <= 24; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+    }
+    balconyRows.push({ rowLetter: rLet, row_letter: rLet, seats: r_seats });
+  });
+
+  // Row N: Left (1-6), Center (6-18), Right (19-23)
+  const rN_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rN_seats.push({ id: `N${s}`, number: s, row: 'N', rowLetter: 'N', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 6; s <= 18; s++) {
+    rN_seats.push({ id: `N${s}`, number: s, row: 'N', rowLetter: 'N', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 18, is_aisle_after: s === 18 });
+  }
+  for (let s = 19; s <= 23; s++) {
+    rN_seats.push({ id: `N${s}`, number: s, row: 'N', rowLetter: 'N', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'N', row_letter: 'N', seats: rN_seats });
+
+  // Row P: Left (1-6), Center (5-19), Right (20-24)
+  const rP_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rP_seats.push({ id: `P${s}`, number: s, row: 'P', rowLetter: 'P', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 5; s <= 19; s++) {
+    rP_seats.push({ id: `P${s}`, number: s, row: 'P', rowLetter: 'P', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: s === 19, is_aisle_after: s === 19 });
+  }
+  for (let s = 20; s <= 24; s++) {
+    rP_seats.push({ id: `P${s}`, number: s, row: 'P', rowLetter: 'P', tier: 'BALCONY', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  balconyRows.push({ rowLetter: 'P', row_letter: 'P', seats: rP_seats });
+
+  tiers.push({
+    id: 'BALCONY',
+    name: 'BALCONY',
+    tier: 'BALCONY',
+    label: 'Balcony Class',
+    price: 1,
+    rows: balconyRows
+  });
+
+  // ----------------------------------------------------
+  // TIER 2: SECOND CLASS (130 Seats, 5 Rows Q to U)
+  // ----------------------------------------------------
+  const secondClassRows = [];
+
+  // Row Q: Long continuous walkway row (Seats 1 to 32)
+  const rQ_seats = [];
+  for (let s = 1; s <= 6; s++) {
+    rQ_seats.push({ id: `Q${s}`, number: s, row: 'Q', rowLetter: 'Q', tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+  }
+  for (let s = 7; s <= 28; s++) {
+    rQ_seats.push({ id: `Q${s}`, number: s, row: 'Q', rowLetter: 'Q', tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: s === 28, is_aisle_after: s === 28 });
+  }
+  for (let s = 29; s <= 32; s++) {
+    rQ_seats.push({ id: `Q${s}`, number: s, row: 'Q', rowLetter: 'Q', tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  secondClassRows.push({ rowLetter: 'Q', row_letter: 'Q', seats: rQ_seats });
+
+  // Rows R, S, T: Left (1-6), Center (7-22), Right (23-28)
+  ['R', 'S', 'T'].forEach((rLet) => {
+    const r_seats = [];
+    for (let s = 1; s <= 6; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: s === 6, is_aisle_after: s === 6 });
+    }
+    for (let s = 7; s <= 22; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: s === 22, is_aisle_after: s === 22 });
+    }
+    for (let s = 23; s <= 28; s++) {
+      r_seats.push({ id: `${rLet}${s}`, number: s, row: rLet, rowLetter: rLet, tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+    }
+    secondClassRows.push({ rowLetter: rLet, row_letter: rLet, seats: r_seats });
+  });
+
+  // Row U (front row near screen): Center (7-20)
+  const rU_seats = [];
+  for (let s = 7; s <= 20; s++) {
+    rU_seats.push({ id: `U${s}`, number: s, row: 'U', rowLetter: 'U', tier: 'SECOND_CLASS', price: 1, status: 'AVAILABLE', isAisleAfter: false, is_aisle_after: false });
+  }
+  secondClassRows.push({ rowLetter: 'U', row_letter: 'U', seats: rU_seats });
+
+  tiers.push({
+    id: 'SECOND_CLASS',
+    name: 'SECOND_CLASS',
+    tier: 'SECOND_CLASS',
+    label: 'Second Class',
+    price: 1,
+    rows: secondClassRows
+  });
+
+  return tiers;
 };

@@ -27,34 +27,143 @@ import { seatLockManager, getShowKey as getGlobalShowKey } from '../../services/
 import { supabase } from '../../services/supabaseClient';
 import api from '../../services/api';
 
-// Base Screen 1 Seat Layout Template
-const BASE_SEAT_LAYOUT = {
-  screen_name: 'Screen 1 4K Laser',
-  tiers: [
-    {
-      id: 'BALCONY',
-      name: 'Balcony Class',
-      price: 147,
-      rows: [
-        { rowLetter: 'A', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [1, 2], initialBooked: [5, 6, 7] },
-        { rowLetter: 'B', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], counterHeld: [], initialBooked: [8, 9] },
-        { rowLetter: 'C', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [10, 11, 12] },
-        { rowLetter: 'D', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [1, 2, 3], initialBooked: [4, 5] }
+// Base Screen 1 Seat Layout Template: Exact 449-Seat Siva Cinemas Blueprint
+const generatePosBaseLayout = () => {
+  const balconyRows = [];
+  // Row A: 1-6 (aisle), 7-15 (aisle), 16-23
+  balconyRows.push({
+    rowLetter: 'A',
+    counterHeld: [1, 2],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `A${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[7, 8, 9, 10, 11, 12, 13, 14, 15].map((n) => ({ id: `A${n}`, number: n, isAisleAfter: n === 15 })),
+      ...[16, 17, 18, 19, 20, 21, 22, 23].map((n) => ({ id: `A${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Row B: 1-6 (aisle), 8-14 (aisle), 19-24
+  balconyRows.push({
+    rowLetter: 'B',
+    counterHeld: [],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `B${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[8, 9, 10, 11, 12, 13, 14].map((n) => ({ id: `B${n}`, number: n, isAisleAfter: n === 14 })),
+      ...[19, 20, 21, 22, 23, 24].map((n) => ({ id: `B${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Row C: 1-6 (aisle), 19-24
+  balconyRows.push({
+    rowLetter: 'C',
+    counterHeld: [1, 2],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `C${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[19, 20, 21, 22, 23, 24].map((n) => ({ id: `C${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Rows D, E, F: 1-6 (aisle), 7-18 (aisle), 19-24
+  ['D', 'E', 'F'].forEach((r) => {
+    balconyRows.push({
+      rowLetter: r,
+      counterHeld: [1, 2],
+      seats: [
+        ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 6 })),
+        ...[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 18 })),
+        ...[19, 20, 21, 22, 23, 24].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: false }))
       ]
-    },
-    {
-      id: 'SECOND_CLASS',
-      name: 'Second Class',
-      price: 84,
-      rows: [
-        { rowLetter: 'E', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], counterHeld: [], initialBooked: [] },
-        { rowLetter: 'F', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [8, 9, 10] },
-        { rowLetter: 'G', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [1, 2, 3, 4], initialBooked: [] },
-        { rowLetter: 'H', seats: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], counterHeld: [], initialBooked: [11, 12] }
+    });
+  });
+  // Row G: 2-6 (aisle), 7-18 (aisle), 19-24
+  balconyRows.push({
+    rowLetter: 'G',
+    counterHeld: [],
+    seats: [
+      ...[2, 3, 4, 5, 6].map((n) => ({ id: `G${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => ({ id: `G${n}`, number: n, isAisleAfter: n === 18 })),
+      ...[19, 20, 21, 22, 23, 24].map((n) => ({ id: `G${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Rows H, J, K, L, M: 1-6 (aisle), 7-18 (aisle), 19-24
+  ['H', 'J', 'K', 'L', 'M'].forEach((r) => {
+    balconyRows.push({
+      rowLetter: r,
+      counterHeld: [],
+      seats: [
+        ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 6 })),
+        ...[7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 18 })),
+        ...[19, 20, 21, 22, 23, 24].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: false }))
       ]
-    }
-  ]
+    });
+  });
+  // Row N: 1-6 (aisle), 6-18 (aisle), 19-23
+  balconyRows.push({
+    rowLetter: 'N',
+    counterHeld: [],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `N${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((n) => ({ id: `N${n}`, number: n, isAisleAfter: n === 18 })),
+      ...[19, 20, 21, 22, 23].map((n) => ({ id: `N${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Row P: 1-6 (aisle), 5-19 (aisle), 20-24
+  balconyRows.push({
+    rowLetter: 'P',
+    counterHeld: [],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `P${n}`, number: n, isAisleAfter: n === 6 })),
+      ...[5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19].map((n) => ({ id: `P${n}`, number: n, isAisleAfter: n === 19 })),
+      ...[20, 21, 22, 23, 24].map((n) => ({ id: `P${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+
+  const secondClassRows = [];
+  // Row Q: 1-6 (aisle), 7-28 (aisle), 29-32
+  secondClassRows.push({
+    rowLetter: 'Q',
+    counterHeld: [],
+    seats: [
+      ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `Q${n}`, number: n, isAisleAfter: n === 6 })),
+      ...Array.from({ length: 22 }, (_, i) => i + 7).map((n) => ({ id: `Q${n}`, number: n, isAisleAfter: n === 28 })),
+      ...[29, 30, 31, 32].map((n) => ({ id: `Q${n}`, number: n, isAisleAfter: false }))
+    ]
+  });
+  // Rows R, S, T: 1-6 (aisle), 7-22 (aisle), 23-28
+  ['R', 'S', 'T'].forEach((r) => {
+    secondClassRows.push({
+      rowLetter: r,
+      counterHeld: [],
+      seats: [
+        ...[1, 2, 3, 4, 5, 6].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 6 })),
+        ...Array.from({ length: 16 }, (_, i) => i + 7).map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: n === 22 })),
+        ...[23, 24, 25, 26, 27, 28].map((n) => ({ id: `${r}${n}`, number: n, isAisleAfter: false }))
+      ]
+    });
+  });
+  // Row U: 7-20
+  secondClassRows.push({
+    rowLetter: 'U',
+    counterHeld: [],
+    seats: Array.from({ length: 14 }, (_, i) => i + 7).map((n) => ({ id: `U${n}`, number: n, isAisleAfter: false }))
+  });
+
+  return {
+    screen_name: 'Screen 1 4K Laser',
+    tiers: [
+      {
+        id: 'BALCONY',
+        name: 'Balcony Class',
+        price: 147,
+        rows: balconyRows
+      },
+      {
+        id: 'SECOND_CLASS',
+        name: 'Second Class',
+        price: 84,
+        rows: secondClassRows
+      }
+    ]
+  };
 };
+
+const BASE_SEAT_LAYOUT = generatePosBaseLayout();
 
 const SHOWTIMES = [
   { id: 'sh-1', time: '11:00 AM', slot: 'Morning Show', format: '2D Dolby Atmos' },
@@ -528,16 +637,18 @@ const PartnerCounterPosPage = () => {
                         <span className="w-5 text-center text-xs font-bold text-text-muted">{row.rowLetter}</span>
 
                         <div className="flex items-center gap-1.5">
-                          {row.seats.map((seatNum) => {
-                            const seatId = `${row.rowLetter}${seatNum}`;
+                          {row.seats.map((seatItem) => {
+                            const seatNum = typeof seatItem === 'object' ? seatItem.number : seatItem;
+                            const seatId = typeof seatItem === 'object' ? seatItem.id : `${row.rowLetter}${seatNum}`;
+                            const isAisle = typeof seatItem === 'object' ? Boolean(seatItem.isAisleAfter) : (seatNum === 4 || seatNum === row.seats.length - 4);
                             const isBlocked = bookedSeatsSet.has(seatId);
                             const isLocked = !isBlocked && lockedSeatsSet.has(seatId);
-                            const isCounterHeld = row.counterHeld.includes(seatNum) && !isBlocked && !isLocked;
+                            const isCounterHeld = (row.counterHeld || []).includes(seatNum) && !isBlocked && !isLocked;
                             const isSelected = selectedSeats.some((s) => s.id === seatId);
                             const isDisabled = isBlocked || isLocked;
 
                             return (
-                              <React.Fragment key={seatNum}>
+                              <React.Fragment key={seatId}>
                                 <button
                                   type="button"
                                   disabled={isDisabled}
@@ -565,7 +676,7 @@ const PartnerCounterPosPage = () => {
                                 >
                                   {isBlocked ? '✕' : isLocked ? '🔒' : isSelected ? '✓' : isCounterHeld ? '🔒' : seatNum}
                                 </button>
-                                {seatNum === 4 || seatNum === row.seats.length - 4 ? <div className="w-3 sm:w-4" /> : null}
+                                {isAisle ? <div className="w-3 sm:w-4" /> : null}
                               </React.Fragment>
                             );
                           })}

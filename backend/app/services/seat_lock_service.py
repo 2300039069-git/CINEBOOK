@@ -106,10 +106,35 @@ class SeatLockService:
             except Exception:
                 pass
 
-        tiers_config = [
-            {"tier": SeatTier.RECLINER, "label": "Recliner (Plush Loungers)", "price": 550.0, "rows": ["A", "B"]},
-            {"tier": SeatTier.PREMIUM, "label": "Premium (Executive Seating)", "price": 380.0, "rows": ["C", "D", "E", "F"]},
-            {"tier": SeatTier.CLASSIC, "label": "Classic (Standard Cinema)", "price": 250.0, "rows": ["G", "H", "J", "K"]},
+        # Exact Siva Cinemas 449-Seat Layout (Balcony: 319 seats, Second Class: 130 seats)
+        balcony_row_defs = [
+            ("A", [(1, 6, True), (7, 15, True), (16, 23, False)]),
+            ("B", [(1, 6, True), (8, 14, True), (19, 24, False)]),
+            ("C", [(1, 6, True), (19, 24, False)]),
+            ("D", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("E", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("F", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("G", [(2, 6, True), (7, 18, True), (19, 24, False)]),
+            ("H", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("J", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("K", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("L", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("M", [(1, 6, True), (7, 18, True), (19, 24, False)]),
+            ("N", [(1, 6, True), (6, 18, True), (19, 23, False)]),
+            ("P", [(1, 6, True), (5, 19, True), (20, 24, False)]),
+        ]
+
+        second_class_row_defs = [
+            ("Q", [(1, 6, True), (7, 28, True), (29, 32, False)]),
+            ("R", [(1, 6, True), (7, 22, True), (23, 28, False)]),
+            ("S", [(1, 6, True), (7, 22, True), (23, 28, False)]),
+            ("T", [(1, 6, True), (7, 22, True), (23, 28, False)]),
+            ("U", [(7, 20, False)]),
+        ]
+
+        tiers_def = [
+            {"tier": SeatTier.BALCONY, "label": "Balcony Class", "price": 1.0, "row_defs": balcony_row_defs},
+            {"tier": SeatTier.SECOND_CLASS, "label": "Second Class", "price": 1.0, "row_defs": second_class_row_defs},
         ]
 
         total_seats = 0
@@ -118,83 +143,84 @@ class SeatLockService:
         booked_count = 0
 
         layout_tiers = []
-        seats_per_row = 14
 
-        for tc in tiers_config:
+        for tc in tiers_def:
             tier_rows = []
-            for r_letter in tc["rows"]:
+            for r_letter, blocks in tc["row_defs"]:
                 seats_in_row = []
-                for num in range(1, seats_per_row + 1):
-                    seat_id = f"{r_letter}{num}"
-                    total_seats += 1
-                    
-                    # Determine live status and lock ownership
-                    seat_status = SeatStatus.AVAILABLE
-                    is_locked_by_me = False
-                    is_locked_by_other = False
-                    
-                    # 1. Check in-memory store
-                    mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
-                    if mem_entry:
-                        if mem_entry["status"] == "BOOKED":
-                            seat_status = SeatStatus.BOOKED
-                        elif mem_entry["status"] == "LOCKED" and mem_entry["expires_at"] > now:
-                            mem_is_mine = False
-                            if lock_token and mem_entry.get("lock_token") == lock_token:
-                                mem_is_mine = True
-                            elif user_id and mem_entry.get("user_id") == user_id:
-                                mem_is_mine = True
+                for start_num, end_num, is_aisle_after_block in blocks:
+                    for num in range(start_num, end_num + 1):
+                        seat_id = f"{r_letter}{num}"
+                        total_seats += 1
+                        
+                        # Determine live status and lock ownership
+                        seat_status = SeatStatus.AVAILABLE
+                        is_locked_by_me = False
+                        is_locked_by_other = False
+                        
+                        # 1. Check in-memory store
+                        mem_entry = IN_MEMORY_SEAT_STORE.get((show_id, seat_id))
+                        if mem_entry:
+                            if mem_entry["status"] == "BOOKED":
+                                seat_status = SeatStatus.BOOKED
+                            elif mem_entry["status"] == "LOCKED" and mem_entry["expires_at"] > now:
+                                mem_is_mine = False
+                                if lock_token and mem_entry.get("lock_token") == lock_token:
+                                    mem_is_mine = True
+                                elif user_id and mem_entry.get("user_id") == user_id:
+                                    mem_is_mine = True
 
-                            if mem_is_mine:
-                                is_locked_by_me = True
-                                is_locked_by_other = False
-                                seat_status = SeatStatus.AVAILABLE
-                            else:
+                                if mem_is_mine:
+                                    is_locked_by_me = True
+                                    is_locked_by_other = False
+                                    seat_status = SeatStatus.AVAILABLE
+                                else:
+                                    is_locked_by_me = False
+                                    is_locked_by_other = True
+                                    seat_status = SeatStatus.LOCKED
+
+                        # 2. Check Supabase
+                        if seat_id in db_locks:
+                            db_entry = db_locks[seat_id]
+                            if db_entry.get("status") == "BOOKED":
+                                seat_status = SeatStatus.BOOKED
                                 is_locked_by_me = False
-                                is_locked_by_other = True
-                                seat_status = SeatStatus.LOCKED
-
-                    # 2. Check Supabase
-                    if seat_id in db_locks:
-                        db_entry = db_locks[seat_id]
-                        if db_entry.get("status") == "BOOKED":
-                            seat_status = SeatStatus.BOOKED
-                            is_locked_by_me = False
-                            is_locked_by_other = False
-                        elif db_entry.get("status") == "LOCKED":
-                            db_is_mine = False
-                            if lock_token and db_entry.get("lock_token") == lock_token:
-                                db_is_mine = True
-                            elif user_id and db_entry.get("user_id") == user_id:
-                                db_is_mine = True
-
-                            if db_is_mine:
-                                is_locked_by_me = True
                                 is_locked_by_other = False
-                                seat_status = SeatStatus.AVAILABLE
-                            else:
-                                is_locked_by_me = False
-                                is_locked_by_other = True
-                                seat_status = SeatStatus.LOCKED
+                            elif db_entry.get("status") == "LOCKED":
+                                db_is_mine = False
+                                if lock_token and db_entry.get("lock_token") == lock_token:
+                                    db_is_mine = True
+                                elif user_id and db_entry.get("user_id") == user_id:
+                                    db_is_mine = True
 
-                    if seat_status == SeatStatus.AVAILABLE:
-                        available_count += 1
-                    elif seat_status == SeatStatus.LOCKED:
-                        locked_count += 1
-                    elif seat_status == SeatStatus.BOOKED:
-                        booked_count += 1
+                                if db_is_mine:
+                                    is_locked_by_me = True
+                                    is_locked_by_other = False
+                                    seat_status = SeatStatus.AVAILABLE
+                                else:
+                                    is_locked_by_me = False
+                                    is_locked_by_other = True
+                                    seat_status = SeatStatus.LOCKED
 
-                    seats_in_row.append(SeatItem(
-                        id=seat_id,
-                        number=num,
-                        row=r_letter,
-                        tier=tc["tier"],
-                        price=tc["price"],
-                        status=seat_status,
-                        is_aisle_after=(num == 3 or num == 11),
-                        is_locked_by_me=is_locked_by_me,
-                        is_locked_by_other=is_locked_by_other
-                    ))
+                        if seat_status == SeatStatus.AVAILABLE:
+                            available_count += 1
+                        elif seat_status == SeatStatus.LOCKED:
+                            locked_count += 1
+                        elif seat_status == SeatStatus.BOOKED:
+                            booked_count += 1
+
+                        is_aisle = (num == end_num and is_aisle_after_block)
+                        seats_in_row.append(SeatItem(
+                            id=seat_id,
+                            number=num,
+                            row=r_letter,
+                            tier=tc["tier"],
+                            price=tc["price"],
+                            status=seat_status,
+                            is_aisle_after=is_aisle,
+                            is_locked_by_me=is_locked_by_me,
+                            is_locked_by_other=is_locked_by_other
+                        ))
                 tier_rows.append(SeatRow(row_letter=r_letter, seats=seats_in_row))
             
             layout_tiers.append(SeatTierLayout(

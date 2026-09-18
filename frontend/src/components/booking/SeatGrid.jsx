@@ -90,68 +90,72 @@ const SeatGrid = ({
 
               {/* Rows */}
               <div className="space-y-2 pt-1">
-                {tier.rows.map((row) => (
-                  <div key={row.rowLetter} className="flex items-center justify-center gap-3">
-                    {/* Row Letter Left */}
-                    <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
-                      {row.rowLetter}
-                    </span>
+                {tier.rows.map((row) => {
+                  const letter = row.rowLetter || row.row_letter;
+                  return (
+                    <div key={letter} className="flex items-center justify-center gap-3">
+                      {/* Row Letter Left */}
+                      <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
+                        {letter}
+                      </span>
 
-                    {/* Seats in Row */}
-                    <div className="flex items-center gap-2">
-                      {row.seats.map((seat) => {
-                        const isSelected = selectedSeats.some((s) => s.id === seat.id);
-                        const isBooked = seat.status === 'BOOKED';
-                        const isLocked = !isSelected && (seat.status === 'LOCKED' || seat.isLockedByOtherTab || seat.isLockedByOther);
-                        const isDisabled = isBooked || isLocked;
+                      {/* Seats in Row */}
+                      <div className="flex items-center gap-2">
+                        {row.seats.map((seat) => {
+                          const isSelected = selectedSeats.some((s) => s.id === seat.id);
+                          const isBooked = seat.status === 'BOOKED';
+                          const isLocked = !isSelected && (seat.status === 'LOCKED' || seat.isLockedByOtherTab || seat.isLockedByOther);
+                          const isDisabled = isBooked || isLocked;
+                          const hasAisle = Boolean(seat.isAisleAfter || seat.is_aisle_after);
 
-                        return (
-                          <React.Fragment key={seat.id}>
-                            <button
-                              type="button"
-                              disabled={isDisabled}
-                              onClick={() => onToggleSeat(seat)}
-                              title={
-                                isSelected
-                                  ? `${seat.id} — Selected (Click to remove)`
-                                  : isLocked
-                                  ? `${seat.id} — Seat in progress (Held by another customer)`
-                                  : isBooked
-                                  ? `${seat.id} — Sold Out`
-                                  : `${seat.id} — ₹${seat.price} (Available)`
-                              }
-                              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center select-none relative ${
-                                isSelected
-                                  ? 'bg-gradient-to-br from-primary to-red-700 text-white shadow-md shadow-primary/30 ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-[#161B26] scale-110 active:scale-95 cursor-pointer z-10 font-black pointer-events-auto'
-                                  : isLocked
-                                  ? 'bg-amber-500/20 dark:bg-amber-500/25 border border-amber-500 text-amber-500 dark:text-amber-400 cursor-not-allowed pointer-events-none opacity-90 shadow-xs'
-                                  : isBooked
-                                  ? 'bg-rose-500/10 dark:bg-slate-900 border border-rose-500/30 dark:border-slate-800 opacity-40 cursor-not-allowed pointer-events-none text-rose-500 dark:text-slate-500 line-through'
-                                  : 'bg-white dark:bg-slate-800/80 border border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-slate-800 dark:text-slate-100 hover:text-emerald-600 hover:scale-105 active:scale-95 cursor-pointer shadow-xs pointer-events-auto'
-                              }`}
-                            >
-                              {isSelected ? (
-                                <CinebookSeat3D size="md" />
-                              ) : isLocked ? (
-                                <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                              ) : isBooked ? (
-                                '✕'
-                              ) : (
-                                seat.number
-                              )}
-                            </button>
-                            {seat.isAisleAfter && <div className="w-4 sm:w-6" />}
-                          </React.Fragment>
-                        );
-                      })}
+                          return (
+                            <React.Fragment key={seat.id}>
+                              <button
+                                type="button"
+                                disabled={isDisabled}
+                                onClick={() => onToggleSeat(seat)}
+                                title={
+                                  isSelected
+                                    ? `${seat.id} — Selected (Click to remove)`
+                                    : isLocked
+                                    ? `${seat.id} — Seat in progress (Held by another customer)`
+                                    : isBooked
+                                    ? `${seat.id} — Sold Out`
+                                    : `${seat.id} — ₹${seat.price} (Available)`
+                                }
+                                className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center select-none relative ${
+                                  isSelected
+                                    ? 'bg-gradient-to-br from-primary to-red-700 text-white shadow-md shadow-primary/30 ring-2 ring-primary ring-offset-1 ring-offset-white dark:ring-offset-[#161B26] scale-110 active:scale-95 cursor-pointer z-10 font-black pointer-events-auto'
+                                    : isLocked
+                                    ? 'bg-amber-500/20 dark:bg-amber-500/25 border border-amber-500 text-amber-500 dark:text-amber-400 cursor-not-allowed pointer-events-none opacity-90 shadow-xs'
+                                    : isBooked
+                                    ? 'bg-rose-500/10 dark:bg-slate-900 border border-rose-500/30 dark:border-slate-800 opacity-40 cursor-not-allowed pointer-events-none text-rose-500 dark:text-slate-500 line-through'
+                                    : 'bg-white dark:bg-slate-800/80 border border-emerald-500/40 dark:border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-slate-800 dark:text-slate-100 hover:text-emerald-600 hover:scale-105 active:scale-95 cursor-pointer shadow-xs pointer-events-auto'
+                                }`}
+                              >
+                                {isSelected ? (
+                                  <CinebookSeat3D size="md" />
+                                ) : isLocked ? (
+                                  <Clock className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                                ) : isBooked ? (
+                                  '✕'
+                                ) : (
+                                  seat.number
+                                )}
+                              </button>
+                              {hasAisle && <div className="w-4 sm:w-6" />}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+
+                      {/* Row Letter Right */}
+                      <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
+                        {letter}
+                      </span>
                     </div>
-
-                    {/* Row Letter Right */}
-                    <span className="w-5 text-center text-xs font-bold text-slate-400 select-none">
-                      {row.rowLetter}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}

@@ -9,6 +9,8 @@ class SeatStatus(str, Enum):
     BOOKED = "BOOKED"
 
 class SeatTier(str, Enum):
+    BALCONY = "BALCONY"
+    SECOND_CLASS = "SECOND_CLASS"
     CLASSIC = "CLASSIC"
     PREMIUM = "PREMIUM"
     RECLINER = "RECLINER"
