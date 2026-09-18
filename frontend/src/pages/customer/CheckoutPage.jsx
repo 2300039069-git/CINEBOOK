@@ -87,15 +87,12 @@ export default function CheckoutPage() {
   const showDate = bookingDetails.date || selectedDate || new Date().toISOString().split('T')[0];
 
   const numSeats = seats.length > 0 ? seats.length : 1;
-  const calculatedBasePrice = seats.reduce((acc, s) => {
-    const p = typeof s === 'object' && s?.price ? Number(s.price) : (show?.price || 150);
-    return acc + p;
-  }, 0) || (numSeats * (show?.price || 150));
+  const calculatedBasePrice = numSeats * 1.00; // Flat ₹1.00 per ticket for testing
 
-  const baseTicketPrice = baseAmount || calculatedBasePrice;
-  const flatConvenienceFee = 10.00;
-  const gstOnConvenienceFee = 1.80; // 18% GST on ₹10 (SAC 998599)
-  const totalPayable = Number((baseTicketPrice + flatConvenienceFee + gstOnConvenienceFee).toFixed(2));
+  const baseTicketPrice = calculatedBasePrice;
+  const flatConvenienceFee = 0.00; // Waived for ₹1.00 testing
+  const gstOnConvenienceFee = 0.00; // Waived for ₹1.00 testing
+  const totalPayable = Number(baseTicketPrice.toFixed(2));
 
   const currentShowKey = getShowKey(show, theatre, movie, showDate);
 
@@ -126,12 +123,7 @@ export default function CheckoutPage() {
           : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
           ? 'BALCONY'
           : 'SECOND_CLASS',
-      price:
-        typeof s === 'object' && s.price
-          ? s.price
-          : ['A', 'B', 'C', 'D'].includes(typeof s === 'string' ? s.charAt(0) : s.id?.charAt(0))
-          ? 147
-          : 84
+      price: 1
     }));
   };
 

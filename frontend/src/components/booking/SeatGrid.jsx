@@ -79,19 +79,12 @@ const SeatGrid = ({
               <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800 text-xs">
                 <span className="font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-2">
                   <span>{tier.label || (tier.name === 'BALCONY' ? 'Balcony Class' : 'Second Class')}</span>
-                  {tier.name === 'BALCONY' && (
-                    <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/30">
-                      Balcony (₹147 + 10% Fee + GST)
-                    </span>
-                  )}
-                  {tier.name === 'SECOND_CLASS' && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[10px] font-black border border-blue-500/30">
-                      Second Class (₹84 + 10% Fee + GST)
-                    </span>
-                  )}
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-black border border-emerald-500/30">
+                    Test Rate ₹1 / seat
+                  </span>
                 </span>
                 <span className="text-primary font-black text-sm">
-                  ₹{tier.price} <span className="text-slate-500 dark:text-slate-400 font-normal text-xs">/ seat</span>
+                  ₹1 <span className="text-slate-500 dark:text-slate-400 font-normal text-xs">/ seat</span>
                 </span>
               </div>
 

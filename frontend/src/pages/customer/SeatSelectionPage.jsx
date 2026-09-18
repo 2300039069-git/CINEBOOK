@@ -77,7 +77,7 @@ const SeatSelectionPage = () => {
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: timeStr,
-        price: { BALCONY: 147, SECOND_CLASS: 84 },
+        price: { BALCONY: 1, SECOND_CLASS: 1 },
         availability: 'AVAILABLE'
       };
     }

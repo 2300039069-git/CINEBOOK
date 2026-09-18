@@ -791,8 +791,8 @@ export const SAMPLE_SHOWTIMES = [
 // Dual-Quota Aware Seat Layout Generator (Real-time Supabase Synchronized)
 export const generateSeatLayout = (showId) => {
   const tiers = [
-    { name: 'BALCONY', tier: 'BALCONY', label: 'Balcony Class', price: 147, rows: ['A', 'B', 'C', 'D'] },
-    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 84, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
+    { name: 'BALCONY', tier: 'BALCONY', label: 'Balcony Class', price: 1, rows: ['A', 'B', 'C', 'D'] },
+    { name: 'SECOND_CLASS', tier: 'SECOND_CLASS', label: 'Second Class', price: 1, rows: ['E', 'F', 'G', 'H', 'J', 'K'] }
   ];
 
   const seatsPerRow = 14;

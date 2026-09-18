@@ -14,9 +14,8 @@ export const getSeatTier = (seat) => {
 };
 
 export const getSeatPrice = (seat) => {
-  if (!seat) return 147;
-  const tier = getSeatTier(seat);
-  return tier === 'BALCONY' ? 147 : 84;
+  // Test Mode: Flat ₹1 per ticket for payment gateway and UPI testing
+  return 1;
 };
 
 export const BookingProvider = ({ children }) => {
@@ -217,24 +216,15 @@ export const BookingProvider = ({ children }) => {
     sessionStorage.removeItem('cinebook_tab_lock_expires_at');
   };
 
-  // Pricing calculations
-  // Base Ticket Price: sum of seat prices (Balcony: ₹147, Second Class: ₹84)
-  const baseAmount = selectedSeats.reduce((sum, seat) => sum + getSeatPrice(seat), 0);
-
-  // Convenience Fee Base: 10% of Ticket Price
-  const convenienceFeeBase = Number((baseAmount * 0.10).toFixed(2));
-
-  // Integrated GST (IGST @ 18% on Convenience Fee Base Amount)
-  const igst = Number((convenienceFeeBase * 0.18).toFixed(2));
-  const cgst = Number((convenienceFeeBase * 0.09).toFixed(2));
-  const sgst = Number((convenienceFeeBase * 0.09).toFixed(2));
-  const taxes = igst;
-
-  // Total Convenience Fee = Convenience Base + 18% IGST
-  const convenienceFeeTotal = Number((convenienceFeeBase + igst).toFixed(2));
-
-  // Total Amount Payable = Ticket(s) Price + Total Convenience Fees
-  const totalAmount = Number((baseAmount + convenienceFeeTotal).toFixed(2));
+  // Pricing calculations (Test Mode: ₹1.00 per ticket, waived convenience fee for testing)
+  const baseAmount = selectedSeats.length > 0 ? selectedSeats.length * 1 : 1;
+  const convenienceFeeBase = 0.00;
+  const igst = 0.00;
+  const cgst = 0.00;
+  const sgst = 0.00;
+  const taxes = 0.00;
+  const convenienceFeeTotal = 0.00;
+  const totalAmount = Number(baseAmount.toFixed(2));
 
   return (
     <BookingContext.Provider
