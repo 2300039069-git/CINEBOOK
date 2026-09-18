@@ -171,3 +171,50 @@ class VyaparService:
         except Exception as sig_err:
             logger.error(f"Webhook signature verification error: {sig_err}")
             return False
+
+    @classmethod
+    async def check_order_status(
+        cls,
+        order_id: Optional[str] = None,
+        client_txn_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Queries VyaparGateway API v2.1.0 check_order_status endpoint directly in real-time.
+        Endpoint: POST https://vyapargateway.com/api/v1/check_order_status
+        """
+        api_key = cls.get_api_key()
+        headers = {
+            "X-API-Key": api_key,
+            "Content-Type": "application/json"
+        }
+        payload = {}
+        if order_id:
+            payload["order_id"] = order_id
+        if client_txn_id:
+            payload["client_txn_id"] = client_txn_id
+
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as client:
+                resp = await client.post(
+                    f"{cls.BASE_URL}/check_order_status",
+                    headers=headers,
+                    json=payload
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    order_info = data.get("data", {})
+                    st = str(order_info.get("status") or "").lower()
+                    is_paid = st in ["success", "paid", "completed", "successful"]
+                    utr = order_info.get("upi_txn_id") or order_info.get("utr") or order_info.get("txn_id")
+                    return {
+                        "success": True,
+                        "is_paid": is_paid,
+                        "status": "PAID" if is_paid else (st.upper() if st else "PENDING"),
+                        "utr_number": utr,
+                        "amount": order_info.get("amount"),
+                        "raw_data": order_info
+                    }
+        except Exception as e:
+            logger.debug(f"VyaparGateway check_order_status check error: {e}")
+
+        return {"success": False, "is_paid": False, "status": "PENDING"}
