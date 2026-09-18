@@ -414,16 +414,25 @@ async def receive_upi_webhook(payload: UpiWebhookPayload):
     extracted_amount = payload.amount
     extracted_utr = payload.utr or payload.utr_number
 
-    # Smart regex parsing for raw bank SMS if provided
+    # Smart regex parsing for raw bank SMS or PhonePe/GPay push notification if provided
     if payload.raw_message:
         raw_txt = payload.raw_message
-        # Extract Amount: e.g. "credited by Rs 300.00", "Rs. 150 deposited", "INR 300.00", "₹300"
-        amt_match = re.search(r'(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)', raw_txt, re.IGNORECASE)
+        # Extract Amount: e.g. "Received ₹300.00 from ...", "Payment of ₹300.00 received", "credited by Rs 300.00", "₹300"
+        amt_match = re.search(r'(?:(?:Received|Payment of|credited(?:\s+by|\s+with)?)\s*)?(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d{1,2})?)', raw_txt, re.IGNORECASE)
         if amt_match and not extracted_amount:
             try:
                 extracted_amount = float(amt_match.group(1).replace(',', ''))
             except Exception:
                 pass
+
+        if not extracted_amount:
+            # Fallback search: "300.00 received" or "300 received"
+            alt_amt = re.search(r'([\d,]+(?:\.\d{1,2})?)\s*(?:received|credited)', raw_txt, re.IGNORECASE)
+            if alt_amt:
+                try:
+                    extracted_amount = float(alt_amt.group(1).replace(',', ''))
+                except Exception:
+                    pass
 
         # Extract 12-digit UTR / UPI Ref: e.g. "UPI Ref 426811902847", "Ref No: 426811902847", "UPI/426811902847"
         utr_match = re.search(r'(?:Ref|Ref\s*No|UPI\s*Ref|UTR|Txn\s*ID)[\s/:]*(\d{8,16})', raw_txt, re.IGNORECASE)
@@ -434,6 +443,7 @@ async def receive_upi_webhook(payload: UpiWebhookPayload):
             any_12_digit = re.search(r'\b(\d{12})\b', raw_txt)
             if any_12_digit:
                 extracted_utr = any_12_digit.group(1)
+
 
     target_order_id = payload.order_id
     
