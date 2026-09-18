@@ -304,8 +304,8 @@ export default function CheckoutPage() {
         setSecondsRemaining((prev) => {
           if (prev <= 1) {
             clearInterval(countdownTimerRef.current);
-            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-            setIsPolling(false);
+            // When 5 minutes expire without auto-confirmation, automatically switch to UTR input screen
+            setShowUtrFallback(true);
             return 0;
           }
           return prev - 1;
@@ -400,7 +400,7 @@ export default function CheckoutPage() {
             <h1 className="text-2xl font-bold text-text-primary">Booking Checkout</h1>
             <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full">
               <ShieldCheck size={14} />
-              Direct Savings UPI Pay
+              All UPI Apps Supported
             </span>
           </div>
 
@@ -492,10 +492,10 @@ export default function CheckoutPage() {
               <span className="flex items-center gap-2 font-medium">
                 <Smartphone className="w-4 h-4 text-primary shrink-0" />
                 <span>Supports all UPI Apps:</span>
-                <span className="font-bold text-text-primary">GPay • PhonePe • Paytm • BHIM • CRED</span>
+                <span className="font-bold text-text-primary">PhonePe • GPay • Paytm • BHIM • CRED</span>
               </span>
               <span className="flex items-center gap-1 text-[11px] text-emerald-500 font-semibold">
-                <Lock className="w-3 h-3" /> 100% Encrypted NPCI Protocol
+                <Lock className="w-3 h-3" /> Multi-Channel Instant Verification
               </span>
             </div>
           </div>
@@ -513,7 +513,7 @@ export default function CheckoutPage() {
             ) : (
               <>
                 <QrCode size={19} className="text-white" />
-                <span>Pay ₹{totalPayable} via UPI QR Code</span>
+                <span>Pay ₹{totalPayable} via UPI Apps / QR Code</span>
                 <ChevronRight size={18} className="ml-1" />
               </>
             )}
@@ -536,14 +536,14 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-text-primary text-base tracking-wide">Scan & Pay via UPI</h3>
+                    <h3 className="font-extrabold text-text-primary text-base tracking-wide">Pay via Any UPI App</h3>
                     <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                      Zero Typing
+                      Auto-Verify
                     </span>
                   </div>
                   <p className="text-[11px] text-text-muted flex items-center gap-1">
-                    <Clock size={11} className="text-amber-400" />
-                    Seat hold expires in: <span className="font-bold text-amber-400 font-mono">{formatTimer(secondsRemaining)}</span>
+                    <Clock size={11} className={secondsRemaining <= 60 ? "text-red-400 animate-pulse" : "text-amber-400"} />
+                    Seat hold expires in: <span className={`font-bold font-mono ${secondsRemaining <= 60 ? "text-red-400" : "text-amber-400"}`}>{formatTimer(secondsRemaining)}</span>
                   </p>
                 </div>
               </div>
@@ -610,31 +610,54 @@ export default function CheckoutPage() {
                       </span>
                       <div className="text-left">
                         <p className="text-xs font-bold text-text-primary">Waiting for payment...</p>
-                        <p className="text-[10px] text-text-muted">Auto-confirms immediately upon payment</p>
+                        <p className="text-[10px] text-text-muted">Listening for PhonePe / GPay / Paytm / Bank Alert</p>
                       </div>
                     </div>
                     <Loader2 size={16} className="animate-spin text-primary shrink-0" />
                   </div>
 
-                  {/* Mobile Deep-link Intent Buttons */}
+                  {/* Mobile Deep-link Intent Buttons for All Major UPI Apps */}
                   <div className="w-full space-y-2">
                     <p className="text-[11px] font-semibold text-text-muted text-center uppercase tracking-wider">
-                      Or Open Directly on Mobile App
+                      Tap to Open Your UPI App Directly
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <a
                         href={upiOrder.upi_intent_url}
-                        className="py-2.5 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                        className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
-                        <span>GPay / PhonePe</span>
-                        <ExternalLink size={13} className="text-text-muted" />
+                        <span className="text-purple-400 font-extrabold">PhonePe</span>
+                        <span className="text-[9px] text-text-muted">Instant</span>
                       </a>
                       <a
                         href={upiOrder.upi_intent_url}
-                        className="py-2.5 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary flex items-center justify-center gap-1.5 transition text-center shadow-sm"
+                        className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
                       >
-                        <span>Paytm / Any UPI</span>
-                        <ExternalLink size={13} className="text-text-muted" />
+                        <span className="text-blue-400 font-extrabold">Google Pay</span>
+                        <span className="text-[9px] text-text-muted">Instant</span>
+                      </a>
+                      <a
+                        href={upiOrder.upi_intent_url}
+                        className="py-2.5 px-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-[11px] font-bold text-text-primary flex flex-col items-center justify-center gap-1 transition text-center shadow-sm active:scale-95"
+                      >
+                        <span className="text-sky-400 font-extrabold">Paytm / BHIM</span>
+                        <span className="text-[9px] text-text-muted">Instant</span>
+                      </a>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <a
+                        href={upiOrder.upi_intent_url}
+                        className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
+                      >
+                        <span>CRED UPI</span>
+                        <ExternalLink size={12} className="text-text-muted" />
+                      </a>
+                      <a
+                        href={upiOrder.upi_intent_url}
+                        className="py-2 px-3 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-text-secondary flex items-center justify-center gap-1.5 transition active:scale-95"
+                      >
+                        <span>Any UPI App</span>
+                        <ExternalLink size={12} className="text-text-muted" />
                       </a>
                     </div>
                   </div>
@@ -642,7 +665,7 @@ export default function CheckoutPage() {
                   {/* Savings UPI ID Copy Bar */}
                   <div className="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-elevated border border-border text-xs">
                     <div className="truncate text-left pr-2">
-                      <span className="text-[10px] text-text-muted block">Savings Account UPI ID:</span>
+                      <span className="text-[10px] text-text-muted block">Direct Payee UPI ID:</span>
                       <span className="font-mono text-xs font-bold text-text-primary truncate block">
                         {upiOrder.upi_id}
                       </span>
@@ -679,9 +702,9 @@ export default function CheckoutPage() {
                     </button>
                   </div>
 
-                  {/* Fallback 12-Digit UTR Input Accordion */}
+                  {/* Automatic 5-Minute Redirect & Manual 12-Digit UTR Input Form */}
                   <div className="w-full text-center">
-                    {!showUtrFallback ? (
+                    {!showUtrFallback && secondsRemaining > 0 ? (
                       <button
                         type="button"
                         onClick={() => setShowUtrFallback(true)}
@@ -690,10 +713,14 @@ export default function CheckoutPage() {
                         Paid but not redirected? Click to verify 12-digit UTR manually
                       </button>
                     ) : (
-                      <form onSubmit={handleVerifyUtr} className="space-y-2 mt-2 p-3 bg-surface-elevated rounded-xl border border-border text-left">
-                        <label className="text-xs font-semibold text-text-secondary block">
-                          Enter 12-Digit UPI Reference / UTR Number:
-                        </label>
+                      <form onSubmit={handleVerifyUtr} className="space-y-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-left animate-in fade-in duration-300">
+                        <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                          <Info size={15} className="shrink-0" />
+                          <span>Enter 12-Digit UPI Reference (UTR)</span>
+                        </div>
+                        <p className="text-[11px] text-text-secondary leading-relaxed">
+                          Bank notification taking a moment? Paste the 12-digit <strong>UPI Ref / UTR number</strong> from your PhonePe, Google Pay, or Paytm receipt to confirm instantly!
+                        </p>
                         <div className="flex gap-2">
                           <input
                             type="text"
@@ -701,19 +728,25 @@ export default function CheckoutPage() {
                             onChange={(e) => setUtrInput(e.target.value)}
                             placeholder="e.g. 426811902847"
                             maxLength={16}
-                            className="flex-1 bg-surface border border-border focus:border-primary rounded-xl px-3 py-2 text-xs text-text-primary font-mono outline-none"
+                            autoFocus
+                            className="flex-1 bg-surface border border-amber-500/40 focus:border-amber-400 rounded-xl px-3 py-2.5 text-xs text-text-primary font-mono outline-none shadow-inner"
                           />
                           <button
                             type="submit"
                             disabled={isVerifyingUtr || !utrInput.trim()}
-                            className="px-3.5 py-2 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl text-xs font-bold transition cursor-pointer shrink-0"
+                            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black rounded-xl text-xs font-extrabold transition cursor-pointer shrink-0 shadow-md"
                           >
-                            {isVerifyingUtr ? <Loader2 size={13} className="animate-spin" /> : 'Verify'}
+                            {isVerifyingUtr ? <Loader2 size={14} className="animate-spin text-black" /> : 'Confirm Seat'}
                           </button>
                         </div>
-                        <p className="text-[10px] text-text-muted">
-                          Find the 12-digit UTR in your GPay / PhonePe / Paytm transaction receipt details.
-                        </p>
+                        <div className="p-2.5 bg-black/40 rounded-xl text-[10px] text-text-muted space-y-1">
+                          <p>💡 <strong>Where to find your 12-Digit UTR:</strong></p>
+                          <ul className="list-disc list-inside space-y-0.5 text-slate-300">
+                            <li><strong>PhonePe</strong>: Tap Payment Details $\rightarrow$ <em>"UTR"</em> or <em>"Debited from"</em></li>
+                            <li><strong>Google Pay</strong>: Tap Transaction $\rightarrow$ <em>"UPI transaction ID"</em></li>
+                            <li><strong>Paytm</strong>: Tap Order Details $\rightarrow$ <em>"UPI Ref No"</em></li>
+                          </ul>
+                        </div>
                       </form>
                     )}
                   </div>
@@ -726,4 +759,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
 
