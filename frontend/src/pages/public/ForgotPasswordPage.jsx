@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Film, Mail, Lock, KeyRound, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Clock, RotateCcw } from 'lucide-react';
 import { authApi } from '../../services/authApi';
+import { Button } from '../../components/ui/Button';
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Enter email, 2: Enter OTP & New Password
@@ -75,16 +76,16 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 relative text-text-primary transition-colors">
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent/10 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 relative text-text-primary transition-colors">
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 shadow-2xl space-y-6 relative z-10 backdrop-blur-xl">
+      <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative z-10 backdrop-blur-2xl">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-amber-500 shadow-lg">
             <KeyRound className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-display font-black text-text-primary tracking-tight">
+          <h1 className="text-2xl font-black text-text-primary tracking-tight font-sans">
             {step === 1 ? 'Reset Password' : 'Enter Verification Code'}
           </h1>
           <p className="text-xs text-text-muted">
@@ -95,7 +96,7 @@ const ForgotPasswordPage = () => {
         </div>
 
         {error && (
-          <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-500 text-xs font-bold animate-shake">
+          <div className="p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-500 text-xs font-bold animate-shake">
             {error}
           </div>
         )}
@@ -103,13 +104,13 @@ const ForgotPasswordPage = () => {
         {success ? (
           <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3 animate-fade-in">
             <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h3 className="text-sm font-bold text-text-primary">Password Reset Successfully!</h3>
+            <h3 className="text-sm font-bold text-text-primary font-sans">Password Reset Successfully!</h3>
             <p className="text-xs text-text-secondary">
               Your password has been updated. You can now log in with your new credentials.
             </p>
             <Link
               to="/login"
-              className="inline-block mt-2 px-6 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-black uppercase tracking-wider shadow-sm"
+              className="inline-block mt-2 px-6 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-cta"
             >
               Sign In Now
             </Link>
@@ -127,7 +128,7 @@ const ForgotPasswordPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-accent"
+                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
             </div>
@@ -135,9 +136,9 @@ const ForgotPasswordPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-cta transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <span>{loading ? 'Sending Code...' : 'Send 6-Digit Reset Code to Email'}</span>
+              <span>{loading ? 'Sending Code...' : 'Send 6-Digit Reset Code'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
@@ -153,7 +154,7 @@ const ForgotPasswordPage = () => {
                   </div>
                   <div>
                     <div className="text-[10px] uppercase font-bold tracking-wider text-amber-500">
-                      {emailDelivered ? "Instant Verification Code" : "Verification Code (Testing/Fallback)"}
+                      {emailDelivered ? "Instant Verification Code" : "Verification Code (Testing)"}
                     </div>
                     <div className="text-base font-mono font-black text-amber-500 tracking-widest">{devOtp}</div>
                   </div>
@@ -180,7 +181,7 @@ const ForgotPasswordPage = () => {
                 placeholder="• • • • • •"
                 required
                 autoFocus
-                className="w-full py-2.5 bg-surface-elevated border border-border rounded-xl text-center text-lg font-mono tracking-widest text-text-primary focus:outline-none focus:border-amber-500"
+                className="w-full py-2.5 bg-surface-elevated border border-border rounded-xl text-center text-lg font-mono tracking-widest text-text-primary focus:outline-none focus:border-amber-500 transition-colors"
               />
             </div>
 
@@ -195,7 +196,7 @@ const ForgotPasswordPage = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-accent"
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
             </div>
@@ -211,7 +212,7 @@ const ForgotPasswordPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-accent"
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted text-xs font-bold focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
             </div>
@@ -219,7 +220,7 @@ const ForgotPasswordPage = () => {
             <div className="flex items-center justify-between text-xs text-text-muted">
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>Code expires in 5 mins</span>
+                <span>Expires in 5 mins</span>
               </span>
 
               {resendSeconds > 0 ? (
@@ -238,9 +239,9 @@ const ForgotPasswordPage = () => {
             <button
               type="submit"
               disabled={loading || otp.length !== 6}
-              className="w-full py-3.5 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider shadow-cta transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <span>{loading ? 'Updating Password...' : 'Verify OTP & Reset Password'}</span>
+              <span>{loading ? 'Updating Password...' : 'Verify Code & Reset Password'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>

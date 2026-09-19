@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Tag, Sparkles, Copy, Check, ShieldCheck, Ticket, Percent, CreditCard, Film, ArrowRight } from 'lucide-react';
+import { Tag, Sparkles, Copy, Check, ShieldCheck, Ticket, Percent, CreditCard, Film, ArrowRight, Gift } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
 
@@ -14,7 +14,7 @@ const PROMO_OFFERS = [
     validity: 'Valid till 31 Dec 2026',
     category: 'Welcome Offer',
     badge: 'Trending',
-    gradient: 'from-rose-600 to-red-700',
+    gradient: 'from-primary to-rose-700',
     description: 'Get an instant 50% discount on your very first movie booking on CINEBOOK. Applicable for Balcony & Second Class.',
     terms: ['Valid once per new registered user', 'Applicable on all showtimes', 'Cannot be clubbed with other promos']
   },
@@ -106,9 +106,9 @@ const OffersPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] pb-24 transition-colors duration-200">
+    <div className="min-h-screen bg-background text-text-primary pb-24 transition-colors">
       {/* 1. HERO HEADER BILLBOARD */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-surface-elevated/40 to-transparent border-b border-border/60 py-12 sm:py-16">
+      <div className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-surface-elevated/40 to-transparent border-b border-border py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
             <Sparkles className="w-3.5 h-3.5" />
@@ -153,7 +153,7 @@ const OffersPage = () => {
             return (
               <div
                 key={offer.id}
-                className="group relative flex flex-col justify-between rounded-2xl bg-surface border border-border hover:border-primary/40 shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
+                className="group relative flex flex-col justify-between rounded-3xl bg-surface border border-border hover:border-primary/40 shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden"
               >
                 {/* Top Banner Gradient Strip */}
                 <div className={`h-2.5 w-full bg-gradient-to-r ${offer.gradient}`} />
@@ -171,7 +171,7 @@ const OffersPage = () => {
 
                   {/* Title & Discount */}
                   <div className="space-y-1">
-                    <h3 className="text-base font-bold text-text-primary group-hover:text-primary transition-colors">
+                    <h3 className="text-base font-bold text-text-primary group-hover:text-primary transition-colors font-sans">
                       {offer.title}
                     </h3>
                     <p className="text-lg font-black text-amber-500 tracking-tight">
@@ -185,7 +185,7 @@ const OffersPage = () => {
                   </p>
 
                   {/* Terms Pills */}
-                  <div className="pt-2 border-t border-border-subtle space-y-1 text-[11px] text-text-muted">
+                  <div className="pt-2 border-t border-border space-y-1 text-[11px] text-text-muted">
                     <p className="flex items-center gap-1.5 font-medium">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <span>{offer.minBooking} • {offer.validity}</span>
@@ -195,7 +195,7 @@ const OffersPage = () => {
 
                 {/* Bottom Coupon Code & Action Box */}
                 <div className="p-4 bg-surface-elevated/70 border-t border-border flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 bg-background border border-dashed border-border px-3 py-1.5 rounded-lg">
+                  <div className="flex items-center gap-2 bg-background border border-dashed border-border px-3 py-1.5 rounded-xl">
                     <Tag className="w-3.5 h-3.5 text-primary" />
                     <span className="font-mono text-xs font-black tracking-widest text-text-primary">
                       {offer.code}
@@ -205,10 +205,10 @@ const OffersPage = () => {
                   <button
                     type="button"
                     onClick={() => handleCopyCode(offer.code)}
-                    className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 ${
                       isCopied
                         ? 'bg-emerald-600 text-white'
-                        : 'bg-primary hover:bg-primary-hover text-white'
+                        : 'bg-primary hover:bg-primary-hover text-white shadow-cta'
                     }`}
                   >
                     {isCopied ? (
@@ -219,7 +219,7 @@ const OffersPage = () => {
                     ) : (
                       <>
                         <Copy className="w-3.5 h-3.5" />
-                        <span>Copy</span>
+                        <span>Copy Code</span>
                       </>
                     )}
                   </button>
@@ -234,7 +234,7 @@ const OffersPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
         <div className="rounded-3xl bg-gradient-to-r from-surface to-surface-elevated border border-border p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2 text-center sm:text-left">
-            <h3 className="text-xl sm:text-2xl font-black text-text-primary tracking-tight">
+            <h3 className="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-sans">
               Ready to Book Your Blockbuster?
             </h3>
             <p className="text-xs sm:text-sm text-text-secondary max-w-xl">

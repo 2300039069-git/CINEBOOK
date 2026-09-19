@@ -22,7 +22,7 @@ import SeatGrid from '../../components/booking/SeatGrid';
 import { LoginModal } from '../../components/auth/LoginModal';
 import { Button } from '../../components/ui/Button';
 
-const SeatSelectionPage = () => {
+export const SeatSelectionPage = () => {
   const { showId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -55,7 +55,6 @@ const SeatSelectionPage = () => {
 
       if (selectedShow && selectedShow.id === showId) return selectedShow;
 
-      // Match theatre from showId slug (e.g. sh-th-gtr-003-01 -> th-gtr-003)
       let matchedTheatre = null;
       for (const t of THEATRES) {
         if (showId.includes(t.id)) {
@@ -95,9 +94,7 @@ const SeatSelectionPage = () => {
 
   const effectiveDate = selectedDate || new Date().toISOString().split('T')[0];
   const currentShowKey = getShowKey(show.id, theatre.id, movie.id, effectiveDate);
-  const currentTabId = getTabId();
 
-  // Formatted date string (e.g., "Wednesday, 16 Sep 2026")
   const formattedDateStr = React.useMemo(() => {
     try {
       const d = new Date(effectiveDate);
@@ -109,32 +106,22 @@ const SeatSelectionPage = () => {
     }
   }, [effectiveDate]);
 
-  // Keep BookingContext synced with the current show
   useEffect(() => {
-    if (show && show.id !== selectedShow?.id) {
-      setSelectedShow(show);
-    }
-    if (movie && movie.id !== selectedMovie?.id) {
-      setSelectedMovie(movie);
-    }
-    if (theatre && theatre.id !== selectedTheatre?.id) {
-      setSelectedTheatre(theatre);
-    }
+    if (show && show.id !== selectedShow?.id) setSelectedShow(show);
+    if (movie && movie.id !== selectedMovie?.id) setSelectedMovie(movie);
+    if (theatre && theatre.id !== selectedTheatre?.id) setSelectedTheatre(theatre);
   }, [show.id, movie.id, theatre.id]);
 
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
 
-  // Keep a live mutable reference to selectedSeats to prevent stale closures in polling loops
   const selectedSeatsRef = React.useRef(selectedSeats);
   selectedSeatsRef.current = selectedSeats;
 
-  // Update layout immediately whenever showId changes
   useEffect(() => {
     setRawLayout(generateSeatLayout(show.id));
   }, [show.id]);
 
-  // Load layout and subscribe to real-time seat locks & bookings from Supabase backend & cross-tabs
   useEffect(() => {
     let isMounted = true;
 
@@ -145,11 +132,9 @@ const SeatSelectionPage = () => {
         const res = await bookingApi.getSeatLayout(show.id, token, tabId);
         const tiers = res?.tiers || (Array.isArray(res) ? res : null);
         if (tiers && tiers.length > 0 && isMounted) {
-          // Self-heal any stale browser cache with server truth
           seatLockManager.syncWithBackend(currentShowKey, tiers);
           setRawLayout(tiers);
 
-          // Extract real-time backend lock & booked statuses
           const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
           const backendStatuses = {};
           const currentSelected = selectedSeatsRef.current || [];
@@ -195,10 +180,8 @@ const SeatSelectionPage = () => {
             });
           });
 
-          // Ground truth from live database
           setLiveStatuses(backendStatuses);
 
-          // Only alert if a seat was genuinely confirmed & permanently booked by another customer
           const permanentlyBookedConflicted = currentSelected.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
           if (permanentlyBookedConflicted.length > 0) {
             toast.conflict(`Seat(s) ${permanentlyBookedConflicted.map((s) => s.id).join(', ')} were just purchased by another customer.`);
@@ -206,27 +189,20 @@ const SeatSelectionPage = () => {
           }
         }
       } catch (err) {
-        // Fallback to local
+        // Fallback
       }
     };
 
-    // 1. Initial fetch
     fetchLatestLayout();
-
-    // 2. High-speed real-time polling fallback
     const pollTimer = setInterval(fetchLatestLayout, 3000);
 
-    // 3. Local cross-tab broadcast listener (0ms instant cross-window sync)
     const unsubscribe = seatLockManager.subscribe((event) => {
       if (isMounted) {
         setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
-        if (event && event.action) {
-          fetchLatestLayout();
-        }
+        if (event && event.action) fetchLatestLayout();
       }
     });
 
-    // 4. Supabase Realtime Subscription (<10ms instant multi-client / cross-browser sync)
     const channel = supabase
       .channel(`realtime:seats:${show.id}`)
       .on(
@@ -235,8 +211,7 @@ const SeatSelectionPage = () => {
         (payload) => {
           if (!isMounted) return;
           const updatedSeat = payload.new || payload.old;
-          if (!updatedSeat) return;
-          if (updatedSeat.show_id && updatedSeat.show_id !== show.id) return;
+          if (!updatedSeat || (updatedSeat.show_id && updatedSeat.show_id !== show.id)) return;
 
           const seatId = updatedSeat.seat_id || (updatedSeat.id && updatedSeat.id.includes(':') ? updatedSeat.id.split(':')[1] : updatedSeat.id);
           if (!seatId) return;
@@ -265,63 +240,6 @@ const SeatSelectionPage = () => {
           }
         }
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'seat_locks' },
-        (payload) => {
-          if (!isMounted) return;
-          const lock = payload.new || payload.old;
-          if (!lock || (lock.show_id && lock.show_id !== show.id)) return;
-          const seatId = lock.seat_id;
-          if (!seatId) return;
-
-          const currentToken = getTabLockToken();
-          const isMine = lock.lock_token === currentToken || (lock.user_id && user && lock.user_id === user.id);
-          const isOtherLocked = !isMine && (lock.status === 'LOCKED' || payload.eventType === 'INSERT' || payload.eventType === 'UPDATE');
-
-          if (payload.eventType === 'DELETE') {
-            setLiveStatuses((prev) => ({
-              ...prev,
-              [seatId]: {
-                status: 'AVAILABLE',
-                isLockedByOtherTab: false,
-                isLockedByCurrentTab: false
-              }
-            }));
-          } else {
-            setLiveStatuses((prev) => ({
-              ...prev,
-              [seatId]: {
-                status: lock.status === 'BOOKED' ? 'BOOKED' : (isMine ? 'AVAILABLE' : 'LOCKED'),
-                isLockedByOtherTab: isOtherLocked,
-                isLockedByCurrentTab: isMine,
-                lockToken: lock.lock_token,
-                expiresAt: lock.expires_at ? new Date(lock.expires_at).getTime() : Date.now() + 8 * 60 * 1000
-              }
-            }));
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'booked_seats' },
-        (payload) => {
-          if (!isMounted) return;
-          const rec = payload.new;
-          if (!rec || (rec.show_id && rec.show_id !== show.id)) return;
-          const seatId = rec.seat_id;
-          if (!seatId) return;
-
-          setLiveStatuses((prev) => ({
-            ...prev,
-            [seatId]: {
-              status: 'BOOKED',
-              isLockedByOtherTab: false,
-              isLockedByCurrentTab: false
-            }
-          }));
-        }
-      )
       .subscribe();
 
     return () => {
@@ -332,7 +250,6 @@ const SeatSelectionPage = () => {
     };
   }, [show.id, currentShowKey]);
 
-  // Merge base layout with live atomic locks and bookings from Supabase
   const dynamicLayout = (rawLayout && rawLayout.length > 0 ? rawLayout : generateSeatLayout(show.id)).map((tier) => ({
     ...tier,
     rows: (tier.rows || []).map((row) => ({
@@ -342,73 +259,33 @@ const SeatSelectionPage = () => {
         const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
         const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
 
-        // 1. If recently released by current tab, force AVAILABLE (0ms flicker immunity)
         if (isRecentlyReleased && !isSelectedInThisTab) {
-          return {
-            ...seat,
-            status: 'AVAILABLE',
-            isLockedByOtherTab: false,
-            isLockedByOther: false,
-            isLockedByMe: false
-          };
+          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: false };
         }
 
-        // 2. If selected in this tab, ALWAYS keep selected & available for current user
         if (isSelectedInThisTab) {
-          return {
-            ...seat,
-            status: 'AVAILABLE',
-            isLockedByOtherTab: false,
-            isLockedByOther: false,
-            isLockedByMe: true
-          };
+          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: true };
         }
 
-        // 3. If permanently booked in backend or live state
         if (seat.status === 'BOOKED' || liveInfo?.status === 'BOOKED') {
-          return {
-            ...seat,
-            status: 'BOOKED',
-            isLockedByOtherTab: false,
-            isLockedByOther: false
-          };
+          return { ...seat, status: 'BOOKED', isLockedByOtherTab: false, isLockedByOther: false };
         }
 
-        // 4. If locked by current user (held in session / backend)
         const isMine = seat.is_locked_by_me || seat.isLockedByMe || liveInfo?.isLockedByCurrentTab;
         if (isMine) {
-          return {
-            ...seat,
-            status: 'AVAILABLE',
-            isLockedByOtherTab: false,
-            isLockedByOther: false,
-            isLockedByMe: true
-          };
+          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: true };
         }
 
-        // 5. If locked by another customer in backend or live state
         const isOther = seat.is_locked_by_other || seat.isLockedByOther || liveInfo?.isLockedByOtherTab || (seat.status === 'LOCKED' && !isMine);
         if (isOther) {
-          return {
-            ...seat,
-            status: 'LOCKED',
-            isLockedByOtherTab: true,
-            isLockedByOther: true
-          };
+          return { ...seat, status: 'LOCKED', isLockedByOtherTab: true, isLockedByOther: true };
         }
 
-        // 6. Clean available
-        return {
-          ...seat,
-          status: 'AVAILABLE',
-          isLockedByOtherTab: false,
-          isLockedByOther: false
-        };
+        return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false };
       })
     }))
   }));
 
-  // Format seconds into MM:SS
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
     const remainder = secs % 60;
@@ -421,13 +298,11 @@ const SeatSelectionPage = () => {
       return;
     }
 
-    // Strict Login Requirement Check
     if (!user) {
       setIsLoginModalOpen(true);
       return;
     }
 
-    // Check if any selected seat has become booked or locked by another session
     const statuses = seatLockManager.getShowSeatStatuses(currentShowKey);
     const conflicted = selectedSeats.find(
       (s) => statuses[s.id]?.status === 'BOOKED' || statuses[s.id]?.isLockedByOtherTab
@@ -438,7 +313,6 @@ const SeatSelectionPage = () => {
       return;
     }
 
-    // Start atomic 8-minute seat lock
     startSeatLock(currentShowKey, show.id);
     navigate('/checkout');
   };
@@ -449,44 +323,45 @@ const SeatSelectionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] pb-36 transition-colors">
+    <div className="min-h-screen bg-background text-text-primary pt-24 pb-36 transition-colors">
+      
       {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-16 sm:top-20 z-30 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 py-3.5 px-4 sm:px-6 lg:px-8 shadow-sm">
+      <div className="sticky top-16 sm:top-20 z-30 bg-surface/90 backdrop-blur-2xl border-b border-border py-3.5 px-4 sm:px-6 lg:px-8 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-primary border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+              className="p-2.5 rounded-2xl bg-surface-elevated hover:bg-surface-hover text-text-primary border border-border transition-colors cursor-pointer"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 leading-none">
+                <h1 className="text-base sm:text-lg font-black text-text-primary leading-none font-display">
                   {movie.title}
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
+                <span className="px-2 py-0.5 rounded-full bg-surface-elevated text-text-muted text-[10px] font-bold border border-border">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 {theatre.name} • <span className="text-primary font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-xs">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-surface-elevated border border-border text-text-primary">
               <Calendar className="w-3.5 h-3.5 text-primary" />
-              <span className="font-bold text-slate-900 dark:text-slate-100">{formattedDateStr}</span>
+              <span className="font-bold">{formattedDateStr}</span>
             </div>
 
             {/* 8-Minute Countdown Timer Widget */}
-            <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
+            <div className={`px-3.5 py-1.5 rounded-2xl flex items-center gap-2 border transition-all ${
               secondsLeft < 120
-                ? 'bg-rose-500/15 border-rose-500 text-rose-600 dark:text-rose-400 animate-pulse'
-                : 'bg-slate-100 dark:bg-slate-800 border-amber-500/40 text-amber-600 dark:text-amber-400'
+                ? 'bg-rose-500/15 border-rose-500 text-rose-500 animate-pulse'
+                : 'bg-surface-elevated border-accent/40 text-accent'
             }`}>
               <Clock className="w-4 h-4" />
               <div className="leading-tight">
@@ -501,11 +376,11 @@ const SeatSelectionPage = () => {
       {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
       {selectedSeats.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#161B26] border border-primary/30 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
-            <div className="flex items-center gap-2.5 text-xs text-slate-600 dark:text-slate-300">
-              <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
+          <div className="p-3.5 rounded-3xl bg-surface border border-primary/30 shadow-sm flex items-center justify-between gap-3 animate-fade-in">
+            <div className="flex items-center gap-2.5 text-xs text-text-secondary">
+              <Sparkles className="w-4 h-4 text-primary shrink-0" />
               <span>
-                <strong className="text-slate-900 dark:text-slate-100">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-primary font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-primary">{formatTime(secondsLeft)}</strong>.
+                <strong className="text-text-primary">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-primary font-bold">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-primary">{formatTime(secondsLeft)}</strong>.
               </span>
             </div>
           </div>
@@ -521,8 +396,8 @@ const SeatSelectionPage = () => {
         />
       </div>
 
-      {/* 4. STICKY BOTTOM BOOKING SUMMARY BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
+      {/* 4. STICKY FLOATING BOTTOM BOOKING SUMMARY DECK */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-2xl border-t border-border py-4 px-4 sm:px-6 lg:px-8 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           {/* Selected Seats summary */}
           <div className="flex items-center gap-3.5">
@@ -531,17 +406,17 @@ const SeatSelectionPage = () => {
             </div>
             <div>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-slate-500 dark:text-slate-400 font-semibold">Selected Seats:</span>
+                <span className="text-text-muted font-bold">Selected Seats:</span>
                 {selectedSeats.length > 0 ? (
-                  <span className="font-black bg-slate-100 dark:bg-slate-800 px-3 py-0.5 rounded-full border border-primary/40 text-primary">
+                  <span className="font-black bg-surface-elevated px-3 py-0.5 rounded-full border border-primary/40 text-primary">
                     {selectedSeats.map((s) => s.id).join(', ')}
                   </span>
                 ) : (
-                  <span className="text-slate-400 italic">Click on seat layout above</span>
+                  <span className="text-text-muted italic">Click on seat layout above</span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Ticket(s): <strong className="text-slate-900 dark:text-slate-100 font-bold">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Convenience Fee (10% + 18% GST): <strong className="text-slate-900 dark:text-slate-100 font-bold">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
+              <p className="text-[11px] text-text-muted mt-1">
+                {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} • Base Ticket(s): <strong className="text-text-primary">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Handling Fee: <strong className="text-text-primary">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
               </p>
             </div>
           </div>
@@ -549,23 +424,19 @@ const SeatSelectionPage = () => {
           {/* Action Total and Checkout Button */}
           <div className="flex items-center justify-between sm:justify-end gap-6">
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Amount (Incl. All)</span>
+              <span className="text-[10px] uppercase font-black text-text-muted block tracking-wider">Total Payable (All Incl.)</span>
               <span className="text-xl sm:text-2xl font-black text-primary font-mono">₹{Number(totalAmount || 0).toFixed(2)}</span>
             </div>
 
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="lg"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 cursor-pointer ${
-                selectedSeats.length > 0
-                  ? 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/25 transform hover:-translate-y-0.5 active:translate-y-0 active:scale-98'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700'
-              }`}
+              rightIcon={<ChevronRight className="w-4 h-4" />}
             >
-              <span>Proceed to Pay</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              Proceed to Pay
+            </Button>
           </div>
         </div>
       </div>

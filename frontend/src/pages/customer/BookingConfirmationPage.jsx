@@ -5,11 +5,19 @@ import {
   CheckCircle2,
   Ticket,
   Home,
-  ReceiptText
+  ReceiptText,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Calendar,
+  Clock,
+  MapPin,
+  Film
 } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 import { DigitalTicket } from '../../components/booking/DigitalTicket';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
+import { Button } from '../../components/ui/Button';
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
@@ -53,17 +61,21 @@ const BookingConfirmationPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 bg-background text-text-primary transition-colors">
-      {/* 1. CELEBRATION HEADER (Hidden in Print) */}
-      <div className="text-center space-y-2 animate-fade-in no-print">
-        <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto shadow-lg">
+    <div className="min-h-screen py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-background text-text-primary transition-colors">
+      {/* 1. CELEBRATION HERO BANNER (Hidden in Print) */}
+      <div className="text-center space-y-3 animate-fade-in no-print">
+        <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
           <CheckCircle2 className="w-9 h-9" />
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-text-primary tracking-tight">
-          Booking Confirmed!
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Payment Verified • Seats Confirmed</span>
+        </div>
+        <h1 className="text-3xl sm:text-5xl font-black text-text-primary tracking-tight font-sans">
+          You're Going to the Movies!
         </h1>
-        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto">
-          Your payment is complete. Present your digital QR pass below at the cinema turnstile for instant admission.
+        <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
+          Your reservation is locked. Show the digital QR pass below at the cinema turnstile for instant admission.
         </p>
       </div>
 
@@ -76,45 +88,45 @@ const BookingConfirmationPage = () => {
         <button
           type="button"
           onClick={handlePrintThermal}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-gold/40 text-gold text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-amber-500/40 text-amber-500 text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
         >
-          <ReceiptText className="w-4 h-4 text-gold" />
-          <span>80mm POS Slip</span>
+          <ReceiptText className="w-4 h-4 text-amber-500" />
+          <span>80mm POS Receipt Slip</span>
         </button>
 
         <Link
           to="/my-bookings"
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-bold transition-all shadow-sm"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-bold transition-all shadow-sm active:scale-95"
         >
           <Ticket className="w-4 h-4 text-primary" />
-          <span>My Bookings</span>
+          <span>My Passes</span>
         </Link>
 
         <Link
           to="/"
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gold hover:bg-gold-hover text-background text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-gold/20"
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider transition-all shadow-cta active:scale-95"
         >
           <Home className="w-4 h-4" />
-          <span>Explore More</span>
+          <span>Explore More Movies</span>
         </Link>
       </div>
 
       {/* 4. MODAL: 80MM CONTINUOUS THERMAL RECEIPT SLIP */}
       {showThermalModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-surface p-6 rounded-2xl max-w-md w-full border border-border shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-surface p-6 rounded-3xl max-w-md w-full border border-border shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-border no-print">
               <div className="flex items-center gap-2">
                 <ReceiptText className="w-5 h-5 text-amber-500" />
                 <div>
-                  <h3 className="font-bold text-sm text-text-primary">80mm Box-Office Thermal Slip</h3>
-                  <p className="text-[10px] text-text-muted">Formatted for continuous thermal POS paper roll</p>
+                  <h3 className="font-bold text-sm text-text-primary font-sans">80mm Cinema Thermal Slip</h3>
+                  <p className="text-[10px] text-text-muted">Formatted for continuous 80mm POS printer paper</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowThermalModal(false)}
-                className="w-7 h-7 rounded-lg bg-surface-elevated border border-border flex items-center justify-center text-text-muted hover:text-text-primary text-xs cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-surface-elevated border border-border flex items-center justify-center text-text-muted hover:text-text-primary text-xs cursor-pointer"
               >
                 ✕
               </button>

@@ -5,22 +5,22 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #08090C;
-    --theme-surface: #11141B;
-    --theme-card: #11141B;
-    --theme-elevated: #171B24;
-    --theme-hover: #1F2430;
-    --theme-subtle: #0D0F14;
+    --theme-bg: #05070B;
+    --theme-surface: #0C1017;
+    --theme-card: #0C1017;
+    --theme-elevated: #141A24;
+    --theme-hover: #1C2331;
+    --theme-subtle: #080B10;
     --theme-border: rgba(255, 255, 255, 0.08);
     --theme-border-subtle: rgba(255, 255, 255, 0.04);
-    --theme-border-hover: #E50914;
-    --theme-primary: #E50914;
-    --theme-primary-hover: #FF1E2B;
-    --theme-accent: #F59E0B;
-    --theme-accent-hover: #D97706;
-    --theme-crimson: #E50914;
-    --theme-gold: #F59E0B;
-    --theme-cyan: #06B6D4;
+    --theme-border-hover: #FF204E;
+    --theme-primary: #FF204E;
+    --theme-primary-hover: #FF3B64;
+    --theme-accent: #E5B869;
+    --theme-accent-hover: #F3C77C;
+    --theme-crimson: #FF204E;
+    --theme-gold: #E5B869;
+    --theme-cyan: #00D2FF;
     --theme-text: #F8FAFC;
     --theme-text-primary: #F8FAFC;
     --theme-text-secondary: #94A3B8;
@@ -28,14 +28,14 @@
   }
 
   .light {
-    --theme-bg: #F8FAFC;
+    --theme-bg: #F7F9FC;
     --theme-surface: #FFFFFF;
     --theme-card: #FFFFFF;
-    --theme-elevated: #F1F5F9;
+    --theme-elevated: #EEF2F6;
     --theme-hover: #E2E8F0;
-    --theme-subtle: #F8FAFC;
-    --theme-border: #E2E8F0;
-    --theme-border-subtle: #F1F5F9;
+    --theme-subtle: #F1F5F9;
+    --theme-border: rgba(15, 23, 42, 0.08);
+    --theme-border-subtle: rgba(15, 23, 42, 0.04);
     --theme-border-hover: #E50914;
     --theme-primary: #E50914;
     --theme-primary-hover: #CC0812;
@@ -44,16 +44,16 @@
     --theme-crimson: #E50914;
     --theme-gold: #D97706;
     --theme-cyan: #0284C7;
-    --theme-text: #0F172A;
-    --theme-text-primary: #0F172A;
+    --theme-text: #0A0F1D;
+    --theme-text-primary: #0A0F1D;
     --theme-text-secondary: #475569;
     --theme-text-muted: #64748B;
   }
 
   body {
-    background-color: var(--theme-bg, #08090C);
+    background-color: var(--theme-bg, #05070B);
     color: var(--theme-text-primary, #F8FAFC);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -62,21 +62,45 @@
 }
 
 @layer utilities {
-  /* Clean Cinema Card with Adaptive Surface */
-  .cine-card {
-    background-color: var(--theme-surface, #161B26);
-    border: 1px solid var(--theme-border, #1E293B);
-    box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.2);
-    border-radius: 1rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Floating Glass Navbar & Panels */
+  .glass-nav {
+    background: rgba(12, 16, 23, 0.78);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  .cine-card:hover {
-    border-color: var(--theme-border-hover, #E50914);
-    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.3);
+  .light .glass-nav {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   }
 
-  /* 3D Perspective & Transform Contexts */
+  /* Luxury Cinema Surface Card */
+  .cine-surface {
+    background-color: var(--theme-surface, #0C1017);
+    border: 1px solid var(--theme-border, rgba(255, 255, 255, 0.08));
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.4);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cine-surface:hover {
+    border-color: rgba(255, 32, 78, 0.35);
+    box-shadow: 0 18px 42px -10px rgba(0, 0, 0, 0.6), 0 0 20px -4px rgba(255, 32, 78, 0.15);
+  }
+
+  .light .cine-surface {
+    box-shadow: 0 8px 30px -8px rgba(15, 23, 42, 0.05);
+  }
+
+  .light .cine-surface:hover {
+    border-color: rgba(229, 9, 20, 0.3);
+    box-shadow: 0 18px 42px -10px rgba(15, 23, 42, 0.1), 0 0 20px -4px rgba(229, 9, 20, 0.1);
+  }
+
+  /* 3D Perspective & Depth */
   .perspective-1000 {
     perspective: 1000px;
   }
@@ -89,195 +113,45 @@
     transform-style: preserve-3d;
   }
 
-  .backface-hidden {
-    backface-visibility: hidden;
+  /* Overhead Spotlight Cone */
+  .spotlight-cone {
+    background: radial-gradient(circle at 50% 0%, rgba(229, 184, 105, 0.2) 0%, rgba(255, 32, 78, 0.06) 35%, transparent 70%);
   }
 
-  /* 3D Depth Planes */
-  .translate-z-10 {
-    transform: translateZ(10px);
-  }
-  .translate-z-20 {
-    transform: translateZ(20px);
-  }
-  .translate-z-30 {
-    transform: translateZ(30px);
-  }
-  .translate-z-40 {
-    transform: translateZ(40px);
+  .light .spotlight-cone {
+    background: radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.12) 0%, rgba(229, 9, 20, 0.04) 35%, transparent 70%);
   }
 
-  /* 3D Cinebook Seat Selection Animations */
-  .cinebook-3d-container {
-    transform-style: preserve-3d;
-    animation: cinebook3dEntrance 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  /* Screen Curve Light Bar */
+  .cinema-screen-glow {
+    border-top: 3px solid #FF204E;
+    border-radius: 50% 50% 0 0 / 20px 20px 0 0;
+    box-shadow: 0 -10px 30px -2px rgba(255, 32, 78, 0.5);
   }
 
-  .cinebook-3d-active {
-    transform-style: preserve-3d;
-    animation: cinebook3dFloating 3s ease-in-out infinite alternate;
+  .light .cinema-screen-glow {
+    border-top: 3px solid #E50914;
+    box-shadow: 0 -10px 30px -2px rgba(229, 9, 20, 0.35);
   }
 
-  /* Luxury Glassmorphism Container */
-  .glass-panel {
-    background: rgba(18, 20, 28, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  }
-
-  .light .glass-panel {
-    background: rgba(255, 255, 255, 0.88);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  }
-
-  /* Glowing Stage Spotlights */
-  .stage-spotlight {
-    background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 35%, transparent 70%);
-  }
-
-  .stage-spotlight-gold {
-    background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.24) 0%, rgba(245, 158, 11, 0.06) 40%, transparent 70%);
-  }
-
-  /* 3D Specular Highlight Bevel */
-  .specular-bevel {
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-  }
-
-  /* Curved Screen Indicator */
-  .cinema-screen-curve {
-    border-top: 3px solid #F59E0B;
-    border-radius: 50% 50% 0 0 / 25px 25px 0 0;
-    box-shadow: 0 -8px 25px -4px rgba(245, 158, 11, 0.45);
-  }
-
-  /* Perforated Ticket Stub Separator */
-  .ticket-notch-left {
+  /* Digital E-Ticket Perforation */
+  .ticket-perforation-left {
     position: absolute;
-    left: -12px;
-    width: 24px;
-    height: 24px;
+    left: -14px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background-color: var(--theme-bg, #0E0E12);
+    background-color: var(--theme-bg, #05070B);
   }
 
-  .ticket-notch-right {
+  .ticket-perforation-right {
     position: absolute;
-    right: -12px;
-    width: 24px;
-    height: 24px;
+    right: -14px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    background-color: var(--theme-bg, #0E0E12);
+    background-color: var(--theme-bg, #05070B);
   }
-
-  .ticket-tear-line {
-    border-top: 2px dashed rgba(255, 255, 255, 0.15);
-  }
-
-  /* Luxury Cinema Badges */
-  .cine-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.22rem 0.6rem;
-    font-size: 0.68rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    border-radius: 0.45rem;
-  }
-}
-
-/* ============================================================================
-   3D CINEBOOK SEAT ANIMATIONS
-   ============================================================================ */
-@keyframes cinebook3dEntrance {
-  0% {
-    transform: perspective(500px) scale(0.1) rotateX(60deg) rotateY(-40deg) rotateZ(20deg);
-    opacity: 0;
-  }
-  60% {
-    transform: perspective(500px) scale(1.18) rotateX(-10deg) rotateY(15deg) rotateZ(-4deg);
-    opacity: 1;
-  }
-  80% {
-    transform: perspective(500px) scale(0.95) rotateX(6deg) rotateY(-6deg) rotateZ(2deg);
-  }
-  100% {
-    transform: perspective(500px) scale(1) rotateX(12deg) rotateY(-10deg) rotateZ(0deg);
-    opacity: 1;
-  }
-}
-
-@keyframes cinebook3dFloating {
-  0% {
-    transform: perspective(500px) rotateX(12deg) rotateY(-12deg) translateY(0px) scale(1);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(245, 158, 11, 0.5));
-  }
-  50% {
-    transform: perspective(500px) rotateX(18deg) rotateY(12deg) translateY(-2px) scale(1.06);
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 12px rgba(245, 158, 11, 0.85));
-  }
-  100% {
-    transform: perspective(500px) rotateX(10deg) rotateY(-8deg) translateY(1px) scale(0.98);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 6px rgba(245, 158, 11, 0.5));
-  }
-}
-
-/* ============================================================================
-   LIGHT THEME CONTRAST & POLISH
-   ============================================================================ */
-.light {
-  color-scheme: light;
-}
-
-.light header {
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom-color: #D8E0EC;
-  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.06);
-}
-
-.light input:not([type="checkbox"]):not([type="radio"]),
-.light select,
-.light textarea {
-  background-color: #FFFFFF;
-  color: #090D16;
-  border-color: #CBD5E1;
-}
-
-.light input::placeholder,
-.light textarea::placeholder {
-  color: #94A3B8;
-}
-
-.light input:focus,
-.light select:focus,
-.light textarea:focus {
-  border-color: #E50914;
-  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.14);
-}
-
-.light table {
-  color: #090D16;
-}
-
-.light table thead {
-  background-color: #F8FAFD;
-  border-bottom-color: #D8E0EC;
-  color: #475569;
-}
-
-.light table tbody tr {
-  border-bottom-color: #EDF2F7;
-}
-
-.light table tbody tr:hover {
-  background-color: #F1F5F9;
 }
 
 /* Custom Refined Scrollbars */
@@ -291,8 +165,12 @@
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #1B2336;
+  background: #141A24;
   border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #FF204E;
 }
 
 .light ::-webkit-scrollbar-track {
@@ -304,20 +182,8 @@
   border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.light ::-webkit-scrollbar-thumb:hover {
   background: #E50914;
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
 }
 
 /* ============================================================================

@@ -16,6 +16,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { useAuth, VALID_THEATRE_CODES } from '../../context/AuthContext';
+import { Button } from '../../components/ui/Button';
 
 const RegisterPage = () => {
   const [accountType, setAccountType] = useState('CUSTOMER'); // 'CUSTOMER' | 'THEATRE_ADMIN'
@@ -82,22 +83,22 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 relative text-text-primary transition-colors">
+    <div className="min-h-[90vh] flex items-center justify-center px-4 py-12 relative text-text-primary transition-colors">
       {/* Background Ambience */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="w-full max-w-lg bg-surface border border-border rounded-3xl p-8 shadow-2xl space-y-6 relative z-10 backdrop-blur-xl">
+      <div className="w-full max-w-lg bg-surface border border-border rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative z-10 backdrop-blur-2xl">
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-text-primary shadow-lg">
             {accountType === 'THEATRE_ADMIN' ? (
               <Store className="w-7 h-7 text-amber-500" />
             ) : (
-              <Film className="w-7 h-7 text-accent" />
+              <Film className="w-7 h-7 text-primary" />
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-display font-black text-text-primary tracking-tight">
-            Create CINE<span className="text-accent">BOOK</span> Account
+          <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-sans">
+            Create CINE<span className="text-primary">BOOK</span> Account
           </h1>
           <p className="text-xs text-text-muted">
             {accountType === 'THEATRE_ADMIN'
@@ -113,7 +114,7 @@ const RegisterPage = () => {
             onClick={() => { setAccountType('CUSTOMER'); setError(''); }}
             className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
               accountType === 'CUSTOMER'
-                ? 'bg-accent text-white shadow-sm'
+                ? 'bg-primary text-white shadow-cta'
                 : 'text-text-muted hover:text-text-primary'
             }`}
           >
@@ -126,12 +127,12 @@ const RegisterPage = () => {
             onClick={() => { setAccountType('THEATRE_ADMIN'); setError(''); }}
             className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
               accountType === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 text-black shadow-sm font-bold'
+                ? 'bg-amber-500 text-black shadow-md font-bold'
                 : 'text-text-muted hover:text-text-primary'
             }`}
           >
             <Store className="w-4 h-4" />
-            <span>Theatre Exhibitor Admin</span>
+            <span>Theatre Exhibitor</span>
           </button>
         </div>
 
@@ -150,7 +151,7 @@ const RegisterPage = () => {
                   <Building2 className="w-3.5 h-3.5" /> Cinema & Authorization Details
                 </span>
                 <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  Admin Verification Required
+                  Partner Code Required
                 </span>
               </div>
 
@@ -163,7 +164,7 @@ const RegisterPage = () => {
                     value={theatreName}
                     onChange={(e) => setTheatreName(e.target.value)}
                     required
-                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500 transition-colors"
                   />
                 </div>
 
@@ -172,7 +173,7 @@ const RegisterPage = () => {
                   <select
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500"
+                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500 transition-colors"
                   >
                     <option value="Guntur" className="bg-surface text-text-primary">Guntur</option>
                     <option value="Vijayawada" className="bg-surface text-text-primary">Vijayawada</option>
@@ -194,7 +195,7 @@ const RegisterPage = () => {
                   value={theatreSecretCode}
                   onChange={(e) => setTheatreSecretCode(e.target.value)}
                   required
-                  className="w-full p-2.5 bg-surface border border-amber-500/50 rounded-xl text-amber-500 font-mono font-black placeholder:text-text-muted focus:outline-none focus:border-amber-500 tracking-wider"
+                  className="w-full p-2.5 bg-surface border border-amber-500/50 rounded-xl text-amber-500 font-mono font-black placeholder:text-text-muted focus:outline-none focus:border-amber-500 tracking-wider transition-colors"
                 />
                 <p className="text-[10px] text-text-muted mt-1">
                   💡 Valid Demo Code: <code className="text-amber-500 font-bold">CINE-THEATRE-2026</code> or <code className="text-amber-500 font-bold">2026</code>
@@ -216,7 +217,7 @@ const RegisterPage = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent font-bold"
+                className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
               />
             </div>
           </div>
@@ -232,7 +233,7 @@ const RegisterPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent font-bold"
+                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
             </div>
@@ -247,7 +248,7 @@ const RegisterPage = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent font-bold"
+                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
             </div>
@@ -265,7 +266,7 @@ const RegisterPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent font-bold"
+                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
             </div>
@@ -281,7 +282,7 @@ const RegisterPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent font-bold"
+                  className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
             </div>
@@ -290,10 +291,10 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer ${
+            className={`w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer shadow-cta active:scale-95 ${
               accountType === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 hover:bg-amber-400 text-black shadow-sm font-bold'
-                : 'bg-accent hover:bg-accent-hover text-white shadow-sm'
+                ? 'bg-amber-500 hover:bg-amber-400 text-black font-bold'
+                : 'bg-primary hover:bg-primary-hover text-white'
             }`}
           >
             <span>{loading ? 'Creating Account...' : accountType === 'THEATRE_ADMIN' ? 'Validate Code & Register Theatre' : 'Create Account'}</span>
@@ -303,7 +304,7 @@ const RegisterPage = () => {
 
         <div className="pt-4 border-t border-border text-center text-xs text-text-muted">
           Already have an account?{' '}
-          <Link to="/login" className="text-accent font-black hover:underline">
+          <Link to="/login" className="text-primary font-black hover:underline">
             Sign In Here
           </Link>
         </div>

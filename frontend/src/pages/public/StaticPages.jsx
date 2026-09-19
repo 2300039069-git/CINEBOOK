@@ -19,6 +19,7 @@ import {
   Info
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from '../../components/ui/Button';
 
 // ============================================================================
 // 1. ABOUT US PAGE (/about)
@@ -30,7 +31,7 @@ export const AboutPage = () => (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider">
         <Sparkles className="w-3.5 h-3.5" /> Next-Gen Cinema Platform
       </span>
-      <h1 className="text-3xl sm:text-5xl font-black text-text-primary tracking-tight font-display">
+      <h1 className="text-3xl sm:text-5xl font-black text-text-primary tracking-tight font-sans">
         About CINE<span className="text-primary">BOOK</span>
       </h1>
       <p className="text-sm sm:text-base text-text-muted max-w-2xl mx-auto leading-relaxed">
@@ -39,13 +40,13 @@ export const AboutPage = () => (
     </div>
 
     {/* Platform Overview */}
-    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 leading-relaxed text-sm text-text-secondary shadow-xl">
+    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 leading-relaxed text-sm text-text-secondary shadow-card">
       <div className="flex items-center gap-3 pb-4 border-b border-border">
         <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
           <Film className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-black text-text-primary font-display">Bridging Heritage Cinemas & Digital Audiences</h2>
+          <h2 className="text-xl font-black text-text-primary font-sans">Bridging Heritage Cinemas & Digital Audiences</h2>
           <p className="text-xs text-text-muted">Empowering independent exhibitors with cloud-native box-office technology</p>
         </div>
       </div>
@@ -88,10 +89,10 @@ export const AboutPage = () => (
         <div className="p-5 rounded-2xl bg-surface-elevated border border-border space-y-2">
           <h3 className="font-bold text-text-primary flex items-center gap-2 text-sm">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
-            Certified Bank & Cashfree Security
+            Certified Bank & Vyapar Security
           </h3>
           <p className="text-xs text-text-muted leading-relaxed">
-            All customer transactions are secured via PCI-DSS Level 1 certified gateways and Cashfree Payments, with 256-bit SSL encryption and full RBI compliance.
+            All customer transactions are secured via PCI-DSS Level 1 certified gateways and Vyapar/UPI Rails, with 256-bit SSL encryption and full RBI compliance.
           </p>
         </div>
       </div>
@@ -99,16 +100,16 @@ export const AboutPage = () => (
       {/* Trust Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t border-border">
         <div className="p-5 rounded-2xl bg-surface-elevated border border-border text-center space-y-1">
-          <span className="text-3xl font-black text-text-primary font-display">100+</span>
+          <span className="text-3xl font-black text-text-primary font-sans">100+</span>
           <p className="text-xs text-text-muted">Partner Theatres & Screens</p>
         </div>
         <div className="p-5 rounded-2xl bg-surface-elevated border border-border text-center space-y-1">
-          <span className="text-3xl font-black text-primary font-display">₹10.00</span>
+          <span className="text-3xl font-black text-primary font-sans">₹10.00</span>
           <p className="text-xs text-text-muted">Flat Lowest Convenience Fee</p>
         </div>
         <div className="p-5 rounded-2xl bg-surface-elevated border border-border text-center space-y-1">
-          <span className="text-3xl font-black text-emerald-500 font-display">100%</span>
-          <p className="text-xs text-text-muted">Secure Cashfree Payment Rails</p>
+          <span className="text-3xl font-black text-emerald-500 font-sans">100%</span>
+          <p className="text-xs text-text-muted">Secure Instant UPI Rails</p>
         </div>
       </div>
     </div>
@@ -141,7 +142,7 @@ export const ContactPage = () => {
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider">
           <HelpCircle className="w-3.5 h-3.5" /> Support & Assistance
         </span>
-        <h1 className="text-3xl sm:text-5xl font-black text-text-primary tracking-tight font-display">
+        <h1 className="text-3xl sm:text-5xl font-black text-text-primary tracking-tight font-sans">
           Contact CINE<span className="text-primary">BOOK</span>
         </h1>
         <p className="text-sm sm:text-base text-text-muted max-w-xl mx-auto">
@@ -177,7 +178,7 @@ export const ContactPage = () => {
             <div>
               <h3 className="text-sm font-bold text-text-primary">Customer Care Helpline</h3>
               <a
-                href="tel:+918000246328"
+                href="tel:+919848012345"
                 className="text-xs font-semibold text-text-primary hover:text-primary block mt-0.5"
               >
                 +91 (022) 8000-CINE (2463) / +91 98480 12345
@@ -221,7 +222,7 @@ export const ContactPage = () => {
               <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center mx-auto border border-emerald-500/20">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-text-primary">Support Request Received</h3>
+              <h3 className="text-lg font-bold text-text-primary font-sans">Support Request Received</h3>
               <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
                 Thank you for contacting CineBook support. Ticket reference has been generated for <strong>{formData.email}</strong>. Our concierge team will reach out to you within 30 minutes.
               </p>
@@ -239,7 +240,7 @@ export const ContactPage = () => {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               <div>
-                <h3 className="text-base font-bold text-text-primary font-display">Send a Support Query</h3>
+                <h3 className="text-base font-bold text-text-primary font-sans">Send a Support Query</h3>
                 <p className="text-xs text-text-muted mt-0.5">Please provide your details below and we will get back to you shortly.</p>
               </div>
 
@@ -252,7 +253,7 @@ export const ContactPage = () => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g. Rahul Sharma"
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                   />
                 </div>
 
@@ -264,7 +265,7 @@ export const ContactPage = () => {
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="e.g. rahul@example.com"
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                   />
                 </div>
               </div>
@@ -277,7 +278,7 @@ export const ContactPage = () => {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     placeholder="e.g. +91 98480 12345"
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                   />
                 </div>
 
@@ -288,7 +289,7 @@ export const ContactPage = () => {
                     value={formData.bookingId}
                     onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
                     placeholder="e.g. CB-2026-894120"
-                    className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs"
+                    className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                   />
                 </div>
               </div>
@@ -298,11 +299,11 @@ export const ContactPage = () => {
                 <select
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary focus:outline-none focus:border-primary text-xs"
+                  className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                 >
                   <option value="General Inquiry">General Inquiry</option>
                   <option value="Ticket Booking Issue">Ticket Booking Issue</option>
-                  <option value="Payment / Cashfree Status">Payment / Cashfree Status</option>
+                  <option value="Payment / UPI Status">Payment / UPI Status</option>
                   <option value="Cancellation & Refund Request">Cancellation & Refund Request</option>
                   <option value="Theatre / Exhibitor Partnership">Theatre / Exhibitor Partnership</option>
                 </select>
@@ -316,13 +317,13 @@ export const ContactPage = () => {
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   placeholder="Describe your query in detail with show date, theatre name, or payment reference ID..."
-                  className="w-full px-4 py-2.5 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs"
+                  className="w-full px-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary text-xs font-bold transition-colors"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98"
+                className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-cta flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
               >
                 <Send className="w-4 h-4" />
                 <span>Submit Support Query</span>
@@ -344,13 +345,13 @@ export const TermsPage = () => (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider">
         <FileText className="w-3.5 h-3.5" /> Legal Governance
       </span>
-      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-display">
+      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-sans">
         Terms & Conditions
       </h1>
       <p className="text-xs text-text-muted">Last Updated: September 2026 • Governed under the Information Technology Act, 2000</p>
     </div>
 
-    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-xl">
+    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-card">
       <p className="text-text-primary font-medium">
         Welcome to <strong>CineBook</strong> (operated by CineBook Media Technologies Pvt. Ltd.). By accessing our website, mobile application, or purchasing movie tickets through our platform, you explicitly agree to be bound by these Terms & Conditions.
       </p>
@@ -392,7 +393,7 @@ export const TermsPage = () => (
       <div className="space-y-2 pt-2 border-t border-border">
         <h2 className="text-base font-bold text-text-primary">4. Payments, Internet Handling Fees & Taxes</h2>
         <p>
-          All online ticket purchases are securely processed through authorized RBI-compliant payment gateway partners, including Cashfree Payments and UPI rails.
+          All online ticket purchases are securely processed through authorized RBI-compliant payment gateway partners, including Vyapar Gateway and UPI rails.
         </p>
         <p>
           The total payable amount consists of the Base Ticket Price (determined by the cinema exhibitor, including municipal entertainment taxes/GST) plus a nominal Internet Handling / Convenience Fee (Flat ₹10.00) and 18% Integrated GST on the handling fee (SAC 998599).
@@ -419,13 +420,13 @@ export const PrivacyPage = () => (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider">
         <ShieldCheck className="w-3.5 h-3.5" /> Data Security & PCI-DSS
       </span>
-      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-display">
+      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-sans">
         Privacy Policy
       </h1>
       <p className="text-xs text-text-muted">Last Updated: September 2026 • In compliance with IT (Reasonable Security Practices) Rules, 2011</p>
     </div>
 
-    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-xl">
+    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-card">
       <p className="text-text-primary font-medium">
         At <strong>CineBook</strong>, we are committed to safeguarding the personal privacy of our users. This Privacy Policy details how we collect, process, tokenize, and protect your information when using our services.
       </p>
@@ -447,7 +448,7 @@ export const PrivacyPage = () => (
         <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-text-primary flex items-start gap-3">
           <Lock className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
           <p className="text-xs leading-relaxed">
-            <strong>PCI-DSS Compliant Payment Security:</strong> All digital payments on CineBook are processed via certified RBI-licensed gateway aggregators (including <strong>Cashfree Payments</strong>). CineBook <u>never</u> collects, views, or stores your sensitive payment data (such as 16-digit Card Numbers, CVVs, Expiry Dates, or UPI PINs) on our servers. All financial communication is protected with 256-bit SSL encryption.
+            <strong>PCI-DSS Compliant Payment Security:</strong> All digital payments on CineBook are processed via certified RBI-licensed gateway aggregators. CineBook <u>never</u> collects, views, or stores your sensitive payment data (such as 16-digit Card Numbers, CVVs, Expiry Dates, or UPI PINs) on our servers. All financial communication is protected with 256-bit SSL encryption.
           </p>
         </div>
       </div>
@@ -490,15 +491,15 @@ export const CancellationRefundsPage = () => (
   <div className="min-h-screen py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in bg-background text-text-primary transition-colors">
     <div className="text-center space-y-2">
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20 text-xs font-bold uppercase tracking-wider">
-        <RefreshCw className="w-3.5 h-3.5" /> Cashfree Merchant Compliance
+        <RefreshCw className="w-3.5 h-3.5" /> Merchant Compliance
       </span>
-      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-display">
+      <h1 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight font-sans">
         Refund & Cancellation Policy
       </h1>
       <p className="text-xs text-text-muted">Standard Operating Policy for Movie Reservations, Show Disruptions & Automated Reversals</p>
     </div>
 
-    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-xl">
+    <div className="p-6 sm:p-10 rounded-3xl bg-surface border border-border space-y-6 text-xs sm:text-sm text-text-secondary leading-relaxed shadow-card">
       {/* Primary Policy Banner */}
       <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
         <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
@@ -534,7 +535,7 @@ export const CancellationRefundsPage = () => (
           In rare circumstances where your bank account or UPI wallet is debited but a network latency prevents ticket issuance before the 8-minute seat lock expires, the transaction is marked as 'FAILED'.
         </p>
         <p>
-          In all such failed transaction events, the debited amount is automatically reversed by the payment gateway (Cashfree) to your original payment source within <strong>24 to 48 banking hours</strong> (or maximum 3–5 working days depending on your issuing bank).
+          In all such failed transaction events, the debited amount is automatically reversed by the payment gateway to your original payment source within <strong>24 to 48 banking hours</strong> (or maximum 3–5 working days depending on your issuing bank).
         </p>
       </div>
 
@@ -550,7 +551,7 @@ export const CancellationRefundsPage = () => (
       <div className="space-y-2 pt-2 border-t border-border">
         <h2 className="text-base font-bold text-text-primary">3. Refund Queries & Escalation Support</h2>
         <p>
-          If your refund has not reflected in your bank account after the stipulated 5–7 business days, please write to our support desk with your <strong>Booking ID</strong> and <strong>Cashfree Payment Reference ID</strong>:
+          If your refund has not reflected in your bank account after the stipulated 5–7 business days, please write to our support desk with your <strong>Booking ID</strong> and <strong>Payment Reference ID</strong>:
         </p>
         <div className="p-4 rounded-xl bg-surface-elevated border border-border flex flex-wrap items-center justify-between gap-3 text-xs">
           <div>

@@ -1,201 +1,173 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, Film, MapPin, Calendar, Star, ArrowRight } from 'lucide-react';
-import { MOVIES, THEATRES, EVENTS } from '../../data/mockData';
+import { Search, X, Film, Building, Sparkles, ArrowRight, Star, Clock } from 'lucide-react';
+import { MOVIES, THEATRES, GENRES } from '../../data/mockData';
+import { Modal } from '../ui/Modal';
 
-const SearchModal = ({ isOpen, onClose }) => {
+export const SearchModal = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
-  const inputRef = useRef(null);
+  const [selectedCategory, setSelectedCategory] = useState('ALL'); // 'ALL' | 'MOVIES' | 'CINEMAS'
   const navigate = useNavigate();
 
+  // Keyboard shortcut listener (Cmd+K or Ctrl+K)
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery('');
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        // Toggle or open
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const filteredMovies = query.trim()
-    ? MOVIES.filter(m =>
-        m.title.toLowerCase().includes(query.toLowerCase()) ||
-        m.genres.some(g => g.toLowerCase().includes(query.toLowerCase())) ||
-        m.languages.some(l => l.toLowerCase().includes(query.toLowerCase())) ||
-        (m.director && m.director.toLowerCase().includes(query.toLowerCase()))
+    ? MOVIES.filter(
+        (m) =>
+          m.title.toLowerCase().includes(query.toLowerCase()) ||
+          m.genres?.some((g) => g.toLowerCase().includes(query.toLowerCase())) ||
+          m.director?.toLowerCase().includes(query.toLowerCase()) ||
+          m.cast?.some((c) => c.name.toLowerCase().includes(query.toLowerCase()))
       )
-    : [];
+    : MOVIES.slice(0, 4);
 
   const filteredTheatres = query.trim()
-    ? THEATRES.filter(t =>
-        t.name.toLowerCase().includes(query.toLowerCase()) ||
-        t.address.toLowerCase().includes(query.toLowerCase()) ||
-        t.city.toLowerCase().includes(query.toLowerCase())
+    ? THEATRES.filter(
+        (t) =>
+          t.name.toLowerCase().includes(query.toLowerCase()) ||
+          t.address.toLowerCase().includes(query.toLowerCase())
       )
-    : [];
+    : THEATRES.slice(0, 3);
 
-  const filteredEvents = query.trim()
-    ? EVENTS.filter(e =>
-        e.title.toLowerCase().includes(query.toLowerCase()) ||
-        e.category.toLowerCase().includes(query.toLowerCase())
-      )
-    : [];
-
-  const handleSelectMovie = (slug) => {
+  const handleSelectMovie = (movie) => {
     onClose();
-    navigate(`/movie/${slug}`);
+    navigate(`/movie/${movie.slug || movie.id}`);
   };
 
-  const handleSelectTheatre = (theatreId) => {
+  const handleSelectTheatre = (theatre) => {
     onClose();
-    navigate(`/theatres`);
+    navigate('/theatres');
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden text-text-primary">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-2xl" showClose={false}>
+      <div className="space-y-5 -m-1">
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface-elevated">
-          <Search className="w-5 h-5 text-primary" />
+        <div className="relative flex items-center">
+          <Search className="w-5 h-5 text-primary absolute left-4 pointer-events-none" />
           <input
-            ref={inputRef}
             type="text"
-            placeholder="Search movies, theatres, events, genres, languages..."
+            autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-text-primary placeholder:text-text-muted text-base focus:outline-none font-medium"
+            placeholder="Search blockbusters, actors, genres, cinemas..."
+            className="w-full pl-12 pr-10 py-3.5 bg-surface-elevated border border-border rounded-2xl text-sm font-bold text-text-primary placeholder:text-text-muted outline-none focus:border-primary transition-colors shadow-inner"
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 rounded-lg text-text-muted hover:text-text-primary cursor-pointer"
+              className="absolute right-3.5 p-1 rounded-lg bg-surface text-text-muted hover:text-text-primary"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <button
-            onClick={onClose}
-            className="px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-surface text-text-muted hover:text-text-primary border border-border cursor-pointer"
-          >
-            ESC
-          </button>
         </div>
 
-        {/* Results Body */}
-        <div className="max-h-[60vh] overflow-y-auto p-4 space-y-5">
-          {!query.trim() ? (
-            <div className="py-8 text-center">
-              <Film className="w-10 h-10 text-text-muted/40 mx-auto mb-3" />
-              <p className="text-sm text-text-muted">Type a movie title, cinema name, or genre to get started</p>
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-                <span className="text-xs text-text-muted">Popular Searches:</span>
-                {['Pushpa 2: The Rule', 'Devara: Part 1', 'Kalki 2898 AD', 'Siva Cinemas', 'Guntur'].map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => setQuery(tag)}
-                    className="px-2.5 py-1 rounded-full bg-surface-elevated text-xs text-text-secondary hover:text-text-primary hover:border-primary border border-border transition-colors cursor-pointer"
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-2 text-xs font-bold">
+          {['ALL', 'MOVIES', 'CINEMAS'].map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                selectedCategory === cat
+                  ? 'bg-primary border-primary text-white shadow-xs'
+                  : 'bg-surface-elevated border-border text-text-muted hover:text-text-primary'
+              }`}
+            >
+              {cat === 'ALL' ? 'Everything' : cat === 'MOVIES' ? 'Movies & Shows' : 'Cinemas & Venues'}
+            </button>
+          ))}
+        </div>
+
+        {/* Results Stream */}
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+          {/* Movies Section */}
+          {(selectedCategory === 'ALL' || selectedCategory === 'MOVIES') && filteredMovies.length > 0 && (
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase font-black tracking-widest text-text-muted flex items-center gap-1.5">
+                <Film className="w-3.5 h-3.5 text-primary" />
+                <span>{query.trim() ? 'Matching Movies' : 'Trending Blockbusters'}</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {filteredMovies.map((movie) => (
+                  <div
+                    key={movie.id}
+                    onClick={() => handleSelectMovie(movie)}
+                    className="p-2.5 rounded-2xl bg-surface-elevated hover:bg-surface-hover border border-border hover:border-primary/50 flex items-center gap-3 cursor-pointer transition-all group"
                   >
-                    {tag}
-                  </button>
+                    <img
+                      src={movie.poster || movie.posterUrl || '/posters/pushpa2.jpg'}
+                      alt={movie.title}
+                      className="w-12 h-16 rounded-xl object-cover shrink-0 border border-border group-hover:scale-105 transition-transform"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-bold text-text-primary group-hover:text-primary transition-colors truncate">
+                        {movie.title}
+                      </h4>
+                      <p className="text-[10px] text-text-muted truncate mt-0.5">
+                        {movie.genres?.join(', ') || movie.genre}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-black text-amber-400 flex items-center gap-0.5">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <span>{movie.rating}</span>
+                        </span>
+                        <span className="text-[10px] text-text-muted">• {movie.duration || '2h 45m'}</span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
-          ) : (
-            <>
-              {/* Movies Result */}
-              {filteredMovies.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5 flex items-center gap-1.5">
-                    <Film className="w-3.5 h-3.5 text-primary" /> Movies ({filteredMovies.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {filteredMovies.map((movie) => (
-                      <div
-                        key={movie.id}
-                        onClick={() => handleSelectMovie(movie.slug)}
-                        className="flex items-center justify-between p-2.5 rounded-xl bg-surface-elevated hover:bg-surface-hover border border-transparent hover:border-border cursor-pointer transition-all group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={movie.poster || movie.posterUrl || movie.poster_url || '/posters/pushpa2.jpg'}
-                            alt={movie.title}
-                            onError={(e) => {
-                              const t = ((movie.title || '') + ' ' + (movie.slug || '')).toLowerCase();
-                              let fb = '/posters/pushpa2.jpg';
-                              if (t.includes('devara')) fb = '/posters/devara.jpg';
-                              else if (t.includes('kalki')) fb = '/posters/kalki.webp';
-                              else if (t.includes('og') || t.includes('ojas')) fb = '/posters/og.jpg';
-                              if (e.target.src !== fb && !e.target.src.endsWith(fb)) {
-                                e.target.src = fb;
-                              }
-                            }}
-                            className="w-12 h-16 object-cover rounded-lg shadow-sm"
-                          />
-                          <div>
-                            <h5 className="text-sm font-semibold text-text-primary group-hover:text-primary transition-colors">
-                              {movie.title}
-                            </h5>
-                            <p className="text-xs text-text-muted mt-0.5">
-                              {movie.genres?.join(' • ')} • {movie.languages?.join(', ')}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="flex items-center text-xs text-gold font-bold">
-                                <Star className="w-3 h-3 fill-gold text-gold mr-1" /> {movie.rating}
-                              </span>
-                              <span className="text-xs text-text-muted">|</span>
-                              <span className="text-[11px] px-1.5 py-0.5 rounded bg-surface border border-border text-text-secondary">
-                                {movie.formats?.join(' / ')}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+          )}
 
-              {/* Theatres Result */}
-              {filteredTheatres.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-gold" /> Cinemas & Theatres ({filteredTheatres.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {filteredTheatres.map((theatre) => (
-                      <div
-                        key={theatre.id}
-                        onClick={() => handleSelectTheatre(theatre.id)}
-                        className="flex items-center justify-between p-3 rounded-xl bg-surface-elevated hover:bg-surface-hover border border-transparent hover:border-border cursor-pointer transition-all group"
-                      >
-                        <div>
-                          <h5 className="text-sm font-medium text-text-primary group-hover:text-gold transition-colors">
-                            {theatre.name}
-                          </h5>
-                          <p className="text-xs text-text-muted mt-0.5">
-                            {theatre.address} • {theatre.city}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-gold group-hover:translate-x-1 transition-all" />
+          {/* Cinemas Section */}
+          {(selectedCategory === 'ALL' || selectedCategory === 'CINEMAS') && filteredTheatres.length > 0 && (
+            <div className="space-y-2 pt-2 border-t border-border">
+              <span className="text-[10px] uppercase font-black tracking-widest text-text-muted flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-accent" />
+                <span>Cinemas & Auditoriums</span>
+              </span>
+              <div className="space-y-2">
+                {filteredTheatres.map((theatre) => (
+                  <div
+                    key={theatre.id}
+                    onClick={() => handleSelectTheatre(theatre)}
+                    className="p-3 rounded-2xl bg-surface-elevated hover:bg-surface-hover border border-border hover:border-accent/50 flex items-center justify-between cursor-pointer transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center font-bold">
+                        <Building className="w-4 h-4" />
                       </div>
-                    ))}
+                      <div>
+                        <h4 className="text-xs font-bold text-text-primary group-hover:text-accent transition-colors">
+                          {theatre.name}
+                        </h4>
+                        <p className="text-[10px] text-text-muted">{theatre.address}</p>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-text-primary group-hover:translate-x-1 transition-all" />
                   </div>
-                </div>
-              )}
-
-              {/* No results */}
-              {filteredMovies.length === 0 && filteredTheatres.length === 0 && filteredEvents.length === 0 && (
-                <div className="py-8 text-center text-sm text-text-muted">
-                  No matching movies, theatres, or events found for "{query}".
-                </div>
-              )}
-            </>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
