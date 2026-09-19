@@ -54,7 +54,30 @@ class NotificationService:
         formatted_phone = f"91{clean_phone}"
         message_text = cls.generate_whatsapp_share_text(booking)
 
-        # 1. Meta WhatsApp Cloud API (if configured)
+        # 1. Brevo WhatsApp API (if configured)
+        if settings.BREVO_API_KEY and settings.BREVO_API_KEY.startswith("xkeysib-"):
+            try:
+                headers = {
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+                payload_brevo = {
+                    "contactNumbers": [formatted_phone],
+                    "text": message_text
+                }
+                if settings.BREVO_WHATSAPP_SENDER_NUMBER:
+                    payload_brevo["senderNumber"] = settings.BREVO_WHATSAPP_SENDER_NUMBER
+
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.post("https://api.brevo.com/v3/whatsapp/sendMessage", json=payload_brevo, headers=headers)
+                    if resp.status_code in (200, 201):
+                        logger.info(f"Brevo WhatsApp message sent to {formatted_phone}")
+                        return {"success": True, "delivered": True, "provider": "brevo_whatsapp"}
+            except Exception as e:
+                logger.debug(f"Brevo WhatsApp notice: {e}")
+
+        # 2. Meta WhatsApp Cloud API (if configured)
         if settings.WHATSAPP_PHONE_NUMBER_ID and settings.WHATSAPP_ACCESS_TOKEN:
             try:
                 url = f"https://graph.facebook.com/v18.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
@@ -98,11 +121,14 @@ class NotificationService:
                 logger.error(f"Twilio WhatsApp error: {e}")
 
         # Development / Fallback log
-        print("\n" + "=" * 65)
-        print("[CINEBOOK WHATSAPP NOTIFICATION]")
-        print(f">> Recipient  : +{formatted_phone}")
-        print(f">> Message    :\n{message_text}")
-        print("=" * 65 + "\n")
+        try:
+            print("\n" + "=" * 65)
+            print("[CINEBOOK WHATSAPP NOTIFICATION]")
+            print(f">> Recipient  : +{formatted_phone}")
+            print(f">> Message    :\n{message_text.encode('ascii', 'replace').decode('ascii')}")
+            print("=" * 65 + "\n")
+        except Exception:
+            pass
 
         return {"success": True, "delivered": False, "provider": "console_fallback"}
 

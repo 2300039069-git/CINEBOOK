@@ -51,6 +51,12 @@ class Settings(BaseSettings):
     INSTAMOJO_SALT: Optional[str] = os.getenv("INSTAMOJO_SALT", "")
     INSTAMOJO_ENV: str = os.getenv("INSTAMOJO_ENV", "production")  # "production" or "test"
     
+    # Brevo (Sendinblue) All-in-One Multi-Channel API
+    BREVO_API_KEY: Optional[str] = os.getenv("BREVO_API_KEY", "")
+    BREVO_SENDER_EMAIL: str = os.getenv("BREVO_SENDER_EMAIL", "kancharladhanush2003@gmail.com")
+    BREVO_SENDER_NAME: str = os.getenv("BREVO_SENDER_NAME", "CineBook Tickets")
+    BREVO_WHATSAPP_SENDER_NUMBER: Optional[str] = os.getenv("BREVO_WHATSAPP_SENDER_NUMBER", "")
+
     # Resend / Email Configuration
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")

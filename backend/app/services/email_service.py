@@ -11,8 +11,38 @@ logger = logging.getLogger("cinebook.email")
 class EmailService:
     @staticmethod
     def _dispatch_html_email(to_clean: str, subject: str, html_content: str) -> Dict[str, Any]:
-        """Core sender for Resend REST API with SMTP fallback"""
-        # 1. Primary Method: Resend REST API
+        """Core sender supporting Brevo REST API, Resend REST API, and Gmail/SMTP fallback"""
+        # 1. Primary Method: Brevo REST API (xkeysib-...)
+        if settings.BREVO_API_KEY and settings.BREVO_API_KEY.startswith("xkeysib-"):
+            try:
+                headers = {
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+                payload = {
+                    "sender": {
+                        "name": settings.BREVO_SENDER_NAME or "CineBook Tickets",
+                        "email": settings.BREVO_SENDER_EMAIL or "kancharladhanush2003@gmail.com"
+                    },
+                    "to": [{"email": to_clean}],
+                    "subject": subject,
+                    "htmlContent": html_content
+                }
+                with httpx.Client(timeout=10) as client:
+                    resp = client.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+                    if resp.status_code in (200, 201):
+                        data = resp.json()
+                        logger.info(f"Successfully sent email to {to_clean} via Brevo. Message ID: {data.get('messageId')}")
+                        return {"success": True, "delivered": True, "provider": "brevo", "message": f"Email delivered to {to_clean} via Brevo."}
+                    else:
+                        resp_json = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+                        err_msg = resp_json.get("message", resp.text)
+                        logger.warning(f"Brevo dispatch notice for {to_clean}: {err_msg}")
+            except Exception as e:
+                logger.error(f"Brevo API dispatch error: {e}")
+
+        # 2. Secondary Method: Resend REST API
         if settings.RESEND_API_KEY and settings.RESEND_API_KEY.startswith("re_"):
             try:
                 headers = {
@@ -30,16 +60,15 @@ class EmailService:
                     if resp.status_code in (200, 201):
                         data = resp.json()
                         logger.info(f"Successfully sent email to {to_clean} via Resend. Message ID: {data.get('id')}")
-                        return {"success": True, "delivered": True, "message": f"Email delivered to {to_clean}."}
+                        return {"success": True, "delivered": True, "provider": "resend", "message": f"Email delivered to {to_clean}."}
                     else:
                         resp_json = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
                         err_msg = resp_json.get("message", resp.text)
                         logger.warning(f"Resend notification for {to_clean}: {err_msg}")
-                        return {"success": True, "delivered": False, "message": err_msg, "reason": err_msg}
             except Exception as e:
                 logger.error(f"Resend API dispatch error: {e}")
 
-        # 2. Secondary Method: SMTP (Gmail or Resend SMTP)
+        # 3. Tertiary Method: SMTP (Gmail or Resend SMTP)
         smtp_user = getattr(settings, "GMAIL_ADDRESS", None) or getattr(settings, "SMTP_USER", None)
         smtp_pass = getattr(settings, "GMAIL_APP_PASSWORD", None) or getattr(settings, "SMTP_PASSWORD", None)
         if smtp_pass:

@@ -37,7 +37,29 @@ class SmsService:
         purpose_text = "registration verification" if purpose == "REGISTRATION" else "password reset"
         message_text = f"Your CineBook verification code for {purpose_text} is {otp}. Valid for 5 minutes. Do not share this OTP."
 
-        # 1. Fast2SMS Provider (India)
+        # 1. Brevo Transactional SMS
+        if settings.BREVO_API_KEY and settings.BREVO_API_KEY.startswith("xkeysib-"):
+            try:
+                headers = {
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+                payload_brevo = {
+                    "sender": "CineBook",
+                    "recipient": f"91{clean_phone}",
+                    "content": message_text,
+                    "type": "transactional"
+                }
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.post("https://api.brevo.com/v3/transactionalSMS/sms", json=payload_brevo, headers=headers)
+                    if resp.status_code in (200, 201):
+                        logger.info(f"Brevo OTP SMS dispatched to +91{clean_phone}")
+                        return {"success": True, "delivered": True, "provider": "brevo", "message": f"OTP SMS sent to +91 {clean_phone} via Brevo"}
+            except Exception as e:
+                logger.debug(f"Brevo SMS notice: {e}")
+
+        # 2. Fast2SMS Provider (India)
         if settings.FAST2SMS_API_KEY and len(settings.FAST2SMS_API_KEY.strip()) > 5:
             try:
                 headers = {
@@ -144,7 +166,29 @@ class SmsService:
             f"E-Ticket QR Pass: {ticket_link}"
         )
 
-        # 1. Fast2SMS Provider
+        # 1. Brevo Transactional SMS
+        if settings.BREVO_API_KEY and settings.BREVO_API_KEY.startswith("xkeysib-"):
+            try:
+                headers = {
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+                payload_brevo = {
+                    "sender": "CineBook",
+                    "recipient": f"91{clean_phone}",
+                    "content": message_text,
+                    "type": "transactional"
+                }
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    resp = await client.post("https://api.brevo.com/v3/transactionalSMS/sms", json=payload_brevo, headers=headers)
+                    if resp.status_code in (200, 201):
+                        logger.info(f"Brevo Ticket SMS dispatched to +91{clean_phone}")
+                        return {"success": True, "delivered": True, "provider": "brevo"}
+            except Exception as e:
+                logger.debug(f"Brevo SMS ticket notice: {e}")
+
+        # 2. Fast2SMS Provider
         if settings.FAST2SMS_API_KEY and len(settings.FAST2SMS_API_KEY.strip()) > 5:
             try:
                 headers = {
