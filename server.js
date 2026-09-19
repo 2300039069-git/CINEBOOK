@@ -54,7 +54,7 @@ app.post(['/api/webhook/vyapar', '/webhook/vyapar'], express.raw({ type: 'applic
         bookingId = data.booking_id || clientTxnId;
       }
 
-      const upiTxnId = data.upi_txn_id || data.utr || (data.data && data.data.upi_txn_id) || `VG_${Date.now()}`;
+      const upiTxnId = data.utr || data.payment_utr || data.upi_txn_id || data.bank_ref_no || (data.data && (data.data.utr || data.data.payment_utr || data.data.upi_txn_id || data.data.bank_ref_no)) || `VG_${Date.now()}`;
 
       if (bookingId) {
         try {

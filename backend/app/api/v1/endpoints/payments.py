@@ -509,20 +509,23 @@ async def receive_vyapar_webhook(request: Request):
     except Exception:
         post_data = {}
 
-    status_raw = str(post_data.get("status") or post_data.get("payment_status") or post_data.get("data", {}).get("status") or "").lower()
-    event_raw = str(post_data.get("event") or post_data.get("data", {}).get("event") or "").lower()
+    payload = post_data
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else payload
+
+    status_raw = str(payload.get("status") or payload.get("payment_status") or data.get("status") or "").lower()
+    event_raw = str(payload.get("event") or data.get("event") or "").lower()
 
     if status_raw not in ["success", "paid", "completed", "successful", "true"] and event_raw != "payment.success":
         return JSONResponse(status_code=200, content={"status": True, "message": "Non-success status acknowledged."})
 
     client_txn_id = (
-        post_data.get("client_txn_id") or
-        post_data.get("data", {}).get("client_txn_id") or
+        payload.get("client_txn_id") or
+        data.get("client_txn_id") or
         ""
     )
     order_id = (
-        post_data.get("order_id") or
-        post_data.get("data", {}).get("order_id") or
+        payload.get("order_id") or
+        data.get("order_id") or
         order_id_hdr or
         client_txn_id
     )
@@ -539,17 +542,21 @@ async def receive_vyapar_webhook(request: Request):
                 booking_id = cb_match.group(1)
 
     if not booking_id:
-        booking_id = post_data.get("booking_id") or post_data.get("data", {}).get("booking_id")
+        booking_id = data.get("booking_id") or payload.get("booking_id")
 
-    utr_number = str(
-        post_data.get("upi_txn_id") or
-        post_data.get("utr") or
-        post_data.get("payment_utr") or
-        post_data.get("bank_ref_no") or
-        post_data.get("data", {}).get("upi_txn_id") or
-        post_data.get("data", {}).get("utr") or
+    # Grab the UTR no matter where Vyapar puts it
+    utr = (
+        data.get("utr") or
+        data.get("payment_utr") or
+        data.get("upi_txn_id") or
+        data.get("bank_ref_no") or
+        payload.get("utr") or
+        payload.get("payment_utr") or
+        payload.get("upi_txn_id") or
+        payload.get("bank_ref_no") or
         f"VG_{int(time.time()*1000)}"
     )
+    utr_number = str(utr).strip()
     payment_id = f"vyapar_{utr_number}"
 
     target_order_id = order_id or client_txn_id or f"upi_ord_{booking_id}"
@@ -559,6 +566,20 @@ async def receive_vyapar_webhook(request: Request):
         utr_number=utr_number,
         booking_id=booking_id
     )
+
+    # Direct Supabase update assurance
+    if db_manager.is_connected and booking_id:
+        try:
+            await db_manager.execute(
+                """
+                UPDATE bookings 
+                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2
+                WHERE booking_id = $3
+                """,
+                utr_number, payment_id, booking_id
+            )
+        except Exception as db_err:
+            logger.warning(f"Supabase direct UTR update notice: {db_err}")
 
     return JSONResponse(
         status_code=200,
