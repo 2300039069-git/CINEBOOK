@@ -84,7 +84,7 @@ async def send_registration_otp(req: SendOTPRequest):
         email=email_clean,
         phone=req.phone,
         expires_in_seconds=ttl,
-        otp=code,
+        otp=None,
         email_delivered=email_delivered,
         sms_delivered=sms_delivered
     )
@@ -260,7 +260,7 @@ async def send_reset_otp(req: SendResetOTPRequest):
         email=email_clean,
         phone=phone_to_use,
         expires_in_seconds=ttl,
-        otp=code,
+        otp=None,
         email_delivered=email_delivered,
         sms_delivered=sms_delivered
     )

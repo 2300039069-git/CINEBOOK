@@ -39,12 +39,13 @@ class EmailService:
             except Exception as e:
                 logger.error(f"Resend API dispatch error: {e}")
 
-        # 2. Secondary Method: SMTP
-        smtp_user = getattr(settings, "SMTP_USER", None)
-        smtp_pass = getattr(settings, "SMTP_PASSWORD", None)
-        if not smtp_pass and getattr(settings, "GMAIL_APP_PASSWORD", None):
-            smtp_user = getattr(settings, "GMAIL_ADDRESS", None)
-            smtp_pass = getattr(settings, "GMAIL_APP_PASSWORD", None)
+        # 2. Secondary Method: SMTP (Gmail or Resend SMTP)
+        smtp_user = getattr(settings, "GMAIL_ADDRESS", None) or getattr(settings, "SMTP_USER", None)
+        smtp_pass = getattr(settings, "GMAIL_APP_PASSWORD", None) or getattr(settings, "SMTP_PASSWORD", None)
+        if smtp_pass:
+            smtp_pass = str(smtp_pass).replace(" ", "").strip()
+
+        if smtp_user and "gmail.com" in str(smtp_user):
             smtp_host = "smtp.gmail.com"
             smtp_port = 587
         else:
@@ -55,19 +56,19 @@ class EmailService:
             try:
                 msg = MIMEMultipart("alternative")
                 msg["Subject"] = subject
-                msg["From"] = f"CineBook <{smtp_user}>"
+                msg["From"] = f"CineBook Tickets <{smtp_user}>"
                 msg["To"] = to_clean
                 msg.attach(MIMEText(html_content, "html"))
 
-                with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+                with smtplib.SMTP(smtp_host, smtp_port, timeout=12) as server:
                     server.starttls()
                     server.login(smtp_user, smtp_pass)
                     server.sendmail(smtp_user, to_clean, msg.as_string())
-                logger.info(f"Successfully dispatched email via SMTP to {to_clean}")
-                return {"success": True, "delivered": True, "message": f"Email sent via SMTP to {to_clean}."}
+                logger.info(f"Successfully dispatched email via {smtp_host} to {to_clean}")
+                return {"success": True, "delivered": True, "message": f"Email delivered to {to_clean}."}
             except Exception as e:
-                logger.error(f"SMTP dispatch failed: {e}")
-                return {"success": True, "delivered": False, "message": f"SMTP Error: {str(e)}", "reason": str(e)}
+                logger.error(f"SMTP dispatch failed ({smtp_host}): {e}")
+                return {"success": False, "delivered": False, "message": f"SMTP Error: {str(e)}", "reason": str(e)}
 
         return {"success": True, "delivered": False, "message": f"Email generated for {to_clean}."}
 

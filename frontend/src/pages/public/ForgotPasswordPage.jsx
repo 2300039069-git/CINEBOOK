@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Film, Mail, Lock, KeyRound, ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck, Clock, RotateCcw } from 'lucide-react';
+import { Film, Mail, Lock, KeyRound, ArrowLeft, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import { authApi } from '../../services/authApi';
-import { Button } from '../../components/ui/Button';
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Enter email, 2: Enter OTP & New Password
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [devOtp, setDevOtp] = useState('');
-  const [emailDelivered, setEmailDelivered] = useState(true);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resendSeconds, setResendSeconds] = useState(60);
@@ -33,11 +30,7 @@ const ForgotPasswordPage = () => {
     setLoading(true);
 
     try {
-      const res = await authApi.sendResetOTP(email);
-      if (res?.otp) {
-        setDevOtp(res.otp);
-      }
-      setEmailDelivered(res?.email_delivered ?? true);
+      await authApi.sendResetOTP(email);
       setStep(2);
       setResendSeconds(60);
     } catch (err) {
@@ -57,6 +50,10 @@ const ForgotPasswordPage = () => {
     }
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
       return;
     }
 
@@ -90,8 +87,8 @@ const ForgotPasswordPage = () => {
           </h1>
           <p className="text-xs text-text-muted">
             {step === 1
-              ? "Enter your registered email and we'll send a 6-digit reset code to your Email & Mobile SMS"
-              : `Check your email (${email}) and SMS for the 6-digit verification code`}
+              ? "Enter your registered email and we'll send a 6-digit reset code to your email"
+              : `We sent a 6-digit verification code to ${email}`}
           </p>
         </div>
 
@@ -136,7 +133,7 @@ const ForgotPasswordPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-cta transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider shadow-cta transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
             >
               <span>{loading ? 'Sending Code...' : 'Send 6-Digit Reset Code'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -145,33 +142,9 @@ const ForgotPasswordPage = () => {
         ) : (
           /* STEP 2: ENTER OTP & NEW PASSWORD */
           <form onSubmit={handleResetPassword} className="space-y-4 animate-fade-in">
-            {/* Instant Verification Code Card */}
-            {devOtp && (
-              <div className="p-3.5 rounded-2xl bg-surface-elevated border border-amber-500/40 flex items-center justify-between gap-3 animate-fade-in shadow-inner">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500">
-                    <KeyRound className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase font-bold tracking-wider text-amber-500">
-                      {emailDelivered ? "Instant Verification Code" : "Verification Code (Testing)"}
-                    </div>
-                    <div className="text-base font-mono font-black text-amber-500 tracking-widest">{devOtp}</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOtp(devOtp)}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black transition-all shadow-sm active:scale-95 flex items-center gap-1 cursor-pointer"
-                >
-                  <span>Auto-fill</span>
-                </button>
-              </div>
-            )}
-
             <div>
               <label className="text-xs font-bold text-text-muted block mb-1 text-center">
-                6-Digit Email Code
+                6-Digit Verification Code
               </label>
               <input
                 type="text"
@@ -183,6 +156,9 @@ const ForgotPasswordPage = () => {
                 autoFocus
                 className="w-full py-2.5 bg-surface-elevated border border-border rounded-xl text-center text-lg font-mono tracking-widest text-text-primary focus:outline-none focus:border-amber-500 transition-colors"
               />
+              <p className="text-[10px] text-text-muted text-center mt-1">
+                Please enter the 6-digit code received on your email
+              </p>
             </div>
 
             <div>
