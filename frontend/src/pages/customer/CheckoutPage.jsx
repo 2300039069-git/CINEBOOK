@@ -30,7 +30,9 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Info
+  Info,
+  Mail,
+  Edit2
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 
@@ -65,6 +67,17 @@ export const CheckoutPage = () => {
   // Customer Contact for Multi-Channel Ticket Delivery (Email, SMS, WhatsApp)
   const [customerEmail, setCustomerEmail] = useState(user?.email || '');
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [isEditingContact, setIsEditingContact] = useState(false);
+
+  useEffect(() => {
+    if (user?.email && !customerEmail) setCustomerEmail(user.email);
+    if (user?.phone && !customerPhone) setCustomerPhone(user.phone);
+  }, [user]);
+
+  const hasRegisteredEmail = Boolean(user?.email && user.email.trim().length > 0 && user.email.includes('@'));
+  const cleanUserPhone = (user?.phone || '').replace(/\D/g, '');
+  const hasRegisteredPhone = Boolean(cleanUserPhone.length >= 10);
+  const hasBothRegistered = hasRegisteredEmail && hasRegisteredPhone;
 
   // Fallback UTR manual verification state
   const [showUtrFallback, setShowUtrFallback] = useState(false);
@@ -136,8 +149,9 @@ export const CheckoutPage = () => {
 
     const formattedSeatsList = getFormattedSeats();
 
-    const activeEmail = customerEmail.trim() || user?.email || 'customer@cinebook.in';
-    const activePhone = customerPhone.trim() || user?.phone || '9848012345';
+    const activeEmail = (customerEmail || user?.email || 'customer@cinebook.in').trim();
+    const rawPhone = (customerPhone || user?.phone || '9848012345').toString().replace(/\D/g, '');
+    const activePhone = rawPhone.slice(-10) || '9848012345';
     const activeName = user?.name || 'Valued Cinema Guest';
 
     const confirmedBooking = {
@@ -289,8 +303,28 @@ export const CheckoutPage = () => {
       return;
     }
 
-    const activeEmail = customerEmail.trim() || user?.email || 'customer@cinebook.in';
-    const activePhone = customerPhone.trim() || user?.phone || '9848012345';
+    const cleanEmail = (customerEmail || user?.email || '').trim();
+    const rawPhone = (customerPhone || user?.phone || '').toString().replace(/\D/g, '');
+    const cleanPhone = rawPhone.slice(-10);
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      const msg = 'Please enter a valid email address for E-Ticket & QR delivery.';
+      setError(msg);
+      if (typeof toast?.error === 'function') toast.error(msg);
+      setLoading(false);
+      return;
+    }
+
+    if (!cleanPhone || cleanPhone.length < 10) {
+      const msg = 'Please enter a valid 10-digit mobile number for WhatsApp & SMS delivery.';
+      setError(msg);
+      if (typeof toast?.error === 'function') toast.error(msg);
+      setLoading(false);
+      return;
+    }
+
+    const activeEmail = cleanEmail;
+    const activePhone = cleanPhone;
     const activeName = user?.name || 'Valued Cinema Guest';
 
     try {
@@ -454,48 +488,142 @@ export const CheckoutPage = () => {
                 <span className="text-xs font-black uppercase text-text-primary flex items-center gap-1.5 font-display">
                   <Smartphone className="w-3.5 h-3.5 text-primary" /> Ticket Delivery Information
                 </span>
-                <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  Instant Auto-Delivery
-                </span>
+                {hasBothRegistered && !isEditingContact ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingContact(true)}
+                    className="text-[11px] text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Edit2 className="w-3 h-3" /> Change
+                  </button>
+                ) : isEditingContact ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingContact(false)}
+                    className="text-[11px] text-emerald-500 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Check className="w-3 h-3" /> Done
+                  </button>
+                ) : (
+                  <span className="text-[10px] text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Instant Auto-Delivery
+                  </span>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="text-[11px] font-bold text-text-muted block mb-1">
-                    Email Address <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={customerEmail}
-                    onChange={(e) => setCustomerEmail(e.target.value)}
-                    required
-                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold text-xs focus:outline-none focus:border-primary transition-colors"
-                  />
-                  <p className="text-[9px] text-text-muted mt-0.5">E-Ticket pass with QR code sent here</p>
-                </div>
+              {/* CASE A: User has both Email & Phone registered -> Zero manual re-entry */}
+              {hasBothRegistered && !isEditingContact ? (
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {/* Verified Email Badge */}
+                    <div className="p-3 bg-surface rounded-xl border border-emerald-500/20 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">Email Pass & QR Code</p>
+                        <p className="text-xs font-bold text-text-primary truncate">{customerEmail || user.email}</p>
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="text-[11px] font-bold text-text-muted block mb-1">
-                    WhatsApp & Mobile Number <span className="text-primary">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted">
-                      +91
-                    </span>
-                    <input
-                      type="tel"
-                      maxLength={10}
-                      placeholder="9848012345"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ''))}
-                      required
-                      className="w-full pl-11 pr-3 py-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold text-xs focus:outline-none focus:border-primary transition-colors"
-                    />
+                    {/* Verified Phone & WhatsApp Badge */}
+                    <div className="p-3 bg-surface rounded-xl border border-emerald-500/20 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+                        <Smartphone className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">WhatsApp & SMS</p>
+                        <p className="text-xs font-bold text-text-primary truncate">+91 {customerPhone || user.phone}</p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-[9px] text-text-muted mt-0.5">WhatsApp pass & SMS confirmation sent here</p>
+
+                  <div className="flex items-center gap-2 text-[11px] text-emerald-500 font-medium bg-emerald-500/5 px-3 py-2 rounded-xl border border-emerald-500/15">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span>Pass will be auto-delivered to your registered email, WhatsApp, and mobile SMS.</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* CASE B, C, D: User missed Email OR Phone (or chose to edit) -> Enter ONLY the missing item */
+                <div className="space-y-3 animate-in fade-in duration-200">
+                  {!isEditingContact && (
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-medium flex items-center gap-2">
+                      <Info className="w-4 h-4 shrink-0" />
+                      <span>
+                        {hasRegisteredEmail && !hasRegisteredPhone
+                          ? 'Please provide your WhatsApp & Mobile number for instant ticket delivery.'
+                          : !hasRegisteredEmail && hasRegisteredPhone
+                          ? 'Please provide your Email address for your digital E-Ticket & QR pass.'
+                          : 'Please provide your contact details below to receive your ticket pass.'}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {/* Email Field OR Verified Badge */}
+                    {hasRegisteredEmail && !isEditingContact ? (
+                      <div className="p-3 bg-surface rounded-xl border border-border flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                          <Mail className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">Saved Email (Verified ✓)</p>
+                          <p className="text-xs font-bold text-text-primary truncate">{customerEmail || user.email}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-[11px] font-bold text-text-muted block mb-1">
+                          Email Address <span className="text-primary">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="your.email@example.com"
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          required
+                          className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold text-xs focus:outline-none focus:border-primary transition-colors"
+                        />
+                        <p className="text-[9px] text-text-muted mt-0.5">E-Ticket pass with QR code sent here</p>
+                      </div>
+                    )}
+
+                    {/* Mobile Field OR Verified Badge */}
+                    {hasRegisteredPhone && !isEditingContact ? (
+                      <div className="p-3 bg-surface rounded-xl border border-border flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">Saved Mobile (Verified ✓)</p>
+                          <p className="text-xs font-bold text-text-primary truncate">+91 {customerPhone || user.phone}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-[11px] font-bold text-text-muted block mb-1">
+                          WhatsApp & Mobile Number <span className="text-primary">*</span>
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted">
+                            +91
+                          </span>
+                          <input
+                            type="tel"
+                            maxLength={10}
+                            placeholder="9848012345"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ''))}
+                            required
+                            className="w-full pl-11 pr-3 py-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold text-xs focus:outline-none focus:border-primary transition-colors"
+                          />
+                        </div>
+                        <p className="text-[9px] text-text-muted mt-0.5">WhatsApp pass & SMS confirmation sent here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Itemized Fare Breakdown (SAC 998599 Compliant) */}

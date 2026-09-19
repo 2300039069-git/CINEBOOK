@@ -84,7 +84,13 @@ const BookingConfirmationPage = () => {
       `📱 *Digital Entry Pass:* https://cinebook.cyou/booking-confirmation/${bId}\n\n` +
       `✨ _Show this QR pass at the turnstile for instant admission._`;
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    const phoneRaw = (booking.customerPhone || booking.customer_phone || '').replace(/\D/g, '');
+    const cleanPhone = phoneRaw.slice(-10);
+    const waUrl = cleanPhone
+      ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    window.open(waUrl, '_blank');
     toast.success('Opening WhatsApp with your confirmed ticket pass!');
   };
 
