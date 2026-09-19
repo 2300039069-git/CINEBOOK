@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")
     
     # Fast2SMS (India SMS Gateway)
-    FAST2SMS_API_KEY: Optional[str] = os.getenv("FAST2SMS_API_KEY", "")
+    FAST2SMS_API_KEY: Optional[str] = os.getenv("FAST2SMS_API_KEY", "j0yCPc4KOsmGJ13NAVQlrWnTvwLM7bRhXdkFI2UpuYf8569iDSdQKPqCkIc48ULGDslrRb59SBTuiFo3")
     FAST2SMS_SENDER_ID: str = os.getenv("FAST2SMS_SENDER_ID", "CINEBK")
     
     # Twilio (International SMS & WhatsApp Fallback)
