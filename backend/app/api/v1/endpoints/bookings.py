@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Depends, status
@@ -9,6 +10,7 @@ from app.models.user import UserResponse
 from app.api.deps import get_current_active_user, get_optional_user
 from app.core.database import db_manager
 from app.services.seat_lock_service import SeatLockService
+from app.services.notification_service import NotificationService
 
 logger = logging.getLogger("cinebook.bookings")
 
@@ -145,6 +147,43 @@ async def create_booking_session(
                 """, booking_in.show_id, seat_ids)
         except Exception as e:
             logger.exception(f"Error persisting booking {booking_id} to Supabase: {e}")
+
+    # If confirmed, asynchronously dispatch notifications to customer Email, SMS, WhatsApp
+    if status_val in (BookingStatus.CONFIRMED.value, "CONFIRMED", "PAID"):
+        try:
+            movie_title = "Cinema Experience"
+            theatre_name = "Siva Cinemas 4K Laser"
+            if db_manager.is_connected:
+                try:
+                    m_row = await db_manager.fetch_one("SELECT title FROM movies WHERE id = $1", booking_in.movie_id)
+                    if m_row and m_row.get("title"):
+                        movie_title = m_row.get("title")
+                    t_row = await db_manager.fetch_one("SELECT name FROM theatres WHERE id = $1", booking_in.theatre_id)
+                    if t_row and t_row.get("name"):
+                        theatre_name = t_row.get("name")
+                except Exception:
+                    pass
+
+            notif_booking = {
+                "booking_id": booking_id,
+                "movie_title": movie_title,
+                "theatre_name": theatre_name,
+                "show_date": booking_in.show_date,
+                "show_time": booking_in.show_time,
+                "seats": seats_data,
+                "total_amount": float(booking_in.total_amount),
+                "payment_id": booking_in.payment_id or "CONFIRMED",
+                "customer_email": booking_in.customer_email,
+                "customer_phone": booking_in.customer_phone
+            }
+            asyncio.create_task(NotificationService.dispatch_booking_notifications(
+                booking=notif_booking,
+                customer_email=booking_in.customer_email,
+                customer_phone=booking_in.customer_phone
+            ))
+            logger.info(f"Asynchronously triggered confirmation notifications for booking {booking_id} to {booking_in.customer_email}")
+        except Exception as notif_err:
+            logger.warning(f"Booking confirmation notification notice: {notif_err}")
 
     BOOKINGS_STORE[booking_id] = booking_dict
     return BookingResponse(**booking_dict)
