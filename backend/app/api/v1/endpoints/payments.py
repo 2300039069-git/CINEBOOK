@@ -370,7 +370,7 @@ async def _confirm_upi_booking(
             except Exception as bs_err:
                 logger.warning(f"booked_seats insert notice for {s_id}: {bs_err}")
 
-        # 6. Update seats table to BOOKED
+        # 6. Update seats table to BOOKED and clear temporary seat locks
         try:
             if seat_ids:
                 await db_manager.execute(
@@ -381,7 +381,14 @@ async def _confirm_upi_booking(
                     """,
                     show_id, seat_ids
                 )
-                logger.info(f"Supabase seats {seat_ids} updated to BOOKED for show {show_id}")
+                await db_manager.execute(
+                    """
+                    DELETE FROM seat_locks
+                    WHERE show_id = $1 AND seat_id = ANY($2::text[])
+                    """,
+                    show_id, seat_ids
+                )
+                logger.info(f"Supabase seats {seat_ids} updated to BOOKED and seat_locks cleared for show {show_id}")
         except Exception as s_err:
             logger.exception(f"Failed to update seats status in Supabase for booking {actual_booking_id}: {s_err}")
 
@@ -416,7 +423,6 @@ async def _confirm_upi_booking(
 
 
 @router.post("/confirm-booking")
-@router.post("/api/v1/payments/confirm-booking")
 async def direct_confirm_booking(req: DirectConfirmBookingRequest):
     """
     Direct frontend fallback confirmation endpoint:
@@ -532,7 +538,7 @@ async def direct_confirm_booking(req: DirectConfirmBookingRequest):
             except Exception as bs_err:
                 logger.warning(f"booked_seats insert notice for {s_id}: {bs_err}")
 
-        # 5. Transition seats table to BOOKED
+        # 5. Transition seats table to BOOKED and clear temporary seat locks
         if seat_ids:
             try:
                 await db_manager.execute(
@@ -543,7 +549,14 @@ async def direct_confirm_booking(req: DirectConfirmBookingRequest):
                     """,
                     show_id, seat_ids
                 )
-                logger.info(f"Direct fallback marked seats {seat_ids} as BOOKED for show {show_id}")
+                await db_manager.execute(
+                    """
+                    DELETE FROM seat_locks
+                    WHERE show_id = $1 AND seat_id = ANY($2::text[])
+                    """,
+                    show_id, seat_ids
+                )
+                logger.info(f"Direct fallback marked seats {seat_ids} as BOOKED and cleared seat_locks for show {show_id}")
             except Exception as s_err:
                 logger.warning(f"Direct fallback seat update notice for {booking_id}: {s_err}")
 

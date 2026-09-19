@@ -217,4 +217,18 @@ async def vyapar_webhook_alias(req: Request):
     from app.api.v1.endpoints.payments import receive_vyapar_webhook
     return await receive_vyapar_webhook(req)
 
+# Explicit fallback aliases for direct booking confirmation
+@app.post("/confirm-booking", tags=["Payments"])
+@app.post("/api/confirm-booking", tags=["Payments"])
+@app.post("/api/v1/confirm-booking", tags=["Payments"])
+@app.post("/payments/confirm-booking", tags=["Payments"])
+@app.post("/api/payments/confirm-booking", tags=["Payments"])
+@app.post("/api/v1/payments/confirm-booking", tags=["Payments"])
+async def direct_confirm_booking_alias(req: Request):
+    from app.api.v1.endpoints.payments import direct_confirm_booking, DirectConfirmBookingRequest
+    data = await req.json() if req.headers.get("content-type", "").startswith("application/json") else {}
+    model_req = DirectConfirmBookingRequest(**data)
+    return await direct_confirm_booking(model_req)
+
+
 
