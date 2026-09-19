@@ -68,7 +68,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--theme-bg)] text-[var(--theme-text-primary)] pb-20 transition-colors duration-200">
+    <div className="min-h-screen bg-background text-text-primary pb-20 transition-colors duration-200">
       {/* 1. HERO CAROUSEL BILLBOARD */}
       <HeroCarousel onWatchTrailer={(movie) => setSelectedTrailerMovie(movie)} />
 
@@ -89,16 +89,16 @@ const HomePage = () => {
               <Link
                 key={cap.label}
                 to={cap.link}
-                className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 transition-all duration-200 flex-shrink-0 shadow-sm hover:shadow-md"
+                className="group flex items-center gap-3 px-4 py-2.5 rounded-xl bg-surface border border-border hover:border-primary/50 transition-all duration-200 flex-shrink-0 shadow-sm hover:shadow-md"
               >
                 <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-200">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-xs font-bold tracking-wide text-slate-900 dark:text-slate-100 group-hover:text-primary transition-colors block">
+                  <span className="text-xs font-bold tracking-wide text-text-primary group-hover:text-primary transition-colors block">
                     {cap.label}
                   </span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium block leading-none">
+                  <span className="text-[10px] text-text-muted font-medium block leading-none">
                     {cap.tag}
                   </span>
                 </div>
@@ -111,13 +111,13 @@ const HomePage = () => {
       {/* 4. MAIN DISCOVERY: MOVIES + THEATRE SHOWTIMES */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
           <div>
             <div className="flex items-center gap-2 text-xs font-extrabold text-primary uppercase tracking-widest mb-1">
               <Sparkles className="w-4 h-4 text-primary" />
               <span>EXPERIENCE CINEMA IN {selectedCity.name.toUpperCase()} ({cityTheatres.length} AUDITORIUMS)</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-text-primary">
               Recommended Blockbusters
             </h2>
           </div>
@@ -126,11 +126,11 @@ const HomePage = () => {
           <button
             type="button"
             onClick={() => setIsCityModalOpen(true)}
-            className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 hover:border-primary/50 text-xs font-bold text-slate-900 dark:text-slate-100 transition-all shadow-sm hover:shadow self-start sm:self-auto cursor-pointer"
+            className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-surface border border-border hover:border-primary/50 text-xs font-bold text-text-primary transition-all shadow-sm hover:shadow self-start sm:self-auto cursor-pointer"
           >
             <span className="text-sm">{selectedCity.icon}</span>
             <span className="uppercase tracking-wider">{selectedCity.name}</span>
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-text-muted" />
           </button>
         </div>
 
@@ -148,7 +148,7 @@ const HomePage = () => {
             <div className="pt-2">
               <Link
                 to="/movies"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 hover:border-primary text-xs font-bold text-slate-900 dark:text-slate-100 hover:text-primary transition-all shadow-sm group"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-surface border border-border hover:border-primary text-xs font-bold text-text-primary hover:text-primary transition-all shadow-sm group"
               >
                 <span>Explore all blockbusters showing in {selectedCity.name}</span>
                 <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -159,17 +159,17 @@ const HomePage = () => {
           {/* Right 1 Col: Theatre Venue Selector & Live Showtimes */}
           <div className="space-y-6">
             {/* Theatres in Selected City Card */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                     <Building className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-text-primary">
                       Cinemas in {selectedCity.name}
                     </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Real-time box office schedules</p>
+                    <p className="text-[11px] text-text-muted">Real-time box office schedules</p>
                   </div>
                 </div>
                 <Link to="/theatres" className="text-xs font-bold text-primary hover:underline">
@@ -189,7 +189,7 @@ const HomePage = () => {
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border cursor-pointer ${
                         isSelected
                           ? 'bg-primary border-primary text-white shadow-sm'
-                          : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-400'
+                          : 'bg-surface-elevated border-border text-text-secondary hover:border-primary/50'
                       }`}
                     >
                       {theatre.name}
@@ -211,9 +211,9 @@ const HomePage = () => {
             </div>
 
             {/* Live Events in Selected City */}
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-lg space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h3 className="text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 text-text-primary">
                   <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   Live Events in {selectedCity.name}
                 </h3>
@@ -226,7 +226,7 @@ const HomePage = () => {
                 {EVENTS.map((event) => (
                   <div
                     key={event.id}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center gap-3 transition-all group hover:border-slate-300 dark:hover:border-slate-700"
+                    className="p-3 rounded-xl bg-surface-elevated border border-border flex items-center gap-3 transition-all group hover:border-primary/40"
                   >
                     <img
                       src={event.bannerUrl}
@@ -237,9 +237,9 @@ const HomePage = () => {
                       <span className="text-[10px] font-extrabold text-primary uppercase tracking-wider">
                         {event.category}
                       </span>
-                      <h4 className="text-xs font-bold truncate text-slate-900 dark:text-slate-100">{event.title}</h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{event.venue}</p>
-                      <p className="text-xs font-black text-slate-900 dark:text-slate-100 mt-0.5">₹{event.priceStarting}</p>
+                      <h4 className="text-xs font-bold truncate text-text-primary">{event.title}</h4>
+                      <p className="text-[11px] text-text-muted truncate">{event.venue}</p>
+                      <p className="text-xs font-black text-text-primary mt-0.5">₹{event.priceStarting}</p>
                     </div>
                   </div>
                 ))}
@@ -249,71 +249,71 @@ const HomePage = () => {
         </div>
 
         {/* 5. COMMERCIAL GRADE TRUST BAR */}
-        <div className="pt-10 border-t border-slate-200 dark:border-slate-800 space-y-8">
+        <div className="pt-10 border-t border-border space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <span className="text-xs font-extrabold uppercase tracking-widest text-primary">
               ENGINEERED FOR CINEMAS & AUDIENCES
             </span>
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+            <h3 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
               Enterprise Cinema-Tech Platform
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-text-muted">
               Built with zero-collision distributed seat locking, dual-quota box office integration, and instant automated bank credits.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
                 <Ticket className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Contactless E-Passes</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h4 className="text-sm font-bold text-text-primary">Contactless E-Passes</h4>
+              <p className="text-xs text-text-muted leading-relaxed">
                 Cryptographically signed QR admission passes generated in real time upon authorization.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center">
                 <Lock className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Atomic Seat Locking</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h4 className="text-sm font-bold text-text-primary">Atomic Seat Locking</h4>
+              <p className="text-xs text-text-muted leading-relaxed">
                 Guarantees zero double bookings across multiple tabs & sessions with distributed locks.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">Dual-Quota Safe</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h4 className="text-sm font-bold text-text-primary">Dual-Quota Safe</h4>
+              <p className="text-xs text-text-muted leading-relaxed">
                 Physical box office cash quotas are safely segregated from online inventory.
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5">
+            <div className="p-5 rounded-2xl bg-surface border border-border shadow-sm space-y-2.5">
               <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-500 flex items-center justify-center">
                 <Headphones className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">24/7 AI Concierge</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <h4 className="text-sm font-bold text-text-primary">24/7 AI Concierge</h4>
+              <p className="text-xs text-text-muted leading-relaxed">
                 Automated booking resolutions, 1-click refund triggers, and instant gate verification assistance.
               </p>
             </div>
           </div>
 
           {/* 6. THEATRE PARTNER CALLOUT BANNER */}
-          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white border border-slate-700 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-surface to-surface-elevated text-text-primary border border-border shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2 max-w-xl text-center md:text-left">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md border border-amber-400/30 inline-block">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/30 inline-block">
                 FOR CINEMA OPERATORS & EXHIBITORS
               </span>
-              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-text-primary">
                 Modernize Your Single-Screen or Multiplex with CINEBOOK
               </h3>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-text-secondary leading-relaxed">
                 Get full access to thermal 80mm POS slip printing, gatekeeper barcode validation scanner, real-time settlement tracking, and dual-quota seat control.
               </p>
             </div>

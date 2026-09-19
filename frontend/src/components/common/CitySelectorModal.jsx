@@ -4,9 +4,9 @@ import { CITIES } from '../../data/mockData';
 import { useLocation } from '../../context/LocationContext';
 
 const CITY_DESCRIPTIONS = {
-  guntur: 'Chilli City • Siva, Studio 81, Naz, Bhaskar (7 Theatres)',
-  vijayawada: 'Capital City • G3 Raj Yuvraj, Alankar, Sailaja (8 Theatres)',
-  tenali: 'Paris of Andhra • Asha, Sangameswara, SV Priya, V-Max (7 Theatres)'
+  guntur: 'Cinema Hub • Siva Cinemas 4K RGB Laser & Dolby Atmos (Screen 1)',
+  vijayawada: 'Cinema Hub • 4K Dolby Atmos & Multiplex Premieres',
+  tenali: 'Cinema Hub • Cultural & Single-Screen Premieres'
 };
 
 const CitySelectorModal = () => {

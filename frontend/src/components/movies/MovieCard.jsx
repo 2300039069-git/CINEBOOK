@@ -39,9 +39,9 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
   };
 
   return (
-    <div className="group flex flex-col rounded-2xl bg-white dark:bg-[#161B26] border border-slate-200 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1.5 will-change-transform">
+    <div className="group flex flex-col rounded-2xl bg-surface border border-border hover:border-primary/40 overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1.5 will-change-transform">
       {/* 1. Poster Container with 2:3 Aspect Ratio */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+      <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface-elevated">
         {!imageError && posterSrc ? (
           <img
             src={posterSrc}
@@ -52,7 +52,7 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
           />
         ) : (
           /* Procedural Fallback Poster */
-          <div className="h-full w-full bg-gradient-to-br from-slate-100 via-white to-slate-200 dark:from-slate-800 dark:via-[#161B26] dark:to-slate-900 p-5 flex flex-col justify-between items-center text-center">
+          <div className="h-full w-full bg-gradient-to-br from-surface via-surface-elevated to-surface-hover p-5 flex flex-col justify-between items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
               <Film className="w-6 h-6" />
             </div>
@@ -60,21 +60,21 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary block">
                 BLOCKBUSTER
               </span>
-              <h4 className="font-bold text-base text-slate-900 dark:text-slate-100 leading-tight">
+              <h4 className="font-bold text-base text-text-primary leading-tight">
                 {movie.title}
               </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-text-muted">
                 {movie.languages?.join(', ') || movie.language}
               </p>
             </div>
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+            <span className="text-[10px] font-semibold text-text-muted uppercase tracking-widest">
               CINEBOOK PREMIERE
             </span>
           </div>
         )}
 
         {/* Subtle Dark Bottom Gradient for Badges */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-85 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-80 group-hover:opacity-95 transition-opacity duration-300 pointer-events-none" />
 
         {/* Top Badges */}
         <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-10">
@@ -102,25 +102,25 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
       </div>
 
       {/* 2. Movie Details Body */}
-      <div className="flex flex-col flex-1 p-3.5 sm:p-4 space-y-2 bg-white dark:bg-[#161B26]">
+      <div className="flex flex-col flex-1 p-3.5 sm:p-4 space-y-2 bg-surface">
         <Link to={`/movie/${movie.slug || movie.id}`} className="group-hover:text-primary transition-colors">
-          <h3 className="font-bold text-sm sm:text-base tracking-tight line-clamp-1 text-slate-900 dark:text-slate-100 leading-snug">
+          <h3 className="font-bold text-sm sm:text-base tracking-tight line-clamp-1 text-text-primary leading-snug">
             {movie.title}
           </h3>
         </Link>
 
         {/* Languages & Duration */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="flex items-center justify-between text-xs text-text-secondary">
           <span className="font-medium truncate">
             {movie.languages?.join(', ') || movie.language || 'Telugu'}
           </span>
-          <span className="text-[11px] font-medium flex items-center gap-1 flex-shrink-0">
+          <span className="text-[11px] font-medium flex items-center gap-1 flex-shrink-0 text-text-muted">
             <Clock className="w-3 h-3" /> {movie.duration || '2h 45m'}
           </span>
         </div>
 
         {/* Genre Tags */}
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-normal">
+        <p className="text-[11px] text-text-muted truncate font-normal">
           {movie.genres?.join(' • ') || movie.genre}
         </p>
 
@@ -130,18 +130,18 @@ const MovieCard = ({ movie = {}, onBookClick }) => {
             <button
               type="button"
               onClick={() => onBookClick(movie)}
-              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-cta active:scale-95"
             >
               <Ticket className="w-3.5 h-3.5" />
-              <span>Grab Seats</span>
+              <span>Book Now</span>
             </button>
           ) : (
             <Link
               to={`/movie/${movie.slug || movie.id}`}
-              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all text-center shadow-sm active:scale-95"
+              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-cta active:scale-95 text-center"
             >
               <Ticket className="w-3.5 h-3.5" />
-              <span>Grab Seats</span>
+              <span>Book Now</span>
             </Link>
           )}
         </div>

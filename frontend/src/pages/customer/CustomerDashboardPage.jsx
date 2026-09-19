@@ -18,6 +18,7 @@ import { useLocation } from '../../context/LocationContext';
 
 const CustomerDashboardPage = () => {
   const { user } = useAuth();
+  const { selectedCity } = useLocation();
   const [name, setName] = useState(user?.name || 'Moviegoer');
   const [phone, setPhone] = useState(user?.phone || '');
   const [saved, setSaved] = useState(false);

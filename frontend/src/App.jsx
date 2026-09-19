@@ -6,6 +6,7 @@ import HomePage from './pages/public/HomePage';
 import MoviesPage from './pages/public/MoviesPage';
 import MovieDetailPage from './pages/public/MovieDetailPage';
 import EventsPage from './pages/public/EventsPage';
+import OffersPage from './pages/public/OffersPage';
 import TheatresPage from './pages/public/TheatresPage';
 import LoginPage from './pages/public/LoginPage';
 import RegisterPage from './pages/public/RegisterPage';
@@ -92,6 +93,7 @@ function App() {
                     <Route path="/movies" element={<MoviesPage />} />
                     <Route path="/movie/:slug" element={<MovieDetailPage />} />
                     <Route path="/events" element={<EventsPage />} />
+                    <Route path="/offers" element={<OffersPage />} />
                     <Route path="/theatres" element={<TheatresPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />

@@ -15,25 +15,26 @@ export const Button = ({
   ...props
 }) => {
   const baseStyles =
-    'relative inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
+    'relative inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.97] cursor-pointer';
 
   const sizeStyles = {
-    sm: 'text-xs px-3 py-1.5 gap-1.5',
-    md: 'text-sm px-4 py-2.5 gap-2',
-    lg: 'text-base px-6 py-3.5 gap-2.5 font-semibold',
+    xs: 'text-[11px] px-2.5 py-1 gap-1 font-bold',
+    sm: 'text-xs px-3.5 py-1.5 gap-1.5 font-semibold',
+    md: 'text-sm px-4.5 py-2.5 gap-2 font-bold',
+    lg: 'text-base px-6 py-3.5 gap-2.5 font-extrabold',
   };
 
   const variantStyles = {
     primary:
-      'bg-primary hover:bg-primary-hover text-white shadow-cta hover:shadow-[0_12px_28px_-4px_rgba(229,9,20,0.55)] focus:ring-primary border border-primary/20',
+      'bg-primary hover:bg-primary-hover text-white shadow-cta hover:shadow-[0_10px_25px_-3px_rgba(229,9,20,0.45)] focus:ring-primary border border-primary/30',
     gold:
-      'bg-accent hover:bg-accent-hover text-background font-semibold shadow-cta-gold hover:shadow-[0_12px_28px_-4px_rgba(212,175,55,0.5)] focus:ring-accent border border-accent/30',
+      'bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-cta-gold hover:shadow-[0_10px_25px_-3px_rgba(245,158,11,0.4)] focus:ring-amber-500 border border-amber-400/40',
     secondary:
-      'bg-surface-elevated hover:bg-surface-hover text-text-primary border border-border hover:border-border/80 focus:ring-slate-500 shadow-sm',
+      'bg-surface-elevated hover:bg-surface-hover text-text-primary border border-border hover:border-border/80 focus:ring-slate-500 shadow-xs',
     outline:
-      'bg-transparent hover:bg-surface-elevated/80 text-text-primary border border-border hover:border-text-muted focus:ring-slate-500',
+      'bg-transparent hover:bg-surface-elevated text-text-primary border border-border hover:border-primary/40 focus:ring-primary',
     ghost:
-      'bg-transparent hover:bg-surface-elevated/60 text-text-secondary hover:text-text-primary focus:ring-slate-500',
+      'bg-transparent hover:bg-surface-elevated text-text-secondary hover:text-text-primary focus:ring-slate-500',
     danger:
       'bg-rose-600 hover:bg-rose-700 text-white shadow-md focus:ring-rose-500 border border-rose-500/30',
   };
