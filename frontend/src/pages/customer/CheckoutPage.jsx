@@ -9,7 +9,6 @@ import { bookingApi } from '../../services/bookingApi';
 import {
   createUpiQrOrder,
   getUpiPaymentStatus,
-  simulateUpiPaymentSuccess,
   verifyUpiUtr
 } from '../../services/paymentApi';
 import {
@@ -30,7 +29,6 @@ import {
   ChevronRight,
   Copy,
   Check,
-  Zap,
   Info
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -67,7 +65,6 @@ export const CheckoutPage = () => {
   const [showUtrFallback, setShowUtrFallback] = useState(false);
   const [utrInput, setUtrInput] = useState('');
   const [isVerifyingUtr, setIsVerifyingUtr] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
 
   const pollIntervalRef = useRef(null);
   const countdownTimerRef = useRef(null);
@@ -318,26 +315,13 @@ export const CheckoutPage = () => {
     if (typeof toast?.info === 'function') toast.info('Payee UPI ID copied to clipboard');
   };
 
-  const handleSimulatePayment = async () => {
-    if (!upiOrder?.order_id) return;
-    setIsSimulating(true);
-    try {
-      const res = await simulateUpiPaymentSuccess(upiOrder.order_id);
-      if (res.success) {
-        await finalizeBooking(upiOrder.order_id, res.utr_number, res.utr_number);
-      }
-    } catch (err) {
-      if (typeof toast?.error === 'function') toast.error(err.message || 'Simulation failed.');
-    } finally {
-      setIsSimulating(false);
-    }
-  };
-
   const handleVerifyUtr = async (e) => {
     e?.preventDefault();
     const cleanUtr = utrInput.trim();
-    if (!cleanUtr || cleanUtr.length < 6) {
-      if (typeof toast?.error === 'function') toast.error('Please enter a valid 12-digit UPI Reference Number / UTR.');
+    if (!cleanUtr || cleanUtr.length < 8) {
+      if (typeof toast?.error === 'function') {
+        toast.error('Please enter a valid 12-digit UPI Reference Number / UTR.');
+      }
       return;
     }
 
@@ -346,12 +330,19 @@ export const CheckoutPage = () => {
     const targetBookingId = upiOrder?.booking_id || `CB-2026-${Math.floor(100000 + Math.random() * 900000)}`;
 
     try {
-      await verifyUpiUtr(targetOrderId, cleanUtr, targetBookingId);
+      const verifyRes = await verifyUpiUtr(targetOrderId, cleanUtr, targetBookingId);
+      if (verifyRes?.success || verifyRes?.status === 'PAID') {
+        await finalizeBooking(targetOrderId, `upi_${cleanUtr}`, cleanUtr);
+      } else {
+        throw new Error(verifyRes?.message || 'UTR verification failed. Please try again.');
+      }
     } catch (err) {
-      console.warn('Backend UTR sync notice:', err.message);
+      const errMsg = err.response?.data?.detail || err.message || 'Payment not yet credited. Please allow 30 seconds and try again.';
+      if (typeof toast?.error === 'function') {
+        toast.error(errMsg);
+      }
     } finally {
       setIsVerifyingUtr(false);
-      await finalizeBooking(targetOrderId, `upi_${cleanUtr}`, cleanUtr);
     }
   };
 
@@ -585,20 +576,6 @@ export const CheckoutPage = () => {
                       <p className="text-xs font-bold text-text-primary">Listening for instant payment alert...</p>
                     </div>
                     <Loader2 className="w-4 h-4 animate-spin text-primary shrink-0" />
-                  </div>
-
-                  {/* Simulate Instant Test */}
-                  <div className="w-full pt-1 border-t border-border">
-                    <Button
-                      variant="glass"
-                      size="sm"
-                      onClick={handleSimulatePayment}
-                      isLoading={isSimulating}
-                      className="w-full text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
-                      leftIcon={<Zap className="w-3.5 h-3.5 text-emerald-400" />}
-                    >
-                      Simulate UPI Payment (Instant Test Confirm)
-                    </Button>
                   </div>
 
                   {/* UTR Fallback Input */}
