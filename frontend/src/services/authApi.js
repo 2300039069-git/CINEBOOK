@@ -34,8 +34,8 @@ export const authApi = {
   },
 
   // 1. Registration with OTP
-  sendRegistrationOTP: async (email) => {
-    return await api.post('/auth/send-registration-otp', { email });
+  sendRegistrationOTP: async (email, phone = null) => {
+    return await api.post('/auth/send-registration-otp', { email, phone });
   },
 
   verifyRegistrationOTP: async (registrationDataWithOTP) => {
@@ -43,8 +43,8 @@ export const authApi = {
   },
 
   // 2. Forgot Password with OTP
-  sendResetOTP: async (email) => {
-    return await api.post('/auth/send-reset-otp', { email });
+  sendResetOTP: async (email, phone = null) => {
+    return await api.post('/auth/send-reset-otp', { email, phone });
   },
 
   verifyResetOTP: async (resetData) => {

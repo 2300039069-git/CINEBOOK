@@ -63,21 +63,30 @@ async def send_registration_otp(req: SendOTPRequest):
     if email_clean in USERS_DATABASE:
         raise HTTPException(status_code=400, detail="An account with this email is already registered. Please sign in.")
 
-    code, ttl, delivered, delivery_msg = await OTPService.create_otp(email=email_clean, purpose="REGISTRATION")
-    
-    msg = (
-        f"6-digit verification code sent to {email_clean}. Please check your inbox."
-        if delivered
-        else f"Verification code generated for {email_clean}."
+    code, ttl, email_delivered, sms_delivered, delivery_msg = await OTPService.create_otp(
+        email=email_clean,
+        phone=req.phone,
+        purpose="REGISTRATION"
     )
+    
+    if email_delivered and sms_delivered:
+        msg = f"6-digit verification code sent to {email_clean} and SMS +91 {req.phone}."
+    elif sms_delivered:
+        msg = f"6-digit verification code sent via SMS to +91 {req.phone}."
+    elif email_delivered:
+        msg = f"6-digit verification code sent to {email_clean}. Please check your inbox."
+    else:
+        msg = f"Verification code generated for {email_clean}."
     
     return OTPResponse(
         success=True,
         message=msg,
         email=email_clean,
+        phone=req.phone,
         expires_in_seconds=ttl,
         otp=code,
-        email_delivered=delivered
+        email_delivered=email_delivered,
+        sms_delivered=sms_delivered
     )
 
 @router.post("/verify-registration-otp", response_model=Token, status_code=status.HTTP_201_CREATED)
@@ -221,21 +230,39 @@ async def send_reset_otp(req: SendResetOTPRequest):
     """Generate and dispatch 6-digit OTP for password reset directly to customer's email"""
     email_clean = req.email.lower()
     
-    code, ttl, delivered, delivery_msg = await OTPService.create_otp(email=email_clean, purpose="FORGOT_PASSWORD")
-    
-    msg = (
-        f"Password reset verification code sent to {email_clean}. Please check your inbox."
-        if delivered
-        else f"Password reset verification code generated for {email_clean}."
+    phone_to_use = req.phone
+    if not phone_to_use and db_manager.is_connected:
+        try:
+            user_row = await db_manager.fetch_one("SELECT phone FROM users WHERE email = $1 LIMIT 1;", email_clean)
+            if user_row and user_row.get("phone"):
+                phone_to_use = user_row["phone"]
+        except Exception:
+            pass
+
+    code, ttl, email_delivered, sms_delivered, delivery_msg = await OTPService.create_otp(
+        email=email_clean,
+        phone=phone_to_use,
+        purpose="FORGOT_PASSWORD"
     )
+    
+    if email_delivered and sms_delivered:
+        msg = f"Password reset verification code sent to {email_clean} and SMS +91 {phone_to_use}."
+    elif sms_delivered:
+        msg = f"Password reset verification code sent via SMS to +91 {phone_to_use}."
+    elif email_delivered:
+        msg = f"Password reset verification code sent to {email_clean}. Please check your inbox."
+    else:
+        msg = f"Password reset verification code generated for {email_clean}."
 
     return OTPResponse(
         success=True,
         message=msg,
         email=email_clean,
+        phone=phone_to_use,
         expires_in_seconds=ttl,
         otp=code,
-        email_delivered=delivered
+        email_delivered=email_delivered,
+        sms_delivered=sms_delivered
     )
 
 @router.post("/verify-reset-otp")

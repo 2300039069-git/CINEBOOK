@@ -90,8 +90,8 @@ const ForgotPasswordPage = () => {
           </h1>
           <p className="text-xs text-text-muted">
             {step === 1
-              ? "Enter your registered email and we'll send a 6-digit reset code to your inbox"
-              : `Check your email inbox (${email}) for the 6-digit reset code`}
+              ? "Enter your registered email and we'll send a 6-digit reset code to your Email & Mobile SMS"
+              : `Check your email (${email}) and SMS for the 6-digit verification code`}
           </p>
         </div>
 

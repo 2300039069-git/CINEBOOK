@@ -22,9 +22,11 @@ from app.models.payment import (
 from app.models.user import UserResponse
 from app.models.booking import BookingStatus
 from app.api.deps import get_current_active_user, get_optional_user
+import asyncio
 from app.services.payment_service import PaymentService
 from app.services.seat_lock_service import SeatLockService
 from app.services.vyapar_service import VyaparService
+from app.services.notification_service import NotificationService
 from app.api.v1.endpoints.bookings import BOOKINGS_STORE
 from app.core.database import db_manager
 
@@ -166,6 +168,16 @@ async def verify_payment(
     if b_id in BOOKINGS_STORE:
         BOOKINGS_STORE[b_id]["booking_status"] = BookingStatus.CONFIRMED
         BOOKINGS_STORE[b_id]["payment_id"] = verified_payment_id
+
+    # Asynchronously dispatch Email, SMS, WhatsApp notifications in background
+    try:
+        asyncio.create_task(NotificationService.dispatch_booking_notifications(
+            booking=booking,
+            customer_email=booking.get("customer_email") or (current_user.email if current_user else None),
+            customer_phone=booking.get("customer_phone") or (current_user.phone if current_user else None)
+        ))
+    except Exception as n_err:
+        logger.warning(f"Notification task launch notice: {n_err}")
 
     return VerifyPaymentResponse(
         success=True,
@@ -419,6 +431,28 @@ async def _confirm_upi_booking(
         order_data["confirmed_at"] = time.time()
         order_data["booking"] = booking
 
+    # Asynchronously dispatch Email, SMS, WhatsApp notifications in background
+    try:
+        notif_booking = {
+            "booking_id": actual_booking_id,
+            "movie_title": (booking.get("movie_title") if booking else None) or (booking.get("movie", {}).get("title") if booking else None) or "Cinema Experience",
+            "theatre_name": (booking.get("theatre_name") if booking else None) or (booking.get("theatre", {}).get("name") if booking else None) or "Siva Cinemas 4K Laser",
+            "show_date": show_date,
+            "show_time": show_time,
+            "seats": [{"id": s} for s in seat_ids],
+            "total_amount": total_amount,
+            "payment_id": payment_id or utr_number,
+            "customer_email": cust_email,
+            "customer_phone": cust_phone
+        }
+        asyncio.create_task(NotificationService.dispatch_booking_notifications(
+            booking=notif_booking,
+            customer_email=cust_email,
+            customer_phone=cust_phone
+        ))
+    except Exception as n_err:
+        logger.warning(f"Notification dispatch launch notice: {n_err}")
+
     return order_data or {"status": "PAID", "utr": utr_number, "booking_id": actual_booking_id}
 
 
@@ -573,12 +607,27 @@ async def direct_confirm_booking(req: DirectConfirmBookingRequest):
         except Exception as p_err:
             logger.warning(f"Payment ledger insert warning for {booking_id}: {p_err}")
 
-    # Sync in-memory store
-    if booking_id in BOOKINGS_STORE:
-        BOOKINGS_STORE[booking_id]["booking_status"] = BookingStatus.CONFIRMED.value
-        BOOKINGS_STORE[booking_id]["payment_id"] = payment_id
-        if utr:
-            BOOKINGS_STORE[booking_id]["payment_utr"] = utr
+    # Asynchronously dispatch Email, SMS, WhatsApp notifications in background
+    try:
+        notif_booking = {
+            "booking_id": booking_id,
+            "movie_title": (movie_row.get("title") if movie_row else None) or req.movie_id or "Cinema Experience",
+            "theatre_name": (theatre_row.get("name") if theatre_row else None) or req.theatre_id or "Siva Cinemas 4K Laser",
+            "show_date": show_date,
+            "show_time": show_time,
+            "seats": [{"id": s} for s in seat_ids],
+            "total_amount": total_amount,
+            "payment_id": payment_id,
+            "customer_email": cust_email,
+            "customer_phone": cust_phone
+        }
+        asyncio.create_task(NotificationService.dispatch_booking_notifications(
+            booking=notif_booking,
+            customer_email=cust_email,
+            customer_phone=cust_phone
+        ))
+    except Exception as n_err:
+        logger.warning(f"Direct confirm notification dispatch launch notice: {n_err}")
 
     return {
         "success": True,
@@ -902,3 +951,55 @@ async def receive_vyapar_webhook(request: Request):
         status_code=200,
         content={"status": True, "success": True, "booking_id": booking_id, "utr": utr_number}
     )
+
+
+class ResendNotificationRequest(BaseModel):
+    booking_id: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+@router.post("/resend-ticket-notifications")
+async def resend_ticket_notifications(req: ResendNotificationRequest):
+    """
+    On-demand re-dispatch of ticket confirmation pass via Email, SMS, and WhatsApp.
+    """
+    b_id = req.booking_id.strip()
+    await db_manager.ensure_connected()
+
+    booking_data = None
+    if db_manager.is_connected:
+        try:
+            row = await db_manager.fetch_one("SELECT * FROM bookings WHERE booking_id = $1 LIMIT 1;", b_id)
+            if row:
+                booking_data = dict(row)
+                if isinstance(booking_data.get("seats"), str):
+                    try:
+                        booking_data["seats"] = json.loads(booking_data["seats"])
+                    except Exception:
+                        pass
+        except Exception as e:
+            logger.warning(f"Resend notification db fetch notice: {e}")
+
+    if not booking_data:
+        booking_data = BOOKINGS_STORE.get(b_id)
+
+    if not booking_data:
+        raise HTTPException(status_code=404, detail="Booking not found.")
+
+    email_to_use = req.email or booking_data.get("customer_email")
+    phone_to_use = req.phone or booking_data.get("customer_phone")
+
+    res = await NotificationService.dispatch_booking_notifications(
+        booking=booking_data,
+        customer_email=email_to_use,
+        customer_phone=phone_to_use
+    )
+
+    wa_text = NotificationService.generate_whatsapp_share_text(booking_data)
+
+    return {
+        "success": True,
+        "message": "Ticket pass dispatched via Email, SMS, and WhatsApp.",
+        "results": res,
+        "whatsapp_share_url": f"https://wa.me/?text={urllib.parse.quote(wa_text)}"
+    }

@@ -4,6 +4,7 @@ from app.models.user import UserRole
 
 class SendOTPRequest(BaseModel):
     email: EmailStr
+    phone: Optional[str] = None
     purpose: str = "REGISTRATION"
 
 class VerifyRegistrationOTPRequest(BaseModel):
@@ -16,6 +17,7 @@ class VerifyRegistrationOTPRequest(BaseModel):
 
 class SendResetOTPRequest(BaseModel):
     email: EmailStr
+    phone: Optional[str] = None
 
 class ResetPasswordWithOTPRequest(BaseModel):
     email: EmailStr
@@ -26,6 +28,8 @@ class OTPResponse(BaseModel):
     success: bool
     message: str
     email: str
+    phone: Optional[str] = None
     expires_in_seconds: int = 300
     otp: Optional[str] = None
     email_delivered: bool = False
+    sms_delivered: bool = False

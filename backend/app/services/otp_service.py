@@ -5,10 +5,11 @@ from typing import Dict, Optional, Tuple
 from fastapi import HTTPException, status
 from app.core.database import db_manager
 from app.services.email_service import EmailService
+from app.services.sms_service import SmsService
 
 logger = logging.getLogger("cinebook.otp")
 
-# In-memory store: { (email, purpose): { "otp": str, "expires_at": datetime } }
+# In-memory store: { (email, purpose): { "otp": str, "expires_at": datetime, "phone": str } }
 OTP_STORE: Dict[Tuple[str, str], dict] = {}
 OTP_EXPIRY_SECONDS = 300 # 5 minutes
 
@@ -19,10 +20,15 @@ class OTPService:
         return str(secrets.randbelow(900000) + 100000)
 
     @classmethod
-    async def create_otp(cls, email: str, purpose: str = "REGISTRATION") -> Tuple[str, int, bool, str]:
+    async def create_otp(
+        cls,
+        email: str,
+        phone: Optional[str] = None,
+        purpose: str = "REGISTRATION"
+    ) -> Tuple[str, int, bool, bool, str]:
         """
-        Generate, save, and dispatch a 6-digit OTP with 5-minute validity.
-        Returns: (code, ttl_seconds, email_delivered, delivery_message)
+        Generate, save, and dispatch a 6-digit OTP via Email and SMS with 5-minute validity.
+        Returns: (code, ttl_seconds, email_delivered, sms_delivered, delivery_message)
         """
         email_clean = email.lower().strip()
         code = cls._generate_code()
@@ -31,10 +37,19 @@ class OTPService:
 
         # 1. Dispatch Email to User's Inbox (Resend API / SMTP)
         email_result = EmailService.send_otp_email(to_email=email_clean, otp=code, purpose=purpose)
-        delivered = email_result.get("delivered", False)
+        email_delivered = email_result.get("delivered", False)
         delivery_msg = email_result.get("message", "")
 
-        # 2. Store in Supabase if connected
+        # 2. Dispatch SMS to User's Mobile (Fast2SMS / Twilio)
+        sms_delivered = False
+        if phone:
+            try:
+                sms_result = await SmsService.send_otp_sms(phone=phone, otp=code, purpose=purpose)
+                sms_delivered = sms_result.get("delivered", False)
+            except Exception as e:
+                logger.error(f"Failed to dispatch OTP SMS to {phone}: {e}")
+
+        # 3. Store in Supabase if connected
         if db_manager.is_connected:
             try:
                 await db_manager.execute(
@@ -51,24 +66,26 @@ class OTPService:
             except Exception as e:
                 logger.warning(f"Supabase OTP insert error: {e}")
 
-        # 3. Store in Memory
+        # 4. Store in Memory
         OTP_STORE[(email_clean, purpose)] = {
             "otp": code,
-            "expires_at": expires_at
+            "expires_at": expires_at,
+            "phone": phone
         }
 
         # Prominent console logging (ASCII-safe for Windows)
         print("\n" + "=" * 65)
-        print("[CINEBOOK OTP DISPATCH]")
-        print(f">> Destination Email : {email_clean}")
+        print("[CINEBOOK DUAL OTP DISPATCH]")
+        print(f">> Destination Email : {email_clean} (Delivered: {email_delivered})")
+        if phone:
+            print(f">> Destination Mobile: {phone} (Delivered: {sms_delivered})")
         print(f">> Purpose           : {purpose}")
         print(f">> 6-Digit OTP Code  : >>> {code} <<<")
         print(f">> Expiry Duration   : 5 minutes ({OTP_EXPIRY_SECONDS}s)")
-        print(f">> Inbox Delivery    : {'DELIVERED (Inbox)' if delivered else 'FALLBACK (Instant code available in UI / console)'}")
         print("=" * 65 + "\n")
 
-        logger.info(f"Generated {purpose} OTP for {email_clean} -> {code} (Delivered: {delivered})")
-        return code, OTP_EXPIRY_SECONDS, delivered, delivery_msg
+        logger.info(f"Generated {purpose} OTP for {email_clean} (Phone: {phone}) -> {code}")
+        return code, OTP_EXPIRY_SECONDS, email_delivered, sms_delivered, delivery_msg
 
     @classmethod
     async def verify_otp(cls, email: str, code: str, purpose: str = "REGISTRATION") -> bool:

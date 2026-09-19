@@ -55,6 +55,20 @@ class Settings(BaseSettings):
     RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY", "")
     EMAILS_FROM: str = os.getenv("EMAILS_FROM", "CineBook <onboarding@resend.dev>")
     
+    # Fast2SMS (India SMS Gateway)
+    FAST2SMS_API_KEY: Optional[str] = os.getenv("FAST2SMS_API_KEY", "")
+    FAST2SMS_SENDER_ID: str = os.getenv("FAST2SMS_SENDER_ID", "CINEBK")
+    
+    # Twilio (International SMS & WhatsApp Fallback)
+    TWILIO_ACCOUNT_SID: Optional[str] = os.getenv("TWILIO_ACCOUNT_SID", "")
+    TWILIO_AUTH_TOKEN: Optional[str] = os.getenv("TWILIO_AUTH_TOKEN", "")
+    TWILIO_PHONE_NUMBER: Optional[str] = os.getenv("TWILIO_PHONE_NUMBER", "")
+    TWILIO_WHATSAPP_NUMBER: Optional[str] = os.getenv("TWILIO_WHATSAPP_NUMBER", "")
+    
+    # Meta WhatsApp Cloud API
+    WHATSAPP_PHONE_NUMBER_ID: Optional[str] = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+    WHATSAPP_ACCESS_TOKEN: Optional[str] = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+    
     # SMTP Fallback
     SMTP_HOST: str = "smtp.resend.com"
     SMTP_PORT: int = 587

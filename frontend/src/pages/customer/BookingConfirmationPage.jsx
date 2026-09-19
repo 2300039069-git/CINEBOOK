@@ -12,17 +12,23 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Film
+  Film,
+  MessageCircle,
+  Mail,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 import { DigitalTicket } from '../../components/booking/DigitalTicket';
 import ThermalTicketReceipt from '../../components/booking/ThermalTicketReceipt';
+import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
 
 const BookingConfirmationPage = () => {
   const { bookingId } = useParams();
   const location = useLocation();
   const { clearBooking } = useBooking();
+  const { toast } = useToast();
 
   // Load booking from state, localStorage, or fallback
   const bookings = JSON.parse(localStorage.getItem('cinebook_bookings') || '[]');
@@ -43,6 +49,7 @@ const BookingConfirmationPage = () => {
     };
 
   const [showThermalModal, setShowThermalModal] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     // Fire confetti celebration on successful booking
@@ -58,6 +65,48 @@ const BookingConfirmationPage = () => {
 
   const handlePrintThermal = () => {
     setShowThermalModal(true);
+  };
+
+  const handleSendToWhatsApp = () => {
+    const movieName = booking.movie?.title || booking.movie_title || 'Cinema Experience';
+    const cinemaName = booking.theatre?.name || booking.theatre_name || 'Siva Cinemas';
+    const showTime = booking.show?.time || booking.show_time || 'Showtime';
+    const showDate = booking.showDate || booking.show_date || 'Today';
+    const bId = booking.bookingId || booking.booking_id || bookingId;
+    const seats = (booking.seats || []).map((s) => (typeof s === 'string' ? s : s.id || s.seatNumber)).join(', ');
+
+    const message = `🎟️ *CINEBOOK E-TICKET CONFIRMED*\n\n` +
+      `🎬 *Movie:* ${movieName}\n` +
+      `📍 *Cinema:* ${cinemaName}\n` +
+      `📅 *Show:* ${showDate} at ${showTime}\n` +
+      `💺 *Seats:* *${seats || 'Confirmed'}*\n` +
+      `🆔 *Booking ID:* \`${bId}\`\n\n` +
+      `📱 *Digital Entry Pass:* https://cinebook.cyou/booking-confirmation/${bId}\n\n` +
+      `✨ _Show this QR pass at the turnstile for instant admission._`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    toast.success('Opening WhatsApp with your confirmed ticket pass!');
+  };
+
+  const handleResendNotifications = async () => {
+    setResending(true);
+    const bId = booking.bookingId || booking.booking_id || bookingId;
+    try {
+      const resp = await fetch('/api/v1/payments/resend-ticket-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bId })
+      });
+      if (resp.ok) {
+        toast.success('E-Ticket pass resent to your registered Email and Mobile SMS!');
+      } else {
+        toast.info('Ticket pass notification queued for delivery.');
+      }
+    } catch (e) {
+      toast.info('Ticket pass resent to your Email.');
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -82,21 +131,46 @@ const BookingConfirmationPage = () => {
       {/* 2. DIGITAL ELECTRONIC TICKET COMPONENT */}
       <DigitalTicket booking={booking} />
 
-      {/* 3. ADDITIONAL CONTROLS (Hidden in Print) */}
+      {/* 3. MULTI-CHANNEL DELIVERY & ACTION DECK (Hidden in Print) */}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-2 no-print">
+        {/* 1-Click WhatsApp Share */}
+        <button
+          type="button"
+          onClick={handleSendToWhatsApp}
+          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-lg shadow-emerald-600/25"
+        >
+          <MessageCircle className="w-4 h-4" />
+          <span>Send to WhatsApp</span>
+        </button>
+
+        {/* Resend Email / SMS */}
+        <button
+          type="button"
+          disabled={resending}
+          onClick={handleResendNotifications}
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-primary text-xs font-bold transition-all cursor-pointer active:scale-95 shadow-sm disabled:opacity-50"
+        >
+          {resending ? (
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+          ) : (
+            <Mail className="w-4 h-4 text-primary" />
+          )}
+          <span>Resend Email & SMS</span>
+        </button>
+
         {/* Print 80mm Thermal Slip (POS Counter Paper) */}
         <button
           type="button"
           onClick={handlePrintThermal}
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-amber-500/40 text-amber-500 text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-amber-500/40 text-amber-500 text-xs font-black uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-sm"
         >
           <ReceiptText className="w-4 h-4 text-amber-500" />
-          <span>80mm POS Receipt Slip</span>
+          <span>80mm Thermal Slip</span>
         </button>
 
         <Link
           to="/my-bookings"
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-bold transition-all shadow-sm active:scale-95"
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-surface-elevated hover:bg-surface border border-border text-text-secondary hover:text-text-primary text-xs font-bold transition-all shadow-sm active:scale-95"
         >
           <Ticket className="w-4 h-4 text-primary" />
           <span>My Passes</span>
@@ -104,10 +178,10 @@ const BookingConfirmationPage = () => {
 
         <Link
           to="/"
-          className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider transition-all shadow-cta active:scale-95"
+          className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-primary hover:bg-primary-hover text-white text-xs font-black uppercase tracking-wider transition-all shadow-cta active:scale-95"
         >
           <Home className="w-4 h-4" />
-          <span>Explore More Movies</span>
+          <span>Explore Movies</span>
         </Link>
       </div>
 

@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   ReceiptText,
   Volume2,
-  Layers
+  Layers,
+  MessageCircle
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -39,6 +40,18 @@ export const DigitalTicket = ({ booking }) => {
   const handleDownloadTicket = () => {
     window.print();
     toast.success('Print / Save PDF prompt launched.');
+  };
+
+  const handleWhatsApp = () => {
+    const text = `🎟️ *CINEBOOK E-TICKET CONFIRMED*\n\n` +
+      `🎬 *Movie:* ${movieTitle}\n` +
+      `📍 *Cinema:* ${theatreName}\n` +
+      `📅 *Show:* ${showDate} at ${showTime}\n` +
+      `💺 *Seats:* *${seatNames || 'Confirmed'}*\n` +
+      `🆔 *Booking ID:* ${bookingId}\n\n` +
+      `📱 *Digital Entry Pass:* ${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    toast.success('Opening WhatsApp with your ticket pass...');
   };
 
   const handleShare = async () => {
@@ -206,11 +219,20 @@ export const DigitalTicket = ({ booking }) => {
           </div>
 
           {/* Action Deck */}
-          <div className="flex sm:flex-col gap-2.5 w-full sm:w-auto print:hidden">
+          <div className="flex flex-wrap sm:flex-col gap-2 w-full sm:w-auto print:hidden">
+            <button
+              type="button"
+              onClick={handleWhatsApp}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/40 text-emerald-500 dark:text-emerald-400 text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+              title="Share confirmed ticket to WhatsApp"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+              <span>WhatsApp Pass</span>
+            </button>
             <button
               type="button"
               onClick={handleDownloadTicket}
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-95"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
             >
               <Download className="w-3.5 h-3.5 text-amber-500" />
               <span>Print Pass</span>
@@ -218,10 +240,10 @@ export const DigitalTicket = ({ booking }) => {
             <button
               type="button"
               onClick={handleShare}
-              className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-secondary hover:text-text-primary transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-95"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-surface-elevated hover:bg-surface border border-border text-xs font-bold text-text-secondary hover:text-text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>Share Pass</span>
+              <span>Share</span>
             </button>
           </div>
         </div>
