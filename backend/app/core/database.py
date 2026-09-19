@@ -389,6 +389,28 @@ async def init_supabase_schema():
                 ALTER TABLE payments ADD COLUMN IF NOT EXISTS cf_payment_id TEXT;
             """)
 
+            # 11. Enable Supabase Realtime for instant change replication
+            try:
+                await conn.execute("""
+                    DO $$
+                    BEGIN
+                        BEGIN
+                            ALTER PUBLICATION supabase_realtime ADD TABLE seats;
+                        EXCEPTION WHEN duplicate_object OR undefined_object THEN NULL;
+                        END;
+                        BEGIN
+                            ALTER PUBLICATION supabase_realtime ADD TABLE seat_locks;
+                        EXCEPTION WHEN duplicate_object OR undefined_object THEN NULL;
+                        END;
+                        BEGIN
+                            ALTER PUBLICATION supabase_realtime ADD TABLE booked_seats;
+                        EXCEPTION WHEN duplicate_object OR undefined_object THEN NULL;
+                        END;
+                    END $$;
+                """)
+            except Exception as pub_err:
+                logger.debug(f"Realtime publication notice: {pub_err}")
+
         logger.info("Supabase PostgreSQL tables and indexes verified successfully.")
     except Exception as e:
         logger.error(f"Error initializing Supabase schema: {e}")

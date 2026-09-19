@@ -1,10 +1,29 @@
 import { bookingApi } from './bookingApi';
+import { supabase } from './supabaseClient';
 
 const STORAGE_KEY_LOCKS = 'cinebook_global_seat_locks';
 const STORAGE_KEY_BOOKED = 'cinebook_global_booked_seats';
 const BROADCAST_CHANNEL_NAME = 'cinebook_seat_lock_channel';
 const LOCK_DURATION_MS = 8 * 60 * 1000; // 8 minutes
 const RECENTLY_RELEASED_DURATION_MS = 3000; // 3-second optimistic immunity cooldown
+
+// Active Supabase realtime show channels for instant WebSocket relay
+const realtimeChannels = new Map();
+
+export const getSupabaseShowChannel = (showId) => {
+  if (!showId || !supabase) return null;
+  if (realtimeChannels.has(showId)) return realtimeChannels.get(showId);
+  try {
+    const ch = supabase.channel(`realtime:seats:${showId}`, {
+      config: { broadcast: { self: false } }
+    });
+    ch.subscribe();
+    realtimeChannels.set(showId, ch);
+    return ch;
+  } catch (e) {
+    return null;
+  }
+};
 
 // In-memory cooldown registry to prevent polling race conditions and UI flickering
 const recentlyReleasedSeats = new Map();
@@ -292,8 +311,8 @@ export const seatLockManager = {
 
     localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(currentLocks));
 
-    // Broadcast change across tabs
-    seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: currentTabId, expiresAt });
+    // Broadcast change across tabs and global devices via Supabase WebSocket
+    seatLockManager.broadcastChange(showKey, { action: 'LOCK', seatId, tabId: currentTabId, lockToken, expiresAt }, showId);
 
     return { success: true, lockToken, expiresAt };
   },
@@ -317,8 +336,8 @@ export const seatLockManager = {
       }
     }
 
-    // 2. Broadcast unlock change immediately across tabs
-    seatLockManager.broadcastChange(showKey, { action: 'UNLOCK', seatId, tabId: currentTabId });
+    // 2. Broadcast unlock change immediately across tabs and devices
+    seatLockManager.broadcastChange(showKey, { action: 'UNLOCK', seatId, tabId: currentTabId, lockToken }, showId);
 
     // 3. Release seat lock in database asynchronously
     if (showId) {
@@ -349,7 +368,7 @@ export const seatLockManager = {
 
     if (releasedAny) {
       localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
-      seatLockManager.broadcastChange(showKey, { action: 'RELEASE_ALL', tabId: currentTabId });
+      seatLockManager.broadcastChange(showKey, { action: 'RELEASE_ALL', tabId: currentTabId, lockToken: lastToken }, showId);
 
       if (showId && lastToken) {
         bookingApi.releaseSeats(showId, lastToken).catch(() => {});
@@ -379,7 +398,7 @@ export const seatLockManager = {
     }
     localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
 
-    seatLockManager.broadcastChange(showKey, { action: 'RELEASE_SEATS', seatIds, tabId: currentTabId });
+    seatLockManager.broadcastChange(showKey, { action: 'RELEASE_SEATS', seatIds, tabId: currentTabId, lockToken: token }, showId);
 
     try {
       await bookingApi.releaseSeats(showId, token, seatIds);
@@ -397,9 +416,11 @@ export const seatLockManager = {
     if (!booked[showKey]) booked[showKey] = {};
     if (!locks[showKey]) locks[showKey] = {};
 
+    const cleanSeatIds = [];
     seatIds.forEach((seat) => {
       const seatId = typeof seat === 'string' ? seat : seat.id;
       if (seatId) {
+        cleanSeatIds.push(seatId);
         booked[showKey][seatId] = {
           status: 'BOOKED',
           bookingId: bookingId || `CB-${Date.now()}`,
@@ -413,12 +434,13 @@ export const seatLockManager = {
     localStorage.setItem(STORAGE_KEY_BOOKED, JSON.stringify(booked));
     localStorage.setItem(STORAGE_KEY_LOCKS, JSON.stringify(locks));
 
-    seatLockManager.broadcastChange(showKey, { action: 'BOOKED_CONFIRMED', seatIds, bookingId });
+    seatLockManager.broadcastChange(showKey, { action: 'BOOKED_CONFIRMED', seatIds: cleanSeatIds, bookingId }, showId);
   },
 
-  // Broadcast change across tabs
-  broadcastChange: (showKey, payload) => {
-    const msg = { showKey, timestamp: Date.now(), ...payload };
+  // Broadcast change across tabs and global devices via Supabase WebSocket
+  broadcastChange: (showKey, payload, showId) => {
+    const effectiveShowId = showId || (typeof showKey === 'string' && showKey.includes('_') ? showKey.split('_')[2] : null);
+    const msg = { showKey, showId: effectiveShowId, timestamp: Date.now(), ...payload };
     if (broadcastChannel) {
       try {
         broadcastChannel.postMessage(msg);
@@ -426,10 +448,24 @@ export const seatLockManager = {
         console.warn('Broadcast error:', e);
       }
     }
-    // Also touch localStorage key to fire window storage events for older browsers
+    // Touch localStorage key for cross-tab storage events
     try {
       localStorage.setItem('cinebook_last_seat_event', JSON.stringify(msg));
     } catch (e) {}
+
+    // Instant Supabase Realtime WebSocket broadcast across ALL devices & users (<50ms latency)
+    if (effectiveShowId && supabase) {
+      try {
+        const ch = getSupabaseShowChannel(effectiveShowId);
+        if (ch) {
+          ch.send({
+            type: 'broadcast',
+            event: 'SEAT_LOCK_EVENT',
+            payload: msg
+          }).catch(() => {});
+        }
+      } catch (wsErr) {}
+    }
   },
 
   // Subscribe to real-time seat lock changes across tabs
