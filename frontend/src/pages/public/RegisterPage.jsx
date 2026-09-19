@@ -6,30 +6,16 @@ import {
   Mail,
   Phone,
   Lock,
-  ArrowRight,
-  ShieldCheck,
-  Building2,
-  KeyRound,
-  Store,
-  CheckCircle2,
-  Sparkles,
-  MapPin
+  ArrowRight
 } from 'lucide-react';
-import { useAuth, VALID_THEATRE_CODES } from '../../context/AuthContext';
-import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../context/AuthContext';
 
 const RegisterPage = () => {
-  const [accountType, setAccountType] = useState('CUSTOMER'); // 'CUSTOMER' | 'THEATRE_ADMIN'
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // Theatre-specific fields
-  const [theatreName, setTheatreName] = useState('');
-  const [city, setCity] = useState('Guntur');
-  const [theatreSecretCode, setTheatreSecretCode] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -46,15 +32,9 @@ const RegisterPage = () => {
       return;
     }
 
-    if (accountType === 'THEATRE_ADMIN') {
-      if (!theatreSecretCode.trim()) {
-        setError('Please enter the Theatre Partner Authorization Code provided by CineBook Admin.');
-        return;
-      }
-      if (!VALID_THEATRE_CODES.includes(theatreSecretCode.trim())) {
-        setError('Invalid Theatre Authorization Code! Please enter the master code provided by CineBook Admin (e.g. CINE-THEATRE-2026).');
-        return;
-      }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
     }
 
     setLoading(true);
@@ -64,17 +44,10 @@ const RegisterPage = () => {
         email,
         phone,
         password,
-        role: accountType,
-        theatreName: accountType === 'THEATRE_ADMIN' ? theatreName : undefined,
-        city: accountType === 'THEATRE_ADMIN' ? city : undefined,
-        theatreSecretCode: accountType === 'THEATRE_ADMIN' ? theatreSecretCode : undefined
+        role: 'CUSTOMER'
       });
 
-      if (accountType === 'THEATRE_ADMIN') {
-        navigate('/partner');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Registration failed. Please try again.');
     } finally {
@@ -91,49 +64,14 @@ const RegisterPage = () => {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-text-primary shadow-lg">
-            {accountType === 'THEATRE_ADMIN' ? (
-              <Store className="w-7 h-7 text-amber-500" />
-            ) : (
-              <Film className="w-7 h-7 text-primary" />
-            )}
+            <Film className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-sans">
             Create CINE<span className="text-primary">BOOK</span> Account
           </h1>
           <p className="text-xs text-text-muted">
-            {accountType === 'THEATRE_ADMIN'
-              ? 'Exhibitor onboarding for single-screen & multiplex cinema partners'
-              : 'Join to reserve cinema seats, download digital passes & unlock offers'}
+            Join to reserve cinema seats, download digital passes & unlock offers
           </p>
-        </div>
-
-        {/* Account Type Selector Tabs */}
-        <div className="p-1.5 bg-surface-elevated border border-border rounded-2xl flex gap-1.5">
-          <button
-            type="button"
-            onClick={() => { setAccountType('CUSTOMER'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              accountType === 'CUSTOMER'
-                ? 'bg-primary text-white shadow-cta'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <User className="w-4 h-4" />
-            <span>Moviegoer / Customer</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { setAccountType('THEATRE_ADMIN'); setError(''); }}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-              accountType === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 text-black shadow-md font-bold'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <Store className="w-4 h-4" />
-            <span>Theatre Exhibitor</span>
-          </button>
         </div>
 
         {error && (
@@ -143,85 +81,24 @@ const RegisterPage = () => {
         )}
 
         <form onSubmit={handleRegister} className="space-y-4 text-xs">
-          {/* Theatre Owner Specific Fields */}
-          {accountType === 'THEATRE_ADMIN' && (
-            <div className="p-4 rounded-2xl bg-surface-elevated border border-amber-500/40 space-y-3">
-              <div className="flex items-center justify-between pb-1 border-b border-border">
-                <span className="text-[11px] font-black uppercase text-amber-500 flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5" /> Cinema & Authorization Details
-                </span>
-                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                  Partner Code Required
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-text-muted font-bold block mb-1">Theatre Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Siva Cinemas"
-                    value={theatreName}
-                    onChange={(e) => setTheatreName(e.target.value)}
-                    required
-                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-text-muted font-bold block mb-1">City Location</label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full p-2.5 bg-surface border border-border rounded-xl text-text-primary font-bold focus:outline-none focus:border-amber-500 transition-colors"
-                  >
-                    <option value="Guntur" className="bg-surface text-text-primary">Guntur</option>
-                    <option value="Vijayawada" className="bg-surface text-text-primary">Vijayawada</option>
-                    <option value="Tenali" className="bg-surface text-text-primary">Tenali</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Secret Exhibitor Authorization Code */}
-              <div className="pt-1">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-amber-500 font-black flex items-center gap-1">
-                    <KeyRound className="w-3.5 h-3.5" /> Exhibitor Partner Authorization Code *
-                  </label>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter Code (e.g. CINE-THEATRE-2026 or 2026)"
-                  value={theatreSecretCode}
-                  onChange={(e) => setTheatreSecretCode(e.target.value)}
-                  required
-                  className="w-full p-2.5 bg-surface border border-amber-500/50 rounded-xl text-amber-500 font-mono font-black placeholder:text-text-muted focus:outline-none focus:border-amber-500 tracking-wider transition-colors"
-                />
-                <p className="text-[10px] text-text-muted mt-1">
-                  💡 Valid Demo Code: <code className="text-amber-500 font-bold">CINE-THEATRE-2026</code> or <code className="text-amber-500 font-bold">2026</code>
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Common Profile Fields */}
+          {/* Full Name */}
           <div>
-            <label className="text-text-muted font-bold block mb-1">
-              {accountType === 'THEATRE_ADMIN' ? 'Owner / Manager Name' : 'Full Name'}
-            </label>
+            <label className="text-text-muted font-bold block mb-1">Full Name</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
-                placeholder={accountType === 'THEATRE_ADMIN' ? 'K. Siva Rama Krishna' : 'Aarav Sharma'}
+                placeholder="Aarav Sharma"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                autoComplete="name"
                 className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
               />
             </div>
           </div>
 
+          {/* Email & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-text-muted font-bold block mb-1">Email Address</label>
@@ -229,10 +106,11 @@ const RegisterPage = () => {
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="email"
-                  placeholder={accountType === 'THEATRE_ADMIN' ? 'partner@sivacinemas.com' : 'user@example.com'}
+                  placeholder="user@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
@@ -248,12 +126,14 @@ const RegisterPage = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
+                  autoComplete="tel"
                   className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
             </div>
           </div>
 
+          {/* Password & Confirm */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-text-muted font-bold block mb-1">Password</label>
@@ -266,6 +146,7 @@ const RegisterPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
@@ -282,6 +163,7 @@ const RegisterPage = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary font-bold transition-colors"
                 />
               </div>
@@ -291,13 +173,9 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer shadow-cta active:scale-95 ${
-              accountType === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 hover:bg-amber-400 text-black font-bold'
-                : 'bg-primary hover:bg-primary-hover text-white'
-            }`}
+            className="w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer shadow-cta active:scale-95 bg-primary hover:bg-primary-hover text-white disabled:opacity-50"
           >
-            <span>{loading ? 'Creating Account...' : accountType === 'THEATRE_ADMIN' ? 'Validate Code & Register Theatre' : 'Create Account'}</span>
+            <span>{loading ? 'Creating Account...' : 'Create Account'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>

@@ -21,16 +21,16 @@ const PartnerAuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    theatre_name: 'Siva Cinemas',
-    owner_name: 'K. Siva Rama Krishna',
-    email: 'partner@sivacinemas.com',
-    phone: '+91 98480 12345',
+    theatre_name: '',
+    owner_name: '',
+    email: '',
+    phone: '',
     city: 'Guntur',
-    password: 'TheatrePass@2026',
-    bank_name: 'State Bank of India',
-    bank_account_num: '308491029481',
-    ifsc_code: 'SBIN0000840',
-    account_holder: 'Siva Cinemas Exhibitors LLP'
+    password: '',
+    bank_name: '',
+    bank_account_num: '',
+    ifsc_code: '',
+    account_holder: ''
   });
 
   const handleSubmit = async (e) => {

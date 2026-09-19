@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Film, Mail, Lock, ArrowRight, ShieldCheck, Sparkles, User, Store, Shield, CheckCircle2 } from 'lucide-react';
+import { Film, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from '../../components/ui/Button';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('CUSTOMER'); // CUSTOMER, THEATRE_ADMIN, SUPER_ADMIN
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -15,7 +13,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || (role === 'THEATRE_ADMIN' ? '/partner' : role === 'SUPER_ADMIN' ? '/admin' : '/');
+  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,9 +22,9 @@ const LoginPage = () => {
 
     try {
       if (!email || !password) {
-        throw new Error('Please fill in both email and password.');
+        throw new Error('Please enter both your email address and password.');
       }
-      const loggedUser = await login(email, password, role);
+      const loggedUser = await login(email, password);
       
       if (loggedUser.role === 'THEATRE_ADMIN') {
         navigate('/partner', { replace: true });
@@ -36,21 +34,9 @@ const LoginPage = () => {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Failed to sign in. Please check credentials.');
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRoleTabChange = (newRole) => {
-    setRole(newRole);
-    setError('');
-    if (newRole === 'SUPER_ADMIN') {
-      setEmail('kancharladhanush2003@gmail.com');
-      setPassword('AdminPass@2026');
-    } else {
-      setEmail('');
-      setPassword('');
     }
   };
 
@@ -63,64 +49,14 @@ const LoginPage = () => {
         {/* Header Block */}
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-text-primary shadow-lg">
-            {role === 'THEATRE_ADMIN' ? (
-              <Store className="w-7 h-7 text-amber-500" />
-            ) : role === 'SUPER_ADMIN' ? (
-              <Shield className="w-7 h-7 text-primary" />
-            ) : (
-              <Film className="w-7 h-7 text-primary" />
-            )}
+            <Film className="w-7 h-7 text-primary" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-sans">
             Sign In to CINE<span className="text-primary">BOOK</span>
           </h1>
           <p className="text-xs text-text-muted">
-            {role === 'THEATRE_ADMIN'
-              ? 'Access your Exhibitor Dashboard, Screen Layouts & Gate Scanner'
-              : role === 'SUPER_ADMIN'
-              ? 'Access Super Admin master platform controls'
-              : 'Sign in to access your digital tickets & seat bookings'}
+            Sign in to access your digital tickets & seat bookings
           </p>
-        </div>
-
-        {/* Role Switcher Tabs */}
-        <div className="p-1.5 bg-surface-elevated border border-border rounded-2xl flex gap-1">
-          <button
-            type="button"
-            onClick={() => handleRoleTabChange('CUSTOMER')}
-            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'CUSTOMER'
-                ? 'bg-primary text-white shadow-cta'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>Customer</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleTabChange('THEATRE_ADMIN')}
-            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 text-black shadow-md font-bold'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <Store className="w-3.5 h-3.5" />
-            <span>Theatre</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleRoleTabChange('SUPER_ADMIN')}
-            className={`flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-              role === 'SUPER_ADMIN'
-                ? 'bg-surface text-text-primary border border-border shadow-md'
-                : 'text-text-muted hover:text-text-primary'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Admin</span>
-          </button>
         </div>
 
         {/* Error Alert */}
@@ -142,6 +78,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted font-bold focus:outline-none focus:border-primary transition-colors"
               />
             </div>
@@ -162,6 +99,7 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className="w-full pl-10 pr-4 py-3 bg-surface-elevated border border-border rounded-xl text-text-primary placeholder:text-text-muted font-bold focus:outline-none focus:border-primary transition-colors"
               />
             </div>
@@ -170,28 +108,12 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer shadow-cta active:scale-95 ${
-              role === 'THEATRE_ADMIN'
-                ? 'bg-amber-500 hover:bg-amber-400 text-black font-bold'
-                : 'bg-primary hover:bg-primary-hover text-white'
-            }`}
+            className="w-full py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer shadow-cta active:scale-95 bg-primary hover:bg-primary-hover text-white disabled:opacity-50"
           >
-            <span>{loading ? 'Authenticating...' : role === 'THEATRE_ADMIN' ? 'Sign In to Exhibitor Portal' : 'Sign In'}</span>
+            <span>{loading ? 'Authenticating...' : 'Sign In'}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Super Admin Access Info */}
-        <div className="p-3.5 rounded-2xl bg-surface-elevated border border-border text-[11px] text-text-muted flex items-center justify-between">
-          <span>Super Admin: <span className="text-text-primary font-mono font-bold">kancharladhanush2003@gmail.com</span></span>
-          <button
-            type="button"
-            onClick={() => handleRoleTabChange('SUPER_ADMIN')}
-            className="text-amber-500 font-bold hover:underline cursor-pointer"
-          >
-            Auto-fill
-          </button>
-        </div>
 
         {/* Footer */}
         <div className="pt-4 border-t border-border text-center text-xs text-text-muted">

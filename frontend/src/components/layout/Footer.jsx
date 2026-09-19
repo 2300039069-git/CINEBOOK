@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Film, Store, Lock, Ticket, Headphones, HelpCircle, FileText, CheckCircle2, CreditCard } from 'lucide-react';
+import { ShieldCheck, Film, Ticket, Headphones, Tag, Sparkles } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -24,17 +24,17 @@ const Footer = () => {
             </div>
             <div>
               <h4 className="text-sm font-bold text-text-primary">Guaranteed Entry</h4>
-              <p className="text-xs text-text-muted mt-0.5">100% verified single-screen & multiplex auditoriums</p>
+              <p className="text-xs text-text-muted mt-0.5">100% verified cinema auditoriums & confirmed seats</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-surface-elevated border border-border shadow-xs">
             <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
-              <Store className="w-5 h-5" />
+              <Tag className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-text-primary">Exhibitor Partner POS</h4>
-              <p className="text-xs text-text-muted mt-0.5">Zero-latency box office & canteen operations</p>
+              <h4 className="text-sm font-bold text-text-primary">Exclusive Offers</h4>
+              <p className="text-xs text-text-muted mt-0.5">Special promo codes, combo discounts & bank offers</p>
             </div>
           </div>
 
@@ -62,7 +62,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-xs leading-relaxed text-text-secondary">
-              India's premier movie ticketing platform delivering unmatched speed, zero-lag seat selection, and verified cinema tickets with transparent zero convenience fees at physical counters.
+              India's premier movie ticketing platform delivering unmatched speed, zero-lag seat selection, and verified cinema tickets with transparent zero convenience fees.
             </p>
             
             {/* Security Badges */}
@@ -109,46 +109,11 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 3: Exhibitor Solutions */}
+          {/* Column 3: Movies & Shows */}
           <div className="space-y-3">
             <h3 className="text-xs font-extrabold uppercase tracking-widest text-text-primary flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              THEATRE PARTNERS
-            </h3>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link to="/partner" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  Exhibitor Portal & POS
-                </Link>
-              </li>
-              <li>
-                <Link to="/partner/pos" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  Box-Office Counter POS
-                </Link>
-              </li>
-              <li>
-                <Link to="/partner/canteen" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  Canteen F&B Terminal
-                </Link>
-              </li>
-              <li>
-                <Link to="/partner/scanner" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  QR Ticket Scanner
-                </Link>
-              </li>
-              <li>
-                <Link to="/partner/screens" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  Seat Matrix & Hall Setup
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Quick Navigation */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-text-primary flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              EXPLORE CINEBOOK
+              EXPLORE MOVIES
             </h3>
             <ul className="space-y-2 text-xs">
               <li>
@@ -158,9 +123,34 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/theatres" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
-                  Siva Cinemas Showtimes
+                  Cinemas & Showtimes
                 </Link>
               </li>
+              <li>
+                <Link to="/events" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
+                  Live Events & Premieres
+                </Link>
+              </li>
+              <li>
+                <Link to="/offers" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
+                  Exclusive Deals & Combos
+                </Link>
+              </li>
+              <li>
+                <Link to="/my-bookings" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
+                  My E-Tickets
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Quick Navigation & Help */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-text-primary flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              CUSTOMER CARE
+            </h3>
+            <ul className="space-y-2 text-xs">
               <li>
                 <Link to="/offers" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
                   Offers & Promo Codes
@@ -169,6 +159,11 @@ const Footer = () => {
               <li>
                 <Link to="/my-bookings" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
                   My Bookings & Pass Download
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-primary transition-colors text-text-secondary hover:text-text-primary font-medium">
+                  24/7 CineBot Support
                 </Link>
               </li>
               <li>
@@ -193,7 +188,7 @@ const Footer = () => {
             <Link to="/terms" className="hover:text-primary transition-colors">Terms</Link>
             <Link to="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
             <Link to="/offers" className="hover:text-primary transition-colors">Offers</Link>
-            <Link to="/partner" className="hover:text-primary transition-colors">Exhibitor</Link>
+            <Link to="/cancellation-refunds" className="hover:text-primary transition-colors">Refunds</Link>
           </div>
         </div>
       </div>
