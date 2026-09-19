@@ -184,98 +184,165 @@ async def _confirm_upi_booking(
     booking_id: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Atomically transitions held seats to BOOKED and records payment details.
-    Guards against UTR replay attacks in the database.
+    Atomically transitions held seats to BOOKED and records payment details in Supabase.
     """
     await db_manager.ensure_connected()
 
     # 1. Database-level anti-replay check
     if db_manager.is_connected and utr_number:
-        existing_utr = await db_manager.fetch_one(
-            "SELECT booking_id FROM bookings WHERE payment_utr = $1 AND booking_status = 'CONFIRMED' LIMIT 1",
-            utr_number
-        )
-        if existing_utr and existing_utr.get("booking_id") != booking_id:
-            logger.error(f"Duplicate UTR detected: {utr_number} was already used by booking {existing_utr.get('booking_id')}")
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="This UPI Reference (UTR) has already been used for another confirmed ticket."
+        try:
+            existing_utr = await db_manager.fetch_one(
+                "SELECT booking_id FROM bookings WHERE payment_utr = $1 AND booking_status = 'CONFIRMED' LIMIT 1",
+                utr_number
             )
+            if existing_utr and existing_utr.get("booking_id") != booking_id:
+                logger.error(f"Duplicate UTR detected: {utr_number} was already used by booking {existing_utr.get('booking_id')}")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This UPI Reference (UTR) has already been used for another confirmed ticket."
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error checking anti-replay UTR in database: {e}")
 
     order_data = UPI_ORDERS_STORE.get(order_id)
-    target_b_id = (order_data.get("booking_id") if order_data else None) or booking_id or f"CB-2026-{int(time.time()*1000)}"
+    target_b_id = booking_id or (order_data.get("booking_id") if order_data else None)
 
+    # 2. Database lookup: Primary by booking_id or payment_id
     booking = None
     if db_manager.is_connected:
         try:
-            row = await db_manager.fetch_one(
-                "SELECT * FROM bookings WHERE booking_id = $1 LIMIT 1",
-                target_b_id
-            )
-            if row:
-                booking = dict(row)
-        except Exception as e:
-            logger.warning(f"Error fetching booking for UPI confirmation: {e}")
+            if target_b_id:
+                row = await db_manager.fetch_one(
+                    "SELECT * FROM bookings WHERE booking_id = $1 OR payment_id = $1 LIMIT 1",
+                    target_b_id
+                )
+                if row:
+                    booking = dict(row)
 
-    if not booking:
+            if not booking and order_id:
+                row = await db_manager.fetch_one(
+                    "SELECT * FROM bookings WHERE booking_id = $1 OR payment_id = $1 LIMIT 1",
+                    order_id
+                )
+                if row:
+                    booking = dict(row)
+
+            # Fallback to latest PENDING booking if not found
+            if not booking:
+                logger.warning("No booking found by ID; falling back to latest PENDING booking.")
+                row = await db_manager.fetch_one(
+                    "SELECT * FROM bookings WHERE booking_status = 'PENDING' ORDER BY created_at DESC LIMIT 1"
+                )
+                if row:
+                    booking = dict(row)
+        except Exception as db_err:
+            logger.error(f"Error querying bookings from Supabase: {db_err}")
+
+    # Fallback to memory stores if DB was unreachable
+    if not booking and target_b_id:
         booking = BOOKINGS_STORE.get(target_b_id)
-
     if not booking and order_data:
         booking = {
-            "booking_id": target_b_id,
+            "booking_id": target_b_id or f"CB-2026-{int(time.time()*1000)}",
             "show_id": order_data.get("show_id", "sh-001"),
             "lock_token": order_data.get("lock_token", ""),
             "seats": order_data.get("seats", []),
             "user_id": "usr_guest",
             "total_amount": float(order_data.get("amount", 1.0))
         }
-        BOOKINGS_STORE[target_b_id] = booking
 
     if not booking:
+        logger.error(f"Booking details not found to confirm payment for order {order_id} (target_b_id: {target_b_id})")
         raise HTTPException(status_code=404, detail="Booking details not found to confirm payment.")
 
+    actual_booking_id = booking.get("booking_id") or target_b_id or f"CB-2026-{int(time.time()*1000)}"
     show_id = booking.get("show_id") or "sh-001"
     lock_token = booking.get("lock_token") or ""
+    user_id = booking.get("user_id") or "usr_guest"
+    total_amount = float(booking.get("total_amount") or (order_data.get("amount") if order_data else 1.0) or 1.0)
+
+    # 3. Extract seat IDs properly whether booking["seats"] is JSON array, stringified JSON, or list of dicts/IDs
     seats_raw = booking.get("seats", [])
     if isinstance(seats_raw, str):
         try:
             seats_raw = json.loads(seats_raw)
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error parsing seats JSON string for booking {actual_booking_id}: {e}")
             seats_raw = []
 
-    seat_ids = [
-        s["id"] if isinstance(s, dict) else (s.id if hasattr(s, "id") else str(s))
-        for s in seats_raw
-    ]
+    seat_ids: List[str] = []
+    if isinstance(seats_raw, list):
+        for s in seats_raw:
+            if isinstance(s, dict):
+                s_id = s.get("id") or s.get("seat_id")
+                if s_id:
+                    seat_ids.append(str(s_id))
+            elif s is not None:
+                seat_ids.append(str(s))
 
-    user_id = booking.get("user_id", "usr_guest")
-    await SeatLockService.permanently_book_seats(
-        show_id=show_id,
-        lock_token=lock_token,
-        seat_ids=seat_ids,
-        user_id=user_id,
-        booking_id=target_b_id
-    )
+    # 4. Atomically transition seats to permanently BOOKED via SeatLockService
+    try:
+        await SeatLockService.permanently_book_seats(
+            show_id=show_id,
+            lock_token=lock_token,
+            seat_ids=seat_ids,
+            user_id=user_id,
+            booking_id=actual_booking_id
+        )
+    except Exception as lock_err:
+        logger.error(f"SeatLockService permanently_book_seats error: {lock_err}")
 
+    # 5. Direct SQL updates against Supabase
     if db_manager.is_connected:
         try:
-            await db_manager.execute("""
-                UPDATE bookings
-                SET booking_status = 'CONFIRMED', payment_id = $1, payment_utr = $2
+            # a. Update bookings table
+            await db_manager.execute(
+                """
+                UPDATE bookings 
+                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2
                 WHERE booking_id = $3
-            """, payment_id, utr_number, target_b_id)
+                """,
+                utr_number, payment_id, actual_booking_id
+            )
+            logger.info(f"Supabase booking {actual_booking_id} updated to CONFIRMED with UTR {utr_number}")
+        except Exception as b_err:
+            logger.error(f"Failed to update booking status in Supabase: {b_err}")
 
-            await db_manager.execute("""
+        try:
+            # b. Update seats table
+            if seat_ids:
+                await db_manager.execute(
+                    """
+                    UPDATE seats 
+                    SET status = 'BOOKED', lock_token = NULL, expires_at = NULL, updated_at = NOW() 
+                    WHERE show_id = $1 AND seat_id = ANY($2::text[])
+                    """,
+                    show_id, seat_ids
+                )
+                logger.info(f"Supabase seats {seat_ids} updated to BOOKED for show {show_id}")
+        except Exception as s_err:
+            logger.error(f"Failed to update seats status in Supabase: {s_err}")
+
+        try:
+            # c. Record payment in payments table
+            await db_manager.execute(
+                """
                 INSERT INTO payments (order_id, payment_id, booking_id, amount, status)
                 VALUES ($1, $2, $3, $4, 'SUCCESS')
                 ON CONFLICT DO NOTHING
-            """, order_id, payment_id, target_b_id, float(booking.get("total_amount", 1.0)))
-        except Exception as e:
-            logger.warning(f"Supabase sync warning for UPI booking: {e}")
+                """,
+                order_id, payment_id, actual_booking_id, total_amount
+            )
+        except Exception as p_err:
+            logger.error(f"Failed to record payment in Supabase: {p_err}")
 
-    if target_b_id in BOOKINGS_STORE:
-        BOOKINGS_STORE[target_b_id]["booking_status"] = BookingStatus.CONFIRMED.value
-        BOOKINGS_STORE[target_b_id]["payment_id"] = payment_id
+    # Update in-memory fallback stores
+    if actual_booking_id in BOOKINGS_STORE:
+        BOOKINGS_STORE[actual_booking_id]["booking_status"] = BookingStatus.CONFIRMED.value
+        BOOKINGS_STORE[actual_booking_id]["payment_id"] = payment_id
+        BOOKINGS_STORE[actual_booking_id]["payment_utr"] = utr_number
 
     if order_data:
         order_data["status"] = PaymentStatus.PAID.value
@@ -285,7 +352,7 @@ async def _confirm_upi_booking(
         order_data["confirmed_at"] = time.time()
         order_data["booking"] = booking
 
-    return order_data or {"status": "PAID", "utr": utr_number}
+    return order_data or {"status": "PAID", "utr": utr_number, "booking_id": actual_booking_id}
 
 
 @router.post("/create-vyapar-order")
@@ -340,6 +407,7 @@ async def create_vyapar_payment_order(
 
 @router.get("/upi-status/{order_id}", response_model=UpiStatusResponse)
 async def check_upi_status(order_id: str):
+    await db_manager.ensure_connected()
     order_data = UPI_ORDERS_STORE.get(order_id)
     if not order_data:
         for oid, o in UPI_ORDERS_STORE.items():
@@ -358,16 +426,16 @@ async def check_upi_status(order_id: str):
             order_data.get("status") in (PaymentStatus.PAID.value, "PAID", "CONFIRMED", "BOOKED", "SUCCESS")
         )
 
-    target_bid = order_data.get("booking_id") if order_data else order_id
-    target_oid = order_data.get("order_id") if order_data else order_id
-    target_ctxn = order_data.get("client_txn_id") if order_data else order_id
+    target_bid = (order_data.get("booking_id") if order_data else None) or order_id
+    target_oid = (order_data.get("order_id") if order_data else None) or order_id
+    target_ctxn = (order_data.get("client_txn_id") if order_data else None) or order_id
 
     # 1. Check database for confirmation recorded by webhook
     if not is_paid and db_manager.is_connected:
         try:
             row = await db_manager.fetch_one("""
                 SELECT * FROM bookings 
-                WHERE (booking_id = $1 OR booking_id = $2)
+                WHERE (booking_id = $1 OR payment_id = $1 OR booking_id = $2 OR payment_id = $2)
                 AND booking_status = 'CONFIRMED' LIMIT 1
             """, target_bid, target_oid)
             if row:
@@ -387,9 +455,7 @@ async def check_upi_status(order_id: str):
                 client_txn_id=target_ctxn
             )
             if vyapar_check.get("is_paid") is True or vyapar_check.get("status") in ("PAID", "SUCCESS", "COMPLETED"):
-                utr = vyapar_check.get("utr_number")
-                if not utr:
-                    utr = f"VG_{int(time.time()*1000)}"
+                utr = vyapar_check.get("utr_number") or f"VG_{int(time.time()*1000)}"
                 payment_id = f"vyapar_{utr}"
 
                 logger.info(f"Vyapar live poll confirmed payment for {order_id} (UTR: {utr})")
@@ -401,7 +467,7 @@ async def check_upi_status(order_id: str):
                 )
                 is_paid = True
         except Exception as check_err:
-            logger.debug(f"Vyapar live poll check notice: {check_err}")
+            logger.error(f"Vyapar live poll check error: {check_err}")
 
     amount_val = float(order_data.get("amount", 1.0)) if order_data else 1.0
     utr_val = order_data.get("utr_number") if order_data else None
@@ -424,7 +490,7 @@ async def verify_upi_utr_submission(req: VerifyUtrRequest):
     """
     SECURE UTR Validation:
     Queries VyaparGateway to verify that this order has actually been paid
-    and matches the customer's entered UTR.
+    and matches the customer's entered UTR, then confirms booking in Supabase.
     """
     utr_clean = req.utr_number.strip()
     if len(utr_clean) < 8 or not utr_clean.isalnum():
@@ -478,6 +544,8 @@ async def verify_upi_utr_submission(req: VerifyUtrRequest):
 
 @router.post("/webhook/vyapar")
 @router.post("/vyapar-webhook")
+@router.post("/api/webhook/vyapar")
+@router.post("/api/v1/webhook/vyapar")
 async def receive_vyapar_webhook(request: Request):
     """
     HMAC-SHA256 Webhook listener for VyaparGateway.
@@ -566,20 +634,6 @@ async def receive_vyapar_webhook(request: Request):
         utr_number=utr_number,
         booking_id=booking_id
     )
-
-    # Direct Supabase update assurance
-    if db_manager.is_connected and booking_id:
-        try:
-            await db_manager.execute(
-                """
-                UPDATE bookings 
-                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2
-                WHERE booking_id = $3
-                """,
-                utr_number, payment_id, booking_id
-            )
-        except Exception as db_err:
-            logger.warning(f"Supabase direct UTR update notice: {db_err}")
 
     return JSONResponse(
         status_code=200,
