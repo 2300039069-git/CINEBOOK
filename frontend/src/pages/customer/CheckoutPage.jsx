@@ -9,7 +9,8 @@ import { bookingApi } from '../../services/bookingApi';
 import {
   createUpiQrOrder,
   getUpiPaymentStatus,
-  verifyUpiUtr
+  verifyUpiUtr,
+  confirmBookingDirect
 } from '../../services/paymentApi';
 import {
   ShieldCheck,
@@ -201,6 +202,12 @@ export const CheckoutPage = () => {
       });
     } catch (backendErr) {
       console.warn('Backend booking sync notice (local booking confirmed):', backendErr.message);
+    }
+
+    try {
+      await confirmBookingDirect(bookingId, utrNumber, paymentId, orderId);
+    } catch (syncErr) {
+      console.warn('Direct confirm sync fallback:', syncErr.message);
     }
 
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);

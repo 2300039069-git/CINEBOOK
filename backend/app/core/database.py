@@ -29,10 +29,11 @@ class Database:
     is_connected: bool = False
     _last_connect_attempt: float = 0
 
-    async def ensure_connected(self):
-        if not self.pool or getattr(self.pool, '_closed', False):
+    async def ensure_connected(self, force: bool = False):
+        """Ensures that the Supabase PostgreSQL connection pool is established and healthy"""
+        if force or not self.pool or getattr(self.pool, '_closed', False) or not self.is_connected:
             now = time.time()
-            if now - self._last_connect_attempt > 30.0:
+            if force or (now - self._last_connect_attempt > 2.0):
                 self._last_connect_attempt = now
                 await connect_to_supabase()
 
@@ -40,47 +41,59 @@ class Database:
         """Execute a SELECT query and return results as a list of dicts"""
         await self.ensure_connected()
         if not self.pool or not self.is_connected:
+            logger.warning(f"Database not connected when executing fetch_all: {query[:80]}")
             return []
         try:
-            async with self.pool.acquire(timeout=2.0) as conn:
+            async with self.pool.acquire(timeout=5.0) as conn:
                 records = await conn.fetch(query, *args)
                 return [dict(r) for r in records]
-        except Exception:
+        except Exception as e:
+            logger.exception(f"Supabase fetch_all failed for query: {query[:120]} with args: {args}")
             return []
 
     async def fetch_one(self, query: str, *args) -> Optional[Dict[str, Any]]:
         """Execute a SELECT query and return a single dict or None"""
         await self.ensure_connected()
         if not self.pool or not self.is_connected:
+            logger.warning(f"Database not connected when executing fetch_one: {query[:80]}")
             return None
         try:
-            async with self.pool.acquire(timeout=2.0) as conn:
+            async with self.pool.acquire(timeout=5.0) as conn:
                 record = await conn.fetchrow(query, *args)
                 return dict(record) if record else None
-        except Exception:
+        except Exception as e:
+            logger.exception(f"Supabase fetch_one failed for query: {query[:120]} with args: {args}")
             return None
 
     async def fetchval(self, query: str, *args) -> Any:
         """Execute a query and return a single scalar value"""
         await self.ensure_connected()
         if not self.pool or not self.is_connected:
+            logger.warning(f"Database not connected when executing fetchval: {query[:80]}")
             return None
         try:
-            async with self.pool.acquire(timeout=2.0) as conn:
+            async with self.pool.acquire(timeout=5.0) as conn:
                 return await conn.fetchval(query, *args)
-        except Exception:
+        except Exception as e:
+            logger.exception(f"Supabase fetchval failed for query: {query[:120]} with args: {args}")
             return None
 
     async def execute(self, query: str, *args) -> str:
         """Execute an INSERT, UPDATE, DELETE, or DDL command"""
         await self.ensure_connected()
         if not self.pool or not self.is_connected:
-            return ""
+            # Force one immediate reconnect attempt before failing
+            await self.ensure_connected(force=True)
+            if not self.pool or not self.is_connected:
+                err_msg = f"Database is disconnected. Cannot execute SQL query: {query[:100]}"
+                logger.error(err_msg)
+                raise RuntimeError(err_msg)
         try:
-            async with self.pool.acquire(timeout=2.0) as conn:
+            async with self.pool.acquire(timeout=5.0) as conn:
                 return await conn.execute(query, *args)
-        except Exception:
-            return ""
+        except Exception as e:
+            logger.exception(f"Supabase execute failed for query: {query[:120]} with args: {args}")
+            raise e
 
 db_manager = Database()
 

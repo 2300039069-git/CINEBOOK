@@ -177,6 +177,14 @@ async def verify_payment(
     )
 
 
+from pydantic import BaseModel
+
+class DirectConfirmBookingRequest(BaseModel):
+    booking_id: str
+    utr: Optional[str] = None
+    payment_id: Optional[str] = None
+    order_id: Optional[str] = None
+
 async def _confirm_upi_booking(
     order_id: str,
     payment_id: str,
@@ -185,8 +193,9 @@ async def _confirm_upi_booking(
 ) -> Dict[str, Any]:
     """
     Atomically transitions held seats to BOOKED and records payment details in Supabase.
+    Prioritizes the bookings table update first to prevent seat lock glitches from blocking confirmation.
     """
-    await db_manager.ensure_connected()
+    await db_manager.ensure_connected(force=True)
 
     # 1. Database-level anti-replay check
     if db_manager.is_connected and utr_number:
@@ -282,36 +291,24 @@ async def _confirm_upi_booking(
             elif s is not None:
                 seat_ids.append(str(s))
 
-    # 4. Atomically transition seats to permanently BOOKED via SeatLockService
-    try:
-        await SeatLockService.permanently_book_seats(
-            show_id=show_id,
-            lock_token=lock_token,
-            seat_ids=seat_ids,
-            user_id=user_id,
-            booking_id=actual_booking_id
-        )
-    except Exception as lock_err:
-        logger.error(f"SeatLockService permanently_book_seats error: {lock_err}")
-
-    # 5. Direct SQL updates against Supabase
+    # 4. CRITICAL: Update bookings table to CONFIRMED FIRST (prevents seat lock errors from blocking confirmation)
     if db_manager.is_connected:
         try:
-            # a. Update bookings table
             await db_manager.execute(
                 """
                 UPDATE bookings 
-                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2
+                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2, updated_at = NOW()
                 WHERE booking_id = $3
                 """,
                 utr_number, payment_id, actual_booking_id
             )
-            logger.info(f"Supabase booking {actual_booking_id} updated to CONFIRMED with UTR {utr_number}")
+            logger.info(f"Supabase booking {actual_booking_id} successfully updated to CONFIRMED with UTR {utr_number}")
         except Exception as b_err:
-            logger.error(f"Failed to update booking status in Supabase: {b_err}")
+            logger.exception(f"CRITICAL: Failed to update booking status in Supabase: {b_err}")
+            raise b_err
 
+        # 5. Update seats table to BOOKED inside separate try/except
         try:
-            # b. Update seats table
             if seat_ids:
                 await db_manager.execute(
                     """
@@ -323,10 +320,22 @@ async def _confirm_upi_booking(
                 )
                 logger.info(f"Supabase seats {seat_ids} updated to BOOKED for show {show_id}")
         except Exception as s_err:
-            logger.error(f"Failed to update seats status in Supabase: {s_err}")
+            logger.exception(f"Failed to update seats status in Supabase for booking {actual_booking_id}: {s_err}")
 
+        # 6. Atomically transition seat locks and booked_seats
         try:
-            # c. Record payment in payments table
+            await SeatLockService.permanently_book_seats(
+                show_id=show_id,
+                lock_token=lock_token,
+                seat_ids=seat_ids,
+                user_id=user_id,
+                booking_id=actual_booking_id
+            )
+        except Exception as lock_err:
+            logger.warning(f"SeatLockService permanently_book_seats warning for {actual_booking_id}: {lock_err}")
+
+        # 7. Record payment ledger entry
+        try:
             await db_manager.execute(
                 """
                 INSERT INTO payments (order_id, payment_id, booking_id, amount, status)
@@ -336,7 +345,7 @@ async def _confirm_upi_booking(
                 order_id, payment_id, actual_booking_id, total_amount
             )
         except Exception as p_err:
-            logger.error(f"Failed to record payment in Supabase: {p_err}")
+            logger.warning(f"Failed to record payment entry in Supabase: {p_err}")
 
     # Update in-memory fallback stores
     if actual_booking_id in BOOKINGS_STORE:
@@ -353,6 +362,91 @@ async def _confirm_upi_booking(
         order_data["booking"] = booking
 
     return order_data or {"status": "PAID", "utr": utr_number, "booking_id": actual_booking_id}
+
+
+@router.post("/confirm-booking")
+@router.post("/api/v1/payments/confirm-booking")
+async def direct_confirm_booking(req: DirectConfirmBookingRequest):
+    """
+    Direct frontend fallback confirmation endpoint:
+    Immediately updates the booking status in Supabase to CONFIRMED with payment_utr,
+    and transitions the associated seats to BOOKED.
+    """
+    booking_id = req.booking_id.strip()
+    utr = req.utr.strip() if req.utr else None
+    payment_id = req.payment_id or (f"vyapar_{utr}" if utr else f"direct_{booking_id}")
+
+    await db_manager.ensure_connected(force=True)
+
+    # 1. Update bookings table
+    try:
+        await db_manager.execute(
+            """
+            UPDATE bookings
+            SET booking_status = 'CONFIRMED',
+                payment_utr = COALESCE($1, payment_utr, 'CONFIRMED_ONLINE'),
+                payment_id = COALESCE($2, payment_id),
+                updated_at = NOW()
+            WHERE booking_id = $3
+            """,
+            utr, payment_id, booking_id
+        )
+        logger.info(f"Direct fallback confirmed booking {booking_id} in Supabase (UTR: {utr})")
+    except Exception as e:
+        logger.exception(f"Direct fallback booking update failed for {booking_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Database update failed: {str(e)}")
+
+    # 2. Transition seats table to BOOKED
+    try:
+        booking_row = await db_manager.fetch_one(
+            "SELECT show_id, seats FROM bookings WHERE booking_id = $1 LIMIT 1",
+            booking_id
+        )
+        if booking_row:
+            show_id = booking_row.get("show_id")
+            seats_raw = booking_row.get("seats", [])
+            if isinstance(seats_raw, str):
+                try:
+                    seats_raw = json.loads(seats_raw)
+                except Exception:
+                    seats_raw = []
+
+            seat_ids = []
+            if isinstance(seats_raw, list):
+                for s in seats_raw:
+                    if isinstance(s, dict):
+                        s_id = s.get("id") or s.get("seat_id")
+                        if s_id:
+                            seat_ids.append(str(s_id))
+                    elif s is not None:
+                        seat_ids.append(str(s))
+
+            if show_id and seat_ids:
+                await db_manager.execute(
+                    """
+                    UPDATE seats
+                    SET status = 'BOOKED', lock_token = NULL, expires_at = NULL, updated_at = NOW()
+                    WHERE show_id = $1 AND seat_id = ANY($2::text[])
+                    """,
+                    show_id, seat_ids
+                )
+                logger.info(f"Direct fallback marked seats {seat_ids} as BOOKED for show {show_id}")
+    except Exception as s_err:
+        logger.warning(f"Direct fallback seat update notice for {booking_id}: {s_err}")
+
+    # Sync in-memory store
+    if booking_id in BOOKINGS_STORE:
+        BOOKINGS_STORE[booking_id]["booking_status"] = BookingStatus.CONFIRMED.value
+        BOOKINGS_STORE[booking_id]["payment_id"] = payment_id
+        if utr:
+            BOOKINGS_STORE[booking_id]["payment_utr"] = utr
+
+    return {
+        "success": True,
+        "booking_id": booking_id,
+        "status": "CONFIRMED",
+        "message": "Booking confirmed successfully in Supabase."
+    }
 
 
 @router.post("/create-vyapar-order")

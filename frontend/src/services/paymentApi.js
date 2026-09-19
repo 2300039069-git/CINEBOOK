@@ -153,6 +153,22 @@ export const paymentApi = {
       utrErr.response = err.response;
       throw utrErr;
     }
+  },
+
+  confirmBookingDirect: async (bookingId, utr = '', paymentId = '', orderId = '') => {
+    try {
+      const response = await api.post('/payments/confirm-booking', {
+        booking_id: bookingId,
+        utr: utr || undefined,
+        payment_id: paymentId || undefined,
+        order_id: orderId || undefined
+      });
+      return response.data || response;
+    } catch (err) {
+      const errMsg = err.response?.data?.detail || err.message || 'Direct booking confirmation sync failed.';
+      console.warn('confirmBookingDirect warning:', errMsg);
+      return { success: false, error: errMsg };
+    }
   }
 };
 
@@ -160,5 +176,7 @@ export const createUpiQrOrder = paymentApi.createUpiQrOrder;
 export const getUpiPaymentStatus = paymentApi.getUpiPaymentStatus;
 export const simulateUpiPaymentSuccess = paymentApi.simulateUpiPaymentSuccess;
 export const verifyUpiUtr = paymentApi.verifyUpiUtr;
+export const confirmBookingDirect = paymentApi.confirmBookingDirect;
 
 export default paymentApi;
+
