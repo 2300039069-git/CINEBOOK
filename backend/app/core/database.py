@@ -316,8 +316,26 @@ async def init_supabase_schema():
                     created_at TIMESTAMPTZ DEFAULT NOW()
                 );
                 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS lock_token TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_utr TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS payment_id TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS ticket_qr_payload TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_name TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_email TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS customer_phone TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS movie_id TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS theatre_id TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_date TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS show_time TEXT;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS base_amount NUMERIC(10,2);
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS convenience_fee NUMERIC(10,2);
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS taxes NUMERIC(10,2);
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS total_amount NUMERIC(10,2);
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS booking_status TEXT DEFAULT 'PENDING';
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS seats JSONB;
+                ALTER TABLE bookings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
                 CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id, created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_bookings_show ON bookings(show_id, booking_status);
+                CREATE INDEX IF NOT EXISTS idx_bookings_utr ON bookings(payment_utr);
             """)
 
             # 8. OTPs table

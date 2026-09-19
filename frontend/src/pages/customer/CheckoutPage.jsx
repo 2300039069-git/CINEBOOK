@@ -205,7 +205,22 @@ export const CheckoutPage = () => {
     }
 
     try {
-      await confirmBookingDirect(bookingId, utrNumber, paymentId, orderId);
+      await confirmBookingDirect(bookingId, utrNumber, paymentId, orderId, {
+        show_id: show?.id || 'sh-001',
+        movie_id: movie?.id || 'mv-001',
+        theatre_id: theatre?.id || 'th-001',
+        show_date: showDate,
+        show_time: show?.time || '11:00 AM',
+        lock_token: heldLockToken,
+        seats: formattedSeatsList,
+        base_amount: baseTicketPrice,
+        convenience_fee: flatConvenienceFee,
+        taxes: gstOnConvenienceFee,
+        total_amount: totalPayable,
+        customer_name: user?.name || 'Valued Cinema Guest',
+        customer_email: user?.email || 'customer@cinebook.in',
+        customer_phone: user?.phone || '9848012345'
+      });
     } catch (syncErr) {
       console.warn('Direct confirm sync fallback:', syncErr.message);
     }

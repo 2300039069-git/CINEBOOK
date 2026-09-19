@@ -17,20 +17,25 @@ class BookedSeatInfo(BaseModel):
     price: float
 
 class BookingCreate(BaseModel):
+    booking_id: Optional[str] = None
     show_id: str
     movie_id: str
     theatre_id: str
     show_date: str
     show_time: str
-    lock_token: str
+    lock_token: Optional[str] = None
     seats: List[BookedSeatInfo]
     base_amount: float
-    convenience_fee: float
-    taxes: float
+    convenience_fee: Optional[float] = 0.0
+    taxes: Optional[float] = 0.0
     total_amount: float
-    customer_name: str
-    customer_email: str
-    customer_phone: str
+    customer_name: Optional[str] = "Valued Cinema Guest"
+    customer_email: Optional[str] = "customer@cinebook.in"
+    customer_phone: Optional[str] = "9848012345"
+    booking_status: Optional[str] = "PENDING"
+    payment_id: Optional[str] = None
+    payment_utr: Optional[str] = None
+    order_id: Optional[str] = None
 
 class BookingResponse(BaseModel):
     booking_id: str
@@ -46,6 +51,7 @@ class BookingResponse(BaseModel):
     taxes: float
     total_amount: float
     payment_id: Optional[str] = None
+    payment_utr: Optional[str] = None
     booking_status: BookingStatus = BookingStatus.PENDING
     ticket_qr_payload: Optional[str] = None
     created_at: str

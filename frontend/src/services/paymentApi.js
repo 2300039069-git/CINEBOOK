@@ -155,13 +155,14 @@ export const paymentApi = {
     }
   },
 
-  confirmBookingDirect: async (bookingId, utr = '', paymentId = '', orderId = '') => {
+  confirmBookingDirect: async (bookingId, utr = '', paymentId = '', orderId = '', extraData = {}) => {
     try {
       const response = await api.post('/payments/confirm-booking', {
         booking_id: bookingId,
         utr: utr || undefined,
         payment_id: paymentId || undefined,
-        order_id: orderId || undefined
+        order_id: orderId || undefined,
+        ...extraData
       });
       return response.data || response;
     } catch (err) {

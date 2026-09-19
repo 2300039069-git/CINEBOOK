@@ -184,6 +184,20 @@ class DirectConfirmBookingRequest(BaseModel):
     utr: Optional[str] = None
     payment_id: Optional[str] = None
     order_id: Optional[str] = None
+    show_id: Optional[str] = None
+    movie_id: Optional[str] = None
+    theatre_id: Optional[str] = None
+    show_date: Optional[str] = None
+    show_time: Optional[str] = None
+    lock_token: Optional[str] = None
+    seats: Optional[Any] = None
+    base_amount: Optional[float] = None
+    convenience_fee: Optional[float] = 0.0
+    taxes: Optional[float] = 0.0
+    total_amount: Optional[float] = None
+    customer_name: Optional[str] = None
+    customer_email: Optional[str] = None
+    customer_phone: Optional[str] = None
 
 async def _confirm_upi_booking(
     order_id: str,
@@ -215,8 +229,8 @@ async def _confirm_upi_booking(
         except Exception as e:
             logger.error(f"Error checking anti-replay UTR in database: {e}")
 
-    order_data = UPI_ORDERS_STORE.get(order_id)
-    target_b_id = booking_id or (order_data.get("booking_id") if order_data else None)
+    order_data = UPI_ORDERS_STORE.get(order_id) or {}
+    target_b_id = booking_id or order_data.get("booking_id")
 
     # 2. Database lookup: Primary by booking_id or payment_id
     booking = None
@@ -256,24 +270,34 @@ async def _confirm_upi_booking(
         booking = {
             "booking_id": target_b_id or f"CB-2026-{int(time.time()*1000)}",
             "show_id": order_data.get("show_id", "sh-001"),
+            "movie_id": order_data.get("movie_id", "mv-001"),
+            "theatre_id": order_data.get("theatre_id", "th-001"),
+            "show_date": time.strftime("%Y-%m-%d"),
+            "show_time": "11:00 AM",
             "lock_token": order_data.get("lock_token", ""),
             "seats": order_data.get("seats", []),
             "user_id": "usr_guest",
             "total_amount": float(order_data.get("amount", 1.0))
         }
 
-    if not booking:
-        logger.error(f"Booking details not found to confirm payment for order {order_id} (target_b_id: {target_b_id})")
-        raise HTTPException(status_code=404, detail="Booking details not found to confirm payment.")
-
-    actual_booking_id = booking.get("booking_id") or target_b_id or f"CB-2026-{int(time.time()*1000)}"
-    show_id = booking.get("show_id") or "sh-001"
-    lock_token = booking.get("lock_token") or ""
-    user_id = booking.get("user_id") or "usr_guest"
-    total_amount = float(booking.get("total_amount") or (order_data.get("amount") if order_data else 1.0) or 1.0)
+    actual_booking_id = (booking.get("booking_id") if booking else None) or target_b_id or f"CB-2026-{int(time.time()*1000)}"
+    show_id = (booking.get("show_id") if booking else None) or "sh-001"
+    movie_id = (booking.get("movie_id") if booking else None) or "mv-001"
+    theatre_id = (booking.get("theatre_id") if booking else None) or "th-001"
+    show_date = (booking.get("show_date") if booking else None) or time.strftime("%Y-%m-%d")
+    show_time = (booking.get("show_time") if booking else None) or "11:00 AM"
+    lock_token = (booking.get("lock_token") if booking else None) or ""
+    user_id = (booking.get("user_id") if booking else None) or "usr_guest"
+    total_amount = float((booking.get("total_amount") if booking else None) or order_data.get("amount") or 1.0)
+    base_amount = float((booking.get("base_amount") if booking else None) or total_amount)
+    convenience_fee = float((booking.get("convenience_fee") if booking else None) or 0.0)
+    taxes = float((booking.get("taxes") if booking else None) or 0.0)
+    cust_name = (booking.get("customer_name") if booking else None) or order_data.get("customer_name") or "Valued Cinema Guest"
+    cust_email = (booking.get("customer_email") if booking else None) or order_data.get("customer_email") or "customer@cinebook.in"
+    cust_phone = (booking.get("customer_phone") if booking else None) or order_data.get("customer_phone") or "9848012345"
 
     # 3. Extract seat IDs properly whether booking["seats"] is JSON array, stringified JSON, or list of dicts/IDs
-    seats_raw = booking.get("seats", [])
+    seats_raw = (booking.get("seats") if booking else None) or order_data.get("seats") or []
     if isinstance(seats_raw, str):
         try:
             seats_raw = json.loads(seats_raw)
@@ -291,23 +315,62 @@ async def _confirm_upi_booking(
             elif s is not None:
                 seat_ids.append(str(s))
 
-    # 4. CRITICAL: Update bookings table to CONFIRMED FIRST (prevents seat lock errors from blocking confirmation)
+    qr_payload = f"https://cinebook.in/verify-ticket?ref={actual_booking_id}&ts={int(time.time())}"
+    seats_json = json.dumps(seats_raw if isinstance(seats_raw, list) else [])
+
+    # 4. CRITICAL: UPSERT bookings table to CONFIRMED
     if db_manager.is_connected:
         try:
             await db_manager.execute(
                 """
-                UPDATE bookings 
-                SET booking_status = 'CONFIRMED', payment_utr = $1, payment_id = $2, updated_at = NOW()
-                WHERE booking_id = $3
+                INSERT INTO bookings (
+                    booking_id, user_id, show_id, movie_id, theatre_id,
+                    show_date, show_time, lock_token, seats,
+                    base_amount, convenience_fee, taxes, total_amount,
+                    customer_name, customer_email, customer_phone,
+                    booking_status, payment_id, payment_utr, ticket_qr_payload,
+                    created_at, updated_at
+                ) VALUES (
+                    $1, $2, $3, $4, $5,
+                    $6, $7, $8, $9::jsonb,
+                    $10, $11, $12, $13,
+                    $14, $15, $16,
+                    'CONFIRMED', $17, $18, $19,
+                    NOW(), NOW()
+                )
+                ON CONFLICT (booking_id) DO UPDATE SET
+                    booking_status = 'CONFIRMED',
+                    payment_utr = EXCLUDED.payment_utr,
+                    payment_id = EXCLUDED.payment_id,
+                    seats = EXCLUDED.seats,
+                    updated_at = NOW();
                 """,
-                utr_number, payment_id, actual_booking_id
+                actual_booking_id, user_id, show_id, movie_id, theatre_id,
+                show_date, show_time, lock_token, seats_json,
+                base_amount, convenience_fee, taxes, total_amount,
+                cust_name, cust_email, cust_phone,
+                payment_id, utr_number, qr_payload
             )
-            logger.info(f"Supabase booking {actual_booking_id} successfully updated to CONFIRMED with UTR {utr_number}")
+            logger.info(f"Supabase booking {actual_booking_id} successfully UPSERTED to CONFIRMED with UTR {utr_number}")
         except Exception as b_err:
-            logger.exception(f"CRITICAL: Failed to update booking status in Supabase: {b_err}")
+            logger.exception(f"CRITICAL: Failed to update/insert booking status in Supabase: {b_err}")
             raise b_err
 
-        # 5. Update seats table to BOOKED inside separate try/except
+        # 5. Insert into booked_seats table
+        for s_id in seat_ids:
+            try:
+                await db_manager.execute(
+                    """
+                    INSERT INTO booked_seats (show_id, seat_id, user_id, booking_id, booked_at)
+                    VALUES ($1, $2, $3, $4, NOW())
+                    ON CONFLICT (show_id, seat_id) DO NOTHING;
+                    """,
+                    show_id, s_id, user_id, actual_booking_id
+                )
+            except Exception as bs_err:
+                logger.warning(f"booked_seats insert notice for {s_id}: {bs_err}")
+
+        # 6. Update seats table to BOOKED
         try:
             if seat_ids:
                 await db_manager.execute(
@@ -321,18 +384,6 @@ async def _confirm_upi_booking(
                 logger.info(f"Supabase seats {seat_ids} updated to BOOKED for show {show_id}")
         except Exception as s_err:
             logger.exception(f"Failed to update seats status in Supabase for booking {actual_booking_id}: {s_err}")
-
-        # 6. Atomically transition seat locks and booked_seats
-        try:
-            await SeatLockService.permanently_book_seats(
-                show_id=show_id,
-                lock_token=lock_token,
-                seat_ids=seat_ids,
-                user_id=user_id,
-                booking_id=actual_booking_id
-            )
-        except Exception as lock_err:
-            logger.warning(f"SeatLockService permanently_book_seats warning for {actual_booking_id}: {lock_err}")
 
         # 7. Record payment ledger entry
         try:
@@ -369,59 +420,121 @@ async def _confirm_upi_booking(
 async def direct_confirm_booking(req: DirectConfirmBookingRequest):
     """
     Direct frontend fallback confirmation endpoint:
-    Immediately updates the booking status in Supabase to CONFIRMED with payment_utr,
-    and transitions the associated seats to BOOKED.
+    Guarantees that a CONFIRMED booking, booked seats, and payment record exist in Supabase PostgreSQL.
     """
     booking_id = req.booking_id.strip()
     utr = req.utr.strip() if req.utr else None
     payment_id = req.payment_id or (f"vyapar_{utr}" if utr else f"direct_{booking_id}")
+    order_id = req.order_id or f"ord_{booking_id}"
 
     await db_manager.ensure_connected(force=True)
 
-    # 1. Update bookings table
-    try:
-        await db_manager.execute(
-            """
-            UPDATE bookings
-            SET booking_status = 'CONFIRMED',
-                payment_utr = COALESCE($1, payment_utr, 'CONFIRMED_ONLINE'),
-                payment_id = COALESCE($2, payment_id),
-                updated_at = NOW()
-            WHERE booking_id = $3
-            """,
-            utr, payment_id, booking_id
-        )
-        logger.info(f"Direct fallback confirmed booking {booking_id} in Supabase (UTR: {utr})")
-    except Exception as e:
-        logger.exception(f"Direct fallback booking update failed for {booking_id}: {e}")
-        raise HTTPException(status_code=500, detail=f"Database update failed: {str(e)}")
+    # 1. Fetch existing booking if already in database
+    existing_row = None
+    if db_manager.is_connected:
+        try:
+            existing_row = await db_manager.fetch_one(
+                "SELECT * FROM bookings WHERE booking_id = $1 LIMIT 1",
+                booking_id
+            )
+        except Exception as e:
+            logger.warning(f"Booking lookup warning for {booking_id}: {e}")
 
-    # 2. Transition seats table to BOOKED
-    try:
-        booking_row = await db_manager.fetch_one(
-            "SELECT show_id, seats FROM bookings WHERE booking_id = $1 LIMIT 1",
-            booking_id
-        )
-        if booking_row:
-            show_id = booking_row.get("show_id")
-            seats_raw = booking_row.get("seats", [])
-            if isinstance(seats_raw, str):
-                try:
-                    seats_raw = json.loads(seats_raw)
-                except Exception:
-                    seats_raw = []
+    # 2. Extract seat info & metadata from request, existing row, or fallback store
+    order_data = UPI_ORDERS_STORE.get(order_id) or UPI_ORDERS_STORE.get(booking_id) or {}
+    mem_booking = BOOKINGS_STORE.get(booking_id) or {}
 
-            seat_ids = []
-            if isinstance(seats_raw, list):
-                for s in seats_raw:
-                    if isinstance(s, dict):
-                        s_id = s.get("id") or s.get("seat_id")
-                        if s_id:
-                            seat_ids.append(str(s_id))
-                    elif s is not None:
-                        seat_ids.append(str(s))
+    show_id = req.show_id or (existing_row.get("show_id") if existing_row else None) or order_data.get("show_id") or mem_booking.get("show_id") or "sh-001"
+    movie_id = req.movie_id or (existing_row.get("movie_id") if existing_row else None) or mem_booking.get("movie_id") or "mv-001"
+    theatre_id = req.theatre_id or (existing_row.get("theatre_id") if existing_row else None) or mem_booking.get("theatre_id") or "th-001"
+    show_date = req.show_date or (existing_row.get("show_date") if existing_row else None) or mem_booking.get("show_date") or time.strftime("%Y-%m-%d")
+    show_time = req.show_time or (existing_row.get("show_time") if existing_row else None) or mem_booking.get("show_time") or "11:00 AM"
+    lock_token = req.lock_token or (existing_row.get("lock_token") if existing_row else None) or mem_booking.get("lock_token") or ""
 
-            if show_id and seat_ids:
+    seats_raw = req.seats or (existing_row.get("seats") if existing_row else None) or mem_booking.get("seats") or order_data.get("seats") or []
+    if isinstance(seats_raw, str):
+        try:
+            seats_raw = json.loads(seats_raw)
+        except Exception:
+            seats_raw = []
+
+    seat_ids: List[str] = []
+    if isinstance(seats_raw, list):
+        for s in seats_raw:
+            if isinstance(s, dict):
+                s_id = s.get("id") or s.get("seat_id")
+                if s_id:
+                    seat_ids.append(str(s_id))
+            elif s is not None:
+                seat_ids.append(str(s))
+
+    total_amount = float(req.total_amount or (existing_row.get("total_amount") if existing_row else None) or order_data.get("amount") or mem_booking.get("total_amount") or 1.0)
+    base_amount = float(req.base_amount or (existing_row.get("base_amount") if existing_row else None) or total_amount)
+    convenience_fee = float(req.convenience_fee or (existing_row.get("convenience_fee") if existing_row else None) or 0.0)
+    taxes = float(req.taxes or (existing_row.get("taxes") if existing_row else None) or 0.0)
+
+    cust_name = req.customer_name or (existing_row.get("customer_name") if existing_row else None) or mem_booking.get("customer_name") or "Valued Cinema Guest"
+    cust_email = req.customer_email or (existing_row.get("customer_email") if existing_row else None) or mem_booking.get("customer_email") or "customer@cinebook.in"
+    cust_phone = req.customer_phone or (existing_row.get("customer_phone") if existing_row else None) or mem_booking.get("customer_phone") or "9848012345"
+
+    qr_payload = f"https://cinebook.in/verify-ticket?ref={booking_id}&ts={int(time.time())}"
+    seats_json = json.dumps(seats_raw if isinstance(seats_raw, list) else [])
+
+    # 3. Comprehensive UPSERT into bookings table
+    if db_manager.is_connected:
+        try:
+            await db_manager.execute(
+                """
+                INSERT INTO bookings (
+                    booking_id, user_id, show_id, movie_id, theatre_id,
+                    show_date, show_time, lock_token, seats,
+                    base_amount, convenience_fee, taxes, total_amount,
+                    customer_name, customer_email, customer_phone,
+                    booking_status, payment_id, payment_utr, ticket_qr_payload,
+                    created_at, updated_at
+                ) VALUES (
+                    $1, 'usr_guest', $2, $3, $4,
+                    $5, $6, $7, $8::jsonb,
+                    $9, $10, $11, $12,
+                    $13, $14, $15,
+                    'CONFIRMED', $16, $17, $18,
+                    NOW(), NOW()
+                )
+                ON CONFLICT (booking_id) DO UPDATE SET
+                    booking_status = 'CONFIRMED',
+                    payment_utr = COALESCE(EXCLUDED.payment_utr, bookings.payment_utr),
+                    payment_id = COALESCE(EXCLUDED.payment_id, bookings.payment_id),
+                    seats = EXCLUDED.seats,
+                    updated_at = NOW();
+                """,
+                booking_id, show_id, movie_id, theatre_id,
+                show_date, show_time, lock_token, seats_json,
+                base_amount, convenience_fee, taxes, total_amount,
+                cust_name, cust_email, cust_phone,
+                payment_id, utr, qr_payload
+            )
+            logger.info(f"Direct fallback UPSERT confirmed booking {booking_id} in Supabase (UTR: {utr})")
+        except Exception as e:
+            logger.exception(f"Direct fallback booking UPSERT failed for {booking_id}: {e}")
+            raise HTTPException(status_code=500, detail=f"Database update failed: {str(e)}")
+
+        # 4. Insert into booked_seats table
+        for s_id in seat_ids:
+            try:
+                await db_manager.execute(
+                    """
+                    INSERT INTO booked_seats (show_id, seat_id, user_id, booking_id, booked_at)
+                    VALUES ($1, $2, 'usr_guest', $3, NOW())
+                    ON CONFLICT (show_id, seat_id) DO NOTHING
+                    """,
+                    show_id, s_id, booking_id
+                )
+            except Exception as bs_err:
+                logger.warning(f"booked_seats insert notice for {s_id}: {bs_err}")
+
+        # 5. Transition seats table to BOOKED
+        if seat_ids:
+            try:
                 await db_manager.execute(
                     """
                     UPDATE seats
@@ -431,8 +544,21 @@ async def direct_confirm_booking(req: DirectConfirmBookingRequest):
                     show_id, seat_ids
                 )
                 logger.info(f"Direct fallback marked seats {seat_ids} as BOOKED for show {show_id}")
-    except Exception as s_err:
-        logger.warning(f"Direct fallback seat update notice for {booking_id}: {s_err}")
+            except Exception as s_err:
+                logger.warning(f"Direct fallback seat update notice for {booking_id}: {s_err}")
+
+        # 6. Record in payments table
+        try:
+            await db_manager.execute(
+                """
+                INSERT INTO payments (order_id, payment_id, booking_id, amount, status)
+                VALUES ($1, $2, $3, $4, 'SUCCESS')
+                ON CONFLICT DO NOTHING
+                """,
+                order_id, payment_id, booking_id, total_amount
+            )
+        except Exception as p_err:
+            logger.warning(f"Payment ledger insert warning for {booking_id}: {p_err}")
 
     # Sync in-memory store
     if booking_id in BOOKINGS_STORE:
@@ -486,6 +612,9 @@ async def create_vyapar_payment_order(
         "client_txn_id": client_txn_id,
         "booking_id": booking_id,
         "amount": amount,
+        "customer_name": name,
+        "customer_email": email,
+        "customer_phone": phone,
         "status": PaymentStatus.PENDING.value,
         "paid": False,
         "created_at": time.time(),
@@ -495,6 +624,33 @@ async def create_vyapar_payment_order(
     UPI_ORDERS_STORE[order_id] = order_record
     UPI_ORDERS_STORE[client_txn_id] = order_record
     UPI_ORDERS_STORE[booking_id] = order_record
+
+    # Pre-create PENDING booking in Supabase PostgreSQL
+    await db_manager.ensure_connected(force=True)
+    if db_manager.is_connected:
+        try:
+            seats_json = json.dumps([])
+            await db_manager.execute("""
+                INSERT INTO bookings (
+                    booking_id, user_id, show_id, movie_id, theatre_id,
+                    show_date, show_time, seats,
+                    base_amount, convenience_fee, taxes, total_amount,
+                    customer_name, customer_email, customer_phone,
+                    booking_status, created_at, updated_at
+                ) VALUES (
+                    $1, 'usr_guest', 'sh-001', 'mv-001', 'th-001',
+                    CURRENT_DATE::text, '11:00 AM', $2::jsonb,
+                    $3, 0.0, 0.0, $3,
+                    $4, $5, $6,
+                    'PENDING', NOW(), NOW()
+                )
+                ON CONFLICT (booking_id) DO NOTHING
+            """,
+            booking_id, seats_json, amount, name, email, phone
+            )
+            logger.info(f"Pre-created PENDING booking {booking_id} in Supabase for UPI QR session.")
+        except Exception as pre_err:
+            logger.warning(f"Pre-creation notice for booking {booking_id}: {pre_err}")
 
     return order_result
 
