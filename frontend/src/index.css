@@ -31,43 +31,71 @@
     --state-sold: #33374f;
   }
 
+  .light {
+    --bg-primary: #f4f6fc;
+    --bg-secondary: #ffffff;
+    --bg-elevated: #f0f3fa;
+    --bg-gradient: linear-gradient(160deg, #f4f6fc 0%, #eaeffb 50%, #e2e8f5 100%);
+
+    --gold-light: #f6e05e;
+    --gold-mid: #d4af37;
+    --gold-deep: #b7791f;
+    --gold-gradient: linear-gradient(135deg, #ecc94b 0%, #d4af37 50%, #b7791f 100%);
+
+    --accent-purple: #6b46c1;
+    --accent-purple-gradient: linear-gradient(135deg, #6b46c1 0%, #d4af37 100%);
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+
+    --border-default: rgba(15, 23, 42, 0.08);
+    --border-gold: #d4af37;
+    --glow-gold: 0 0 16px rgba(212, 175, 55, 0.4);
+
+    --state-available: #cbd5e1;
+    --state-selected: #d4af37;
+    --state-sold: #94a3b8;
+  }
+
   body {
-    background-color: #171b34;
-    background-image: linear-gradient(160deg, #171b34 0%, #241a3e 50%, #2c1f4a 100%);
+    background-color: var(--bg-primary);
+    background-image: var(--bg-gradient);
     background-attachment: fixed;
-    color: #ffffff;
+    color: var(--text-primary);
     font-family: 'Poppins', 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
 @layer utilities {
   /* Luxury Cinema Cards & Surfaces (16px radius) */
   .luxury-card {
-    background-color: #1e2348;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-default);
     border-radius: 16px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   }
 
   .luxury-card-selected {
-    background-color: #1e2348;
-    border: 1px solid #e0b45c;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-gold);
     border-radius: 16px;
-    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55), 0 8px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--glow-gold), 0 8px 30px rgba(0, 0, 0, 0.1);
   }
 
   .luxury-elevated {
-    background-color: #262b52;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: var(--bg-elevated);
+    border: 1px solid var(--border-default);
     border-radius: 16px;
   }
 
   /* Luxury Gold Glow */
   .luxury-glow {
-    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55);
+    box-shadow: var(--glow-gold);
   }
 
   .luxury-glow-lg {
@@ -80,19 +108,19 @@
 
   /* Primary CTA Button: Gold Gradient Fill with Dark Navy Text & Shine Sweep */
   .luxury-gold-btn {
-    background: linear-gradient(135deg, #f6dd9c 0%, #e0b45c 50%, #b8862f 100%);
+    background: var(--gold-gradient);
     color: #171b34;
     font-weight: 700;
     border-radius: 9999px;
-    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55);
+    box-shadow: var(--glow-gold);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
   }
 
   .luxury-gold-btn:hover {
-    background: linear-gradient(135deg, #ffffff 0%, #f6dd9c 40%, #e0b45c 100%);
-    box-shadow: 0 0 24px rgba(224, 180, 92, 0.75), 0 4px 15px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #ffffff 0%, var(--gold-light) 40%, var(--gold-mid) 100%);
+    box-shadow: 0 0 24px rgba(224, 180, 92, 0.75), 0 4px 15px rgba(0, 0, 0, 0.2);
     transform: translateY(-1px);
   }
 
@@ -103,8 +131,8 @@
 
   /* Pill Buttons */
   .luxury-pill-btn {
-    border: 1px solid #e0b45c;
-    color: #e0b45c;
+    border: 1px solid var(--gold-mid);
+    color: var(--gold-mid);
     border-radius: 9999px;
     background: transparent;
     transition: all 0.2s ease;
@@ -116,24 +144,24 @@
   }
 
   .luxury-pill-btn-subtle {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: #a8adc9;
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
     border-radius: 9999px;
     background: transparent;
     transition: all 0.2s ease;
   }
 
   .luxury-pill-btn-subtle:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--gold-mid);
+    color: var(--text-primary);
+    background: rgba(224, 180, 92, 0.05);
   }
 
   /* Header Banner: Purple to Gold Metallic Gradient (Screen 3) */
   .luxury-header-banner {
-    background: linear-gradient(135deg, #7c5cc4 0%, #b8862f 100%);
+    background: var(--accent-purple-gradient);
     border-radius: 16px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(124, 92, 196, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 16px rgba(124, 92, 196, 0.3);
   }
 
   /* Curved Cinema Screen Arc Graphic with Ambient Downward Glow */
@@ -142,7 +170,7 @@
     width: 84%;
     margin: 0 auto;
     height: 14px;
-    background: linear-gradient(180deg, #ffffff 0%, #7c5cc4 60%, rgba(124, 92, 196, 0) 100%);
+    background: linear-gradient(180deg, #ffffff 0%, var(--accent-purple) 60%, rgba(124, 92, 196, 0) 100%);
     clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
     border-radius: 6px 6px 0 0;
     box-shadow: 0 10px 25px 4px rgba(124, 92, 196, 0.45);
@@ -164,17 +192,17 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #171b34;
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #262b52;
+  background: var(--bg-elevated);
   border-radius: 9999px;
   border: 1px solid rgba(224, 180, 92, 0.25);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #e0b45c;
+  background: var(--gold-mid);
 }
 
 /* Print Styles */

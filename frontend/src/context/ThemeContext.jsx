@@ -5,53 +5,49 @@ const ThemeContext = createContext();
 export const THEMES = {
   MIDNIGHT_OBSIDIAN: {
     id: 'midnight-obsidian',
-    name: 'Midnight Charcoal',
+    name: 'Luxury Midnight',
     icon: '🌙',
-    description: 'Deep premium charcoal, dark slate cards & cinema crimson accent',
-    bg: '#0B0F17',
-    surface: '#161B26',
-    card: '#161B26',
-    elevated: '#1E293B',
-    hover: '#242F42',
-    subtle: '#0F141F',
-    border: '#1E293B',
-    borderSubtle: '#151D2A',
-    borderHover: '#E50914',
-    accent: '#E50914',
-    accentCrimson: '#E50914',
-    accentGradient: 'from-rose-600 via-red-600 to-rose-700',
-    primary: '#E50914',
-    primaryHover: '#FF1E2B',
-    gold: '#F59E0B',
-    cyan: '#06B6D4',
-    text: '#F1F5F9',
-    textSecondary: '#94A3B8',
-    textMuted: '#64748B'
+    description: 'Deep obsidian navy, dark glass cards & glowing Art-Deco gold accents',
+    bg: '#171b34',
+    bgGradient: 'linear-gradient(160deg, #171b34 0%, #241a3e 50%, #2c1f4a 100%)',
+    surface: '#1e2348',
+    card: '#1e2348',
+    elevated: '#262b52',
+    hover: '#2f3563',
+    subtle: '#171b34',
+    border: 'rgba(255, 255, 255, 0.1)',
+    borderSubtle: 'rgba(255, 255, 255, 0.05)',
+    borderHover: '#e0b45c',
+    accent: '#7c5cc4',
+    primary: '#e0b45c',
+    primaryHover: '#f6dd9c',
+    gold: '#e0b45c',
+    text: '#ffffff',
+    textSecondary: '#a8adc9',
+    textMuted: '#6b7094'
   },
   LUXE_WHITE: {
     id: 'luxe-white',
-    name: 'Daylight Porcelain',
+    name: 'Champagne Porcelain',
     icon: '☀️',
-    description: 'Clean off-white slate, crisp white cards & high-contrast clarity',
-    bg: '#F8FAFC',
-    surface: '#FFFFFF',
-    card: '#FFFFFF',
-    elevated: '#F1F5F9',
-    hover: '#E2E8F0',
-    subtle: '#F8FAFC',
-    border: '#E2E8F0',
-    borderSubtle: '#F1F5F9',
-    borderHover: '#E50914',
-    accent: '#E50914',
-    accentCrimson: '#E50914',
-    accentGradient: 'from-rose-600 via-red-600 to-rose-700',
-    primary: '#E50914',
-    primaryHover: '#CC0812',
-    gold: '#D97706',
-    cyan: '#0284C7',
-    text: '#0F172A',
+    description: 'Crisp pearl marble, frosted white cards & warm antique gold accents',
+    bg: '#f4f6fc',
+    bgGradient: 'linear-gradient(160deg, #f4f6fc 0%, #eaeffb 50%, #e2e8f5 100%)',
+    surface: '#ffffff',
+    card: '#ffffff',
+    elevated: '#f0f3fa',
+    hover: '#e2e8f0',
+    subtle: '#f4f6fc',
+    border: 'rgba(15, 23, 42, 0.08)',
+    borderSubtle: 'rgba(15, 23, 42, 0.04)',
+    borderHover: '#d4af37',
+    accent: '#6b46c1',
+    primary: '#d4af37',
+    primaryHover: '#b8860b',
+    gold: '#d4af37',
+    text: '#0f172a',
     textSecondary: '#475569',
-    textMuted: '#64748B'
+    textMuted: '#64748b'
   }
 };
 
@@ -80,6 +76,7 @@ export const ThemeProvider = ({ children }) => {
 
     // Apply dynamic CSS variables
     root.style.setProperty('--theme-bg', themeObj.bg);
+    root.style.setProperty('--theme-bg-gradient', themeObj.bgGradient);
     root.style.setProperty('--theme-surface', themeObj.surface);
     root.style.setProperty('--theme-card', themeObj.card);
     root.style.setProperty('--theme-elevated', themeObj.elevated || themeObj.surface);
@@ -87,13 +84,11 @@ export const ThemeProvider = ({ children }) => {
     root.style.setProperty('--theme-subtle', themeObj.subtle || themeObj.bg);
     root.style.setProperty('--theme-border', themeObj.border);
     root.style.setProperty('--theme-border-subtle', themeObj.borderSubtle || themeObj.border);
-    root.style.setProperty('--theme-border-hover', themeObj.borderHover || '#D4AF37');
+    root.style.setProperty('--theme-border-hover', themeObj.borderHover);
     root.style.setProperty('--theme-accent', themeObj.accent);
-    root.style.setProperty('--theme-crimson', themeObj.accentCrimson || '#E50914');
     root.style.setProperty('--theme-primary', themeObj.primary);
-    root.style.setProperty('--theme-primary-hover', themeObj.primaryHover || '#FF1E2B');
-    root.style.setProperty('--theme-gold', themeObj.gold || themeObj.accent);
-    root.style.setProperty('--theme-cyan', themeObj.cyan || '#06B6D4');
+    root.style.setProperty('--theme-primary-hover', themeObj.primaryHover);
+    root.style.setProperty('--theme-gold', themeObj.gold);
     root.style.setProperty('--theme-text', themeObj.text);
     root.style.setProperty('--theme-text-primary', themeObj.text);
     root.style.setProperty('--theme-text-secondary', themeObj.textSecondary);
@@ -114,7 +109,8 @@ export const ThemeProvider = ({ children }) => {
     <ThemeContext.Provider
       value={{
         currentTheme,
-        theme: THEMES[currentTheme] || THEMES.MIDNIGHT_OBSIDIAN,
+        theme: isDark ? 'dark' : 'light',
+        themeConfig: THEMES[currentTheme] || THEMES.MIDNIGHT_OBSIDIAN,
         isDark,
         toggleTheme,
         switchTheme,
@@ -133,3 +129,5 @@ export const useTheme = () => {
   }
   return context;
 };
+
+export default ThemeContext;

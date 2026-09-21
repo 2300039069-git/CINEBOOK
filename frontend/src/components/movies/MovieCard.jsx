@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Play, Ticket, Clock } from 'lucide-react';
+import { Star, Play, Ticket } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 
 export const MovieCard = ({
@@ -63,14 +63,14 @@ export const MovieCard = ({
     return (
       <div
         onClick={handleCardClick}
-        className={`group relative flex flex-col justify-between rounded-2xl bg-[#1e2348] transition-all duration-300 cursor-pointer overflow-hidden ${
+        className={`group relative flex flex-col justify-between rounded-2xl bg-surface transition-all duration-300 cursor-pointer overflow-hidden ${
           isSelected
-            ? 'border border-[#e0b45c] shadow-[0_0_20px_rgba(224,180,92,0.55)] scale-[1.01]'
-            : 'border border-white/10 hover:border-[#e0b45c]/70 hover:shadow-[0_0_18px_rgba(224,180,92,0.35)]'
+            ? 'border border-primary shadow-gold-glow scale-[1.01]'
+            : 'border border-border hover:border-primary/70 hover:shadow-gold-glow'
         }`}
       >
         {/* Top Poster Box with Floating Badges & Hover Play Button */}
-        <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#171b34]">
+        <div className="relative aspect-[2/3] w-full overflow-hidden bg-background">
           <img
             src={posterSrc}
             alt={movie.title}
@@ -81,13 +81,13 @@ export const MovieCard = ({
           <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
 
           {/* Rating Badge Top Left */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#171b34]/90 backdrop-blur-md border border-[#e0b45c]/40 text-[#e0b45c] text-[11px] font-bold shadow-sm">
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface/90 backdrop-blur-md border border-primary/40 text-primary text-[11px] font-bold shadow-xs">
             <span>★</span>
             <span>{movie.rating || '4.5'}</span>
           </div>
 
           {/* Censor / Language Badge Top Right */}
-          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-[#171b34]/90 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold">
+          <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-surface/90 backdrop-blur-md border border-border text-text-primary text-[10px] font-bold">
             {movie.censorRating || movie.language || 'UA 16+'}
           </div>
 
@@ -105,9 +105,9 @@ export const MovieCard = ({
           </div>
 
           {/* Bottom Poster Gradient for Specs */}
-          <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-[#1e2348] via-[#1e2348]/80 to-transparent flex items-center justify-between text-[10px] text-[#a8adc9] font-medium">
+          <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-surface via-surface/80 to-transparent flex items-center justify-between text-[10px] text-text-secondary font-medium">
             <span>{movie.duration || '2h 30m'}</span>
-            <span className="px-1.5 py-0.2 rounded bg-[#262b52] text-[#e0b45c] font-bold border border-white/10">
+            <span className="px-1.5 py-0.2 rounded bg-surface-elevated text-primary font-bold border border-border">
               4K ATMOS
             </span>
           </div>
@@ -117,19 +117,19 @@ export const MovieCard = ({
         <div className="p-3.5 sm:p-4 flex flex-col justify-between flex-1 gap-3">
           {/* Title & Genres */}
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-[#f6dd9c] transition-colors truncate">
+            <h3 className="text-sm sm:text-base font-bold text-text-primary group-hover:text-primary transition-colors truncate">
               {movie.title}
             </h3>
-            <p className="text-[11px] text-[#6b7094] truncate mt-0.5">
+            <p className="text-[11px] text-text-muted truncate mt-0.5">
               {movie.genres?.join(', ') || movie.genre || 'Action, Drama, Thriller'}
             </p>
           </div>
 
           {/* Showtime Quick Selection Pills */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] text-[#a8adc9]">
+            <div className="flex items-center justify-between text-[10px] text-text-secondary">
               <span className="font-semibold">Showtimes</span>
-              <span className="text-[#e0b45c] font-bold">Fast Fill</span>
+              <span className="text-primary font-bold">Fast Fill</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {sampleTimes.slice(0, 3).map((time) => {
@@ -141,8 +141,8 @@ export const MovieCard = ({
                     onClick={(e) => handleShowtimeClick(e, time)}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
                       isTimeSelected
-                        ? 'bg-[#e0b45c] text-[#171b34] shadow-[0_0_8px_rgba(224,180,92,0.6)]'
-                        : 'bg-[#262b52] border border-white/10 text-[#a8adc9] hover:border-[#e0b45c] hover:text-white'
+                        ? 'bg-primary text-[#171b34] shadow-gold-glow'
+                        : 'bg-surface-elevated border border-border text-text-secondary hover:border-primary hover:text-text-primary'
                     }`}
                   >
                     {time}
@@ -174,14 +174,14 @@ export const MovieCard = ({
       onClick={handleCardClick}
       className={`group relative flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 rounded-2xl cursor-pointer transition-all duration-300 gap-3 ${
         isSelected
-          ? 'bg-[#1e2348] border border-[#e0b45c] shadow-[0_0_16px_rgba(224,180,92,0.55)] scale-[1.01]'
-          : 'bg-[#1e2348] border border-white/10 hover:border-white/20'
+          ? 'bg-surface border border-primary shadow-gold-glow scale-[1.01]'
+          : 'bg-surface border border-border hover:border-border-hover'
       }`}
     >
       {/* Left: Thumbnail & Title Info */}
       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
         {/* Movie Thumbnail */}
-        <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden bg-[#171b34] shrink-0 relative">
+        <div className="w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden bg-background shrink-0 relative">
           <img
             src={posterSrc}
             alt={movie.title}
@@ -191,33 +191,33 @@ export const MovieCard = ({
 
         {/* Title & Star Rating */}
         <div className="min-w-0 space-y-1 flex-1">
-          <h3 className="text-sm sm:text-base font-bold text-white truncate group-hover:text-[#f6dd9c] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold text-text-primary truncate group-hover:text-primary transition-colors">
             {movie.title}
           </h3>
           <div className="flex items-center gap-2 text-xs font-semibold">
-            <span className="text-[#e0b45c] flex items-center gap-1">
+            <span className="text-primary flex items-center gap-1">
               ★ {movie.rating || '4.5'}
             </span>
-            <span className="text-[#6b7094]">•</span>
-            <span className="text-[#a8adc9] text-[11px]">
+            <span className="text-text-muted">•</span>
+            <span className="text-text-secondary text-[11px]">
               {movie.duration || '2h 45m'}
             </span>
           </div>
-          <p className="text-[11px] text-[#6b7094] truncate">
+          <p className="text-[11px] text-text-muted truncate">
             {movie.genres?.join(', ') || movie.genre || 'Action, Drama'}
           </p>
         </div>
       </div>
 
       {/* Right: Preferred Showtime & Find Best Seats Action Pills */}
-      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-white/10">
+      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-border">
         <button
           type="button"
           onClick={(e) => handleShowtimeClick(e, preferredTime)}
           className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
             isSelected
-              ? 'bg-[#e0b45c]/20 border border-[#e0b45c] text-[#e0b45c] shadow-[0_0_10px_rgba(224,180,92,0.35)]'
-              : 'border border-[#e0b45c] text-[#e0b45c] hover:bg-[#e0b45c]/10'
+              ? 'bg-primary/20 border border-primary text-primary shadow-xs'
+              : 'border border-primary text-primary hover:bg-primary/10'
           }`}
         >
           {preferredTime}
@@ -225,7 +225,7 @@ export const MovieCard = ({
         <button
           type="button"
           onClick={handleFindBestSeats}
-          className="px-4 py-1.5 rounded-full text-xs font-medium border border-white/20 text-[#a8adc9] hover:text-white hover:border-white/40 transition-all cursor-pointer"
+          className="px-4 py-1.5 rounded-full text-xs font-medium border border-border text-text-secondary hover:text-text-primary hover:border-primary/40 transition-all cursor-pointer"
         >
           Find Best Seats
         </button>

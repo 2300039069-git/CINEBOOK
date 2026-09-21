@@ -8,8 +8,7 @@ import {
   SlidersHorizontal,
   LayoutGrid,
   Calendar,
-  Clock,
-  Volume2
+  Clock
 } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
 
@@ -70,34 +69,34 @@ export const ShowtimeDetailsModal = ({
   const posterSrc = movie.poster || movie.posterUrl || movie.poster_url || '/posters/pushpa2.jpg';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in text-white select-none">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in text-text-primary select-none">
       
       {/* Responsive Modal Container: Bottom sheet on mobile, centered dialog on desktop */}
-      <div className="relative w-full max-w-2xl bg-[#1e2348] border border-white/10 sm:border-[#e0b45c]/40 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in slide-in-from-bottom-6 duration-300">
+      <div className="relative w-full max-w-2xl bg-surface border border-border sm:border-primary/40 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in slide-in-from-bottom-6 duration-300">
         
         {/* Mobile Drag Handle */}
         <div className="sm:hidden pt-3 pb-1 flex justify-center">
-          <div className="w-12 h-1 bg-white/20 rounded-full" />
+          <div className="w-12 h-1 bg-text-muted/30 rounded-full" />
         </div>
 
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-[#171b34]/80">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface-elevated/80">
           <div className="flex items-center gap-3 min-w-0">
             <img
               src={posterSrc}
               alt={movie.title}
-              className="w-10 h-14 rounded-lg object-cover border border-white/15 shrink-0"
+              className="w-10 h-14 rounded-lg object-cover border border-border shrink-0"
             />
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-wide font-display truncate">
+              <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-wide font-display truncate">
                 {movie.title}
               </h2>
-              <div className="flex items-center gap-2 text-xs text-[#a8adc9] mt-0.5">
-                <span className="text-[#e0b45c] font-bold">★ {movie.rating || '4.9'}</span>
+              <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5">
+                <span className="text-primary font-bold">★ {movie.rating || '4.9'}</span>
                 <span>•</span>
                 <span>{movie.duration || '2h 45m'}</span>
                 <span>•</span>
-                <span className="text-[#e0b45c]">4K Atmos</span>
+                <span className="text-primary font-semibold">4K Atmos</span>
               </div>
             </div>
           </div>
@@ -105,7 +104,7 @@ export const ShowtimeDetailsModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-full bg-[#1e2348] hover:bg-[#262b52] text-[#a8adc9] hover:text-white border border-white/10 transition-colors cursor-pointer shrink-0"
+            className="p-2 rounded-full bg-surface hover:bg-surface-elevated text-text-muted hover:text-text-primary border border-border transition-colors cursor-pointer shrink-0"
             aria-label="Close Modal"
           >
             <X className="w-4 h-4" />
@@ -113,7 +112,7 @@ export const ShowtimeDetailsModal = ({
         </div>
 
         {/* Filter Chips Bar (Screen 2 Mockup Top) */}
-        <div className="px-6 pt-3 pb-2 flex items-center justify-between gap-2 overflow-x-auto border-b border-white/5 bg-[#1e2348]">
+        <div className="px-6 pt-3 pb-2 flex items-center justify-between gap-2 overflow-x-auto border-b border-border bg-surface">
           <div className="flex items-center gap-2">
             {[
               { id: 'Filter', label: 'Filter', icon: SlidersHorizontal },
@@ -129,8 +128,8 @@ export const ShowtimeDetailsModal = ({
                   onClick={() => setActiveFilter(chip.id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#262b52] border border-[#e0b45c] text-[#e0b45c] shadow-[0_0_12px_rgba(224,180,92,0.4)]'
-                      : 'bg-[#171b34] border border-white/10 text-[#a8adc9] hover:text-white'
+                      ? 'bg-surface-elevated border border-primary text-primary shadow-xs'
+                      : 'bg-background border border-border text-text-secondary hover:text-text-primary'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -140,7 +139,7 @@ export const ShowtimeDetailsModal = ({
             })}
           </div>
 
-          <span className="text-xs font-bold text-[#e0b45c] hidden sm:inline font-mono">
+          <span className="text-xs font-bold text-primary hidden sm:inline font-mono">
             Screen 5 • 4K Laser
           </span>
         </div>
@@ -148,17 +147,17 @@ export const ShowtimeDetailsModal = ({
         {/* Scrollable Sheet Content */}
         <div className="px-6 py-4 overflow-y-auto space-y-5">
           
-          {/* Timeline Date Selector: Horizontal Dotted Track */}
+          {/* Timeline Date Selector: Horizontal Track */}
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-[#e0b45c]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
               Select Date & Day
             </span>
             <div className="relative py-3">
               {/* Horizontal Track Behind */}
-              <div className="absolute inset-x-2 top-4.5 h-0.5 bg-white/10" />
+              <div className="absolute inset-x-2 top-4.5 h-0.5 bg-border" />
               <div
-                className="absolute left-2 top-4.5 h-0.5 bg-[#e0b45c] transition-all duration-300"
+                className="absolute left-2 top-4.5 h-0.5 bg-primary transition-all duration-300"
                 style={{ width: `${(activeDateIndex + 1) * 20}%` }}
               />
 
@@ -175,19 +174,19 @@ export const ShowtimeDetailsModal = ({
                       <span
                         className={`w-2.5 h-2.5 rounded-full transition-all ${
                           isActive
-                            ? 'bg-[#e0b45c] ring-4 ring-[#e0b45c]/30 shadow-[0_0_10px_#e0b45c]'
-                            : 'bg-[#6b7094] group-hover:bg-white/50'
+                            ? 'bg-primary ring-4 ring-primary/30 shadow-gold-glow'
+                            : 'bg-text-muted group-hover:bg-text-secondary'
                         }`}
                       />
                       <span
                         className={`text-xs font-semibold transition-colors mt-1 ${
-                          isActive ? 'text-[#e0b45c] font-bold' : 'text-[#a8adc9]'
+                          isActive ? 'text-primary font-bold' : 'text-text-secondary'
                         }`}
                       >
                         {day}
                       </span>
                       {isActive && (
-                        <span className="text-[9px] text-[#e0b45c] font-bold">Selected</span>
+                        <span className="text-[9px] text-primary font-bold">Selected</span>
                       )}
                     </button>
                   );
@@ -197,22 +196,22 @@ export const ShowtimeDetailsModal = ({
           </div>
 
           {/* Hall Header Subtitle */}
-          <div className="p-3 rounded-xl bg-[#262b52] border border-white/10 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-surface-elevated border border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#e0b45c]" />
-              <span className="text-xs font-bold text-white tracking-wide">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold text-text-primary tracking-wide">
                 {theatreName}
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded-md bg-[#e0b45c]/20 text-[#f6dd9c] text-[10px] font-black uppercase">
+            <span className="px-2 py-0.5 rounded-md bg-primary/20 text-primary text-[10px] font-black uppercase">
               Dolby Atmos 7.1
             </span>
           </div>
 
           {/* Time Slot Pills */}
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#e0b45c]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-text-primary flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-primary" />
               Select Showtime
             </span>
             <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
@@ -225,8 +224,8 @@ export const ShowtimeDetailsModal = ({
                     onClick={() => setSelectedTime(slot)}
                     className={`py-2.5 px-3 rounded-xl text-xs font-semibold transition-all text-center cursor-pointer ${
                       isActive
-                        ? 'bg-[#262b52] border border-[#e0b45c] text-[#e0b45c] shadow-[0_0_12px_rgba(224,180,92,0.45)] font-bold'
-                        : 'bg-[#171b34] border border-white/10 text-[#a8adc9] hover:border-white/25 hover:text-white'
+                        ? 'bg-surface-elevated border border-primary text-primary shadow-xs font-bold'
+                        : 'bg-background border border-border text-text-secondary hover:border-primary/40 hover:text-text-primary'
                     }`}
                   >
                     {slot}
@@ -237,15 +236,15 @@ export const ShowtimeDetailsModal = ({
           </div>
 
           {/* Chosen Seats Glowing Gold Pills */}
-          <div className="p-4 rounded-2xl bg-[#171b34] border border-white/10 text-center space-y-2">
-            <p className="text-xs text-[#a8adc9] font-medium">
+          <div className="p-4 rounded-2xl bg-background border border-border text-center space-y-2">
+            <p className="text-xs text-text-secondary font-medium">
               Your Pre-Selected Prime Seats
             </p>
             <div className="flex items-center justify-center gap-2.5">
               {pickedSeats.map((seat) => (
                 <span
                   key={seat}
-                  className="px-3.5 py-1 rounded-lg bg-[#e0b45c] text-[#171b34] text-xs font-black shadow-[0_0_12px_rgba(224,180,92,0.6)]"
+                  className="px-3.5 py-1 rounded-lg bg-primary text-[#171b34] text-xs font-black shadow-gold-glow"
                 >
                   {seat}
                 </span>
@@ -255,20 +254,20 @@ export const ShowtimeDetailsModal = ({
 
           {/* Seat Availability Legend */}
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs font-bold text-white">
+            <span className="text-xs font-bold text-text-primary">
               Seat Legend:
             </span>
-            <div className="flex items-center gap-5 text-xs text-[#a8adc9]">
+            <div className="flex items-center gap-5 text-xs text-text-secondary">
               <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-sm bg-[#4a4f74] border border-white/10" />
+                <span className="w-3.5 h-3.5 rounded-sm bg-state-available border border-border" />
                 <span>Available</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-sm bg-[#e0b45c] shadow-[0_0_6px_#e0b45c]" />
-                <span className="text-white font-medium">Selected</span>
+                <span className="w-3.5 h-3.5 rounded-sm bg-primary shadow-xs" />
+                <span className="text-text-primary font-medium">Selected</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 rounded-sm bg-[#33374f] text-[8px] text-[#6b7094] flex items-center justify-center font-bold">
+                <span className="w-3.5 h-3.5 rounded-sm bg-state-sold text-[8px] text-white flex items-center justify-center font-bold">
                   ✕
                 </span>
                 <span>Sold Out</span>
@@ -279,31 +278,31 @@ export const ShowtimeDetailsModal = ({
           {/* Ornate Cut-Corner Ribbon */}
           <div
             onClick={handleProceedToSeats}
-            className="w-full py-3 px-4 rounded-xl bg-[#262b52] border border-[#e0b45c] shadow-[0_0_14px_rgba(224,180,92,0.3)] text-center text-xs font-bold text-[#e0b45c] cursor-pointer hover:bg-[#e0b45c]/10 transition-colors flex items-center justify-between"
+            className="w-full py-3 px-4 rounded-xl bg-surface-elevated border border-primary shadow-gold-glow text-center text-xs font-bold text-primary cursor-pointer hover:bg-primary/10 transition-colors flex items-center justify-between"
           >
-            <span className="text-[#e0b45c] text-xs">◆</span>
+            <span className="text-primary text-xs">◆</span>
             <span>Reserve Seats ({pickedSeats.join(', ')}) • 4K Dolby Atmos</span>
-            <span className="text-[#e0b45c] text-xs">◆</span>
+            <span className="text-primary text-xs">◆</span>
           </div>
         </div>
 
         {/* Sticky Bottom Action Bar */}
-        <div className="p-4 sm:p-5 bg-[#171b34] border-t border-white/10 flex items-center gap-3">
+        <div className="p-4 sm:p-5 bg-background border-t border-border flex items-center gap-3">
           {/* Reshuffle Button */}
           <button
             type="button"
             onClick={handleQuickSwap}
-            className="p-3.5 rounded-2xl bg-[#1e2348] border border-white/15 text-[#a8adc9] hover:text-white hover:border-[#e0b45c] transition-colors cursor-pointer shrink-0"
+            className="p-3.5 rounded-2xl bg-surface border border-border text-text-secondary hover:text-text-primary hover:border-primary transition-colors cursor-pointer shrink-0"
             title="Reshuffle Seats"
           >
-            <Repeat className="w-4 h-4 text-[#e0b45c]" />
+            <Repeat className="w-4 h-4 text-primary" />
           </button>
 
           {/* Large Primary CTA */}
           <button
             type="button"
             onClick={handleProceedToSeats}
-            className="luxury-gold-btn flex-1 py-3.5 px-6 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(224,180,92,0.4)]"
+            className="luxury-gold-btn flex-1 py-3.5 px-6 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow"
           >
             <span>Proceed to Interactive Seat Map</span>
             <ChevronRight className="w-4 h-4" />

@@ -8,12 +8,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#171b34',
+        background: 'var(--bg-primary, #171b34)',
         surface: {
-          DEFAULT: '#1e2348',
-          elevated: '#262b52',
-          hover: '#2f3563',
-          subtle: '#171b34'
+          DEFAULT: 'var(--bg-secondary, #1e2348)',
+          elevated: 'var(--bg-elevated, #262b52)',
+          hover: 'var(--theme-hover, #2f3563)',
+          subtle: 'var(--bg-primary, #171b34)'
         },
         navy: {
           950: '#111428',
@@ -24,37 +24,37 @@ export default {
           500: '#4a4f74'
         },
         gold: {
-          light: '#f6dd9c',
-          DEFAULT: '#e0b45c',
-          mid: '#e0b45c',
-          deep: '#b8862f'
+          light: 'var(--gold-light, #f6dd9c)',
+          DEFAULT: 'var(--gold-mid, #e0b45c)',
+          mid: 'var(--gold-mid, #e0b45c)',
+          deep: 'var(--gold-deep, #b8862f)'
         },
         primary: {
-          DEFAULT: '#e0b45c',
-          hover: '#f6dd9c',
-          active: '#b8862f',
-          light: '#f6dd9c',
-          dark: '#b8862f',
+          DEFAULT: 'var(--gold-mid, #e0b45c)',
+          hover: 'var(--gold-light, #f6dd9c)',
+          active: 'var(--gold-deep, #b8862f)',
+          light: 'var(--gold-light, #f6dd9c)',
+          dark: 'var(--gold-deep, #b8862f)',
         },
         accent: {
-          DEFAULT: '#7c5cc4',
-          purple: '#7c5cc4',
-          gold: '#e0b45c'
+          DEFAULT: 'var(--accent-purple, #7c5cc4)',
+          purple: 'var(--accent-purple, #7c5cc4)',
+          gold: 'var(--gold-mid, #e0b45c)'
         },
         text: {
-          primary: '#ffffff',
-          secondary: '#a8adc9',
-          muted: '#6b7094'
+          primary: 'var(--text-primary, #ffffff)',
+          secondary: 'var(--text-secondary, #a8adc9)',
+          muted: 'var(--text-muted, #6b7094)'
         },
         border: {
-          DEFAULT: 'rgba(255, 255, 255, 0.08)',
-          subtle: 'rgba(255, 255, 255, 0.05)',
-          gold: '#e0b45c'
+          DEFAULT: 'var(--border-default, rgba(255, 255, 255, 0.08))',
+          subtle: 'var(--border-default, rgba(255, 255, 255, 0.05))',
+          gold: 'var(--border-gold, #e0b45c)'
         },
         state: {
-          available: '#4a4f74',
-          selected: '#e0b45c',
-          sold: '#33374f'
+          available: 'var(--state-available, #4a4f74)',
+          selected: 'var(--state-selected, #e0b45c)',
+          sold: 'var(--state-sold, #33374f)'
         }
       },
       fontFamily: {

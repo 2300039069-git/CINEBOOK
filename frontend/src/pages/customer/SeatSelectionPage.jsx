@@ -8,9 +8,7 @@ import {
   Calendar,
   Clock,
   Ticket,
-  Sparkles,
-  MapPin,
-  Volume2
+  MapPin
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
@@ -38,8 +36,7 @@ export const SeatSelectionPage = () => {
     selectedSeats,
     toggleSeatSelection,
     startSeatLock,
-    totalAmount,
-    secondsLeft
+    totalAmount
   } = useBooking();
 
   const show = React.useMemo(() => {
@@ -183,29 +180,29 @@ export const SeatSelectionPage = () => {
   const displayTotal = totalAmount && totalAmount > 0 ? totalAmount : selectedSeats.length * basePricePerSeat;
 
   return (
-    <div className="min-h-screen bg-[#171b34] bg-gradient-to-b from-[#171b34] via-[#1e2348] to-[#171b34] text-white pt-24 pb-36 select-none">
+    <div className="min-h-screen bg-background text-text-primary pt-24 pb-36 select-none transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Top Header Navigation & Movie Info Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1e2348] border border-white/10 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-surface border border-border shadow-lg">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2.5 rounded-xl bg-[#262b52] hover:bg-[#323868] text-[#a8adc9] hover:text-white border border-white/10 transition-colors cursor-pointer"
+              className="p-2.5 rounded-xl bg-surface-elevated hover:bg-surface text-text-secondary hover:text-text-primary border border-border transition-colors cursor-pointer"
               title="Back"
             >
-              <ArrowLeft className="w-4 h-4 text-[#e0b45c]" />
+              <ArrowLeft className="w-4 h-4 text-primary" />
             </button>
             <div>
-              <h1 className="text-base sm:text-lg font-black text-white font-display flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-black text-text-primary font-display flex items-center gap-2">
                 {movie.title}
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e0b45c]/20 text-[#f6dd9c] font-bold uppercase">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-bold uppercase">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </h1>
-              <p className="text-xs text-[#a8adc9] flex items-center gap-2 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-[#e0b45c]" />
+              <p className="text-xs text-text-secondary flex items-center gap-2 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-primary" />
                 <span>{theatre.name}</span>
                 <span>•</span>
                 <span>{show.screenName || 'Screen 5'}</span>
@@ -214,18 +211,18 @@ export const SeatSelectionPage = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#262b52] border border-white/10 text-xs font-bold text-[#e0b45c]">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-elevated border border-border text-xs font-bold text-primary">
               <Clock className="w-3.5 h-3.5" />
               <span>{show.time}</span>
             </div>
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#262b52] border border-white/10 text-xs font-bold text-white">
-              <Calendar className="w-3.5 h-3.5 text-[#e0b45c]" />
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-elevated border border-border text-xs font-bold text-text-primary">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
               <span>{effectiveDate}</span>
             </div>
           </div>
         </div>
 
-        {/* 12-COLUMN RESPONSIVE LAYOUT (Desktop Widescreen Website Experience) */}
+        {/* 12-COLUMN RESPONSIVE LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* LEFT 8 COLUMNS: INTERACTIVE AUDITORIUM SEATING GRID */}
@@ -239,36 +236,36 @@ export const SeatSelectionPage = () => {
 
           {/* RIGHT 4 COLUMNS: DESKTOP BOOKING SUMMARY SIDEBAR */}
           <div className="hidden lg:block lg:col-span-4 sticky top-28 space-y-5">
-            <div className="p-6 rounded-3xl bg-[#1e2348] border border-[#e0b45c]/30 shadow-2xl space-y-6">
+            <div className="p-6 rounded-3xl bg-surface border border-primary/30 shadow-2xl space-y-6">
               
               {/* Summary Header */}
-              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div className="flex items-center gap-2">
-                  <Ticket className="w-5 h-5 text-[#e0b45c]" />
-                  <h3 className="text-base font-black text-white font-display">Booking Summary</h3>
+                  <Ticket className="w-5 h-5 text-primary" />
+                  <h3 className="text-base font-black text-text-primary font-display">Booking Summary</h3>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3" /> Live Lock
                 </span>
               </div>
 
               {/* Movie Thumbnail & Show Details */}
-              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#262b52] border border-white/10">
+              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-surface-elevated border border-border">
                 <img
                   src={movie.poster || movie.posterUrl || '/posters/pushpa2.jpg'}
                   alt={movie.title}
-                  className="w-14 h-18 rounded-xl object-cover border border-white/15 shrink-0"
+                  className="w-14 h-18 rounded-xl object-cover border border-border shrink-0"
                 />
                 <div className="min-w-0 space-y-1">
-                  <h4 className="text-sm font-bold text-white truncate">{movie.title}</h4>
-                  <p className="text-[11px] text-[#a8adc9] truncate">{theatre.name}</p>
-                  <p className="text-[10px] text-[#e0b45c] font-bold">{show.time} • 4K Dolby Atmos</p>
+                  <h4 className="text-sm font-bold text-text-primary truncate">{movie.title}</h4>
+                  <p className="text-[11px] text-text-muted truncate">{theatre.name}</p>
+                  <p className="text-[10px] text-primary font-bold">{show.time} • 4K Dolby Atmos</p>
                 </div>
               </div>
 
               {/* Selected Seats Badges */}
               <div className="space-y-2">
-                <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                <span className="text-xs font-bold text-text-primary uppercase tracking-wider block">
                   Selected Seats ({selectedSeats.length})
                 </span>
                 {selectedSeats.length > 0 ? (
@@ -276,32 +273,32 @@ export const SeatSelectionPage = () => {
                     {selectedSeats.map((seat) => (
                       <span
                         key={seat.id || seat}
-                        className="px-3 py-1 rounded-lg bg-[#e0b45c] text-[#171b34] text-xs font-black shadow-[0_0_10px_rgba(224,180,92,0.6)]"
+                        className="px-3 py-1 rounded-lg bg-primary text-[#171b34] text-xs font-black shadow-gold-glow"
                       >
                         {seat.id || seat}
                       </span>
                     ))}
                   </div>
                 ) : (
-                  <div className="p-3 rounded-xl bg-[#171b34] border border-dashed border-white/15 text-center text-xs text-[#6b7094]">
+                  <div className="p-3 rounded-xl bg-background border border-dashed border-border text-center text-xs text-text-muted">
                     Tap available seats on the map to select
                   </div>
                 )}
               </div>
 
               {/* Price Calculation */}
-              <div className="space-y-2.5 pt-2 border-t border-white/10 text-xs">
-                <div className="flex justify-between text-[#a8adc9]">
+              <div className="space-y-2.5 pt-2 border-t border-border text-xs">
+                <div className="flex justify-between text-text-secondary">
                   <span>Tickets ({selectedSeats.length} × ₹{basePricePerSeat})</span>
-                  <span className="font-bold text-white">₹{selectedSeats.length * basePricePerSeat}.00</span>
+                  <span className="font-bold text-text-primary">₹{selectedSeats.length * basePricePerSeat}.00</span>
                 </div>
-                <div className="flex justify-between text-[#a8adc9]">
+                <div className="flex justify-between text-text-secondary">
                   <span>Convenience Handling Fee</span>
-                  <span className="font-bold text-emerald-400">FREE</span>
+                  <span className="font-bold text-emerald-500">FREE</span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-white/10 text-sm font-bold">
-                  <span className="text-white font-display">Total Payable</span>
-                  <span className="text-lg font-black text-[#e0b45c]">
+                <div className="flex justify-between pt-2 border-t border-border text-sm font-bold">
+                  <span className="text-text-primary font-display">Total Payable</span>
+                  <span className="text-lg font-black text-primary">
                     ₹{displayTotal > 0 ? displayTotal : selectedSeats.length * basePricePerSeat}.00
                   </span>
                 </div>
@@ -312,7 +309,7 @@ export const SeatSelectionPage = () => {
                 type="button"
                 onClick={handleProceed}
                 disabled={selectedSeats.length === 0}
-                className={`luxury-gold-btn w-full py-3.5 px-6 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(224,180,92,0.4)] ${
+                className={`luxury-gold-btn w-full py-3.5 px-6 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-gold-glow ${
                   selectedSeats.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -321,8 +318,8 @@ export const SeatSelectionPage = () => {
               </button>
 
               <div className="text-center">
-                <span className="text-[10px] text-[#6b7094] flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span className="text-[10px] text-text-muted flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-500" />
                   100% Guaranteed Admission & Direct Refund Policy
                 </span>
               </div>
@@ -331,22 +328,22 @@ export const SeatSelectionPage = () => {
         </div>
       </div>
 
-      {/* MOBILE STICKY BOTTOM ACTION BAR (Active on < 1024px screens only) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_35px_rgba(0,0,0,0.8)] py-3 px-4 sm:px-6">
+      {/* MOBILE STICKY BOTTOM ACTION BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-border shadow-2xl py-3 px-4 sm:px-6">
         <div className="max-w-lg mx-auto space-y-2.5">
           
           {/* Summary Text */}
-          <div className="flex items-center justify-between text-xs text-[#a8adc9]">
+          <div className="flex items-center justify-between text-xs text-text-secondary">
             <span className="truncate pr-2">
               {selectedSeats.length > 0 ? (
                 <span>
                   {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id || s).join(', ')})
                 </span>
               ) : (
-                <span className="text-[#6b7094] italic">Select seats above</span>
+                <span className="text-text-muted italic">Select seats above</span>
               )}
             </span>
-            <span className="font-bold text-[#e0b45c] shrink-0 text-sm">
+            <span className="font-bold text-primary shrink-0 text-sm">
               ₹{displayTotal > 0 ? displayTotal : selectedSeats.length * basePricePerSeat}.00
             </span>
           </div>
@@ -357,10 +354,10 @@ export const SeatSelectionPage = () => {
             <button
               type="button"
               onClick={handleReshuffle}
-              className="p-3 rounded-xl bg-[#1e2348] border border-white/15 text-[#a8adc9] hover:text-white hover:border-[#e0b45c] transition-colors cursor-pointer shrink-0"
+              className="p-3 rounded-xl bg-surface border border-border text-text-secondary hover:text-text-primary hover:border-primary transition-colors cursor-pointer shrink-0"
               title="Quick Toggle"
             >
-              <Repeat className="w-4 h-4 text-[#e0b45c]" />
+              <Repeat className="w-4 h-4 text-primary" />
             </button>
 
             {/* Large Gold Primary CTA */}

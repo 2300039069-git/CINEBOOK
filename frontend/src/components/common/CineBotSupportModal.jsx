@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Zap
 } from 'lucide-react';
+import CinebookLogo from './CinebookLogo';
 
 const CineBotSupportModal = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -178,15 +179,11 @@ const CineBotSupportModal = () => {
 
       {/* CineBot Interactive Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-22 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[550px] bg-surface rounded-3xl border border-amber-500/40 shadow-2xl flex flex-col overflow-hidden animate-scale-up backdrop-blur-2xl text-text-primary">
+        <div className="fixed bottom-22 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[550px] bg-surface rounded-3xl border border-primary/40 shadow-2xl flex flex-col overflow-hidden animate-scale-up backdrop-blur-2xl text-text-primary">
           {/* Bot Header */}
           <div className="p-4 bg-surface border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 p-[2px]">
-                <div className="w-full h-full bg-surface rounded-[14px] flex items-center justify-center text-amber-500">
-                  <Bot className="w-5 h-5 text-amber-500" />
-                </div>
-              </div>
+              <CinebookLogo size="xs" showWordmark={false} isLink={false} />
               <div>
                 <h3 className="text-xs font-bold text-text-primary flex items-center gap-1.5">
                   CineBot AI Assistant
@@ -194,7 +191,7 @@ const CineBotSupportModal = () => {
                     Online
                   </span>
                 </h3>
-                <p className="text-[10px] text-text-muted">Instant Clarifications & Auto-Refund Engine</p>
+                <p className="text-[10px] text-text-muted">Instant Cinema Support & Refunds</p>
               </div>
             </div>
 

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { THEATRES } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
+import CinebookLogo from '../../components/common/CinebookLogo';
 
 const PartnerLayout = () => {
   const navigate = useNavigate();
@@ -53,22 +54,10 @@ const PartnerLayout = () => {
         <div className="space-y-6">
           {/* Exhibitor Brand Header */}
           <div className="flex items-center justify-between">
-            <Link to="/partner" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500 flex items-center justify-center text-black shadow-sm group-hover:scale-105 transition-transform">
-                <Store className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-xl font-extrabold text-text-primary tracking-tight leading-none block">
-                  PARTNER<span className="text-amber-500">.</span>
-                </span>
-                <span className="text-[10px] font-bold tracking-widest text-text-muted uppercase">
-                  Exhibitor Portal
-                </span>
-              </div>
-            </Link>
+            <CinebookLogo size="sm" showWordmark={true} to="/partner" />
 
             <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold uppercase border border-emerald-500/20">
-              Verified
+              Partner
             </span>
           </div>
 

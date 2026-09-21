@@ -9,6 +9,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import CinebookLogo from '../../components/common/CinebookLogo';
 
 const RegisterPage = () => {
   const [name, setName] = useState('');
@@ -62,13 +63,10 @@ const RegisterPage = () => {
 
       <div className="w-full max-w-lg bg-surface border border-border rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative z-10 backdrop-blur-2xl">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-text-primary shadow-lg">
-            <Film className="w-7 h-7 text-primary" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <CinebookLogo size="lg" showWordmark={true} showTagline={true} />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight font-sans">
-            Create CINE<span className="text-primary">BOOK</span> Account
-          </h1>
           <p className="text-xs text-text-muted">
             Join to reserve cinema seats, download digital passes & unlock offers
           </p>

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import CinebookLogo from '../../components/common/CinebookLogo';
 
 const PartnerAuthPage = () => {
   const navigate = useNavigate();
@@ -63,11 +64,11 @@ const PartnerAuthPage = () => {
 
       <div className="max-w-xl w-full bg-surface rounded-3xl p-8 space-y-6 shadow-2xl border border-border relative z-10 backdrop-blur-xl">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center text-gold mx-auto shadow-gold-glow">
-            <Store className="w-7 h-7" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <CinebookLogo size="lg" showWordmark={true} showTagline={true} />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-text-primary font-display">
+          <h1 className="text-xl sm:text-2xl font-black text-text-primary font-display">
             Exhibitor & Cinema Partner Portal
           </h1>
           <p className="text-xs text-text-muted">

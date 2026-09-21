@@ -18,6 +18,7 @@ import {
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useToast } from '../../context/ToastContext';
+import CinebookLogo from '../common/CinebookLogo';
 
 export const DigitalTicket = ({ booking }) => {
   const ticketRef = useRef(null);
@@ -82,13 +83,10 @@ export const DigitalTicket = ({ booking }) => {
         <div className="relative h-28 bg-gradient-to-r from-primary/25 via-amber-500/20 to-surface overflow-hidden p-6 flex items-end justify-between border-b border-border/40">
           <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent pointer-events-none" />
           
-          <div className="relative z-10 flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-            <span className="text-xs font-black uppercase tracking-widest text-emerald-400">
-              Verified Cinema E-Pass
+          <div className="relative z-10 flex items-center gap-3">
+            <CinebookLogo size="xs" showWordmark={true} isLink={false} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              Verified E-Pass
             </span>
           </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Film, Mail, Lock, KeyRound, ArrowLeft, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
 import { authApi } from '../../services/authApi';
+import CinebookLogo from '../../components/common/CinebookLogo';
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: Enter email, 2: Enter OTP & New Password
@@ -78,16 +79,16 @@ const ForgotPasswordPage = () => {
 
       <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-8 sm:p-10 shadow-2xl space-y-6 relative z-10 backdrop-blur-2xl">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-surface-elevated border border-border flex items-center justify-center mx-auto text-amber-500 shadow-lg">
-            <KeyRound className="w-7 h-7" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <CinebookLogo size="md" showWordmark={true} />
           </div>
-          <h1 className="text-2xl font-black text-text-primary tracking-tight font-sans">
+          <h1 className="text-xl sm:text-2xl font-black text-text-primary tracking-tight font-display">
             {step === 1 ? 'Reset Password' : 'Enter Verification Code'}
           </h1>
           <p className="text-xs text-text-muted">
             {step === 1
-              ? "Enter your registered email and we'll send a 6-digit reset code to your email"
+              ? "Enter your registered email and we'll send a 6-digit reset code"
               : `We sent a 6-digit verification code to ${email}`}
           </p>
         </div>

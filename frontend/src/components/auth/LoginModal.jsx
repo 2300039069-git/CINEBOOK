@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import CinebookLogo from '../common/CinebookLogo';
 
 export const LoginModal = ({ isOpen, onClose, onSuccess, initialMode = 'login', message }) => {
   const [mode, setMode] = useState(initialMode); // 'login' | 'register'
@@ -53,6 +54,10 @@ export const LoginModal = ({ isOpen, onClose, onSuccess, initialMode = 'login', 
           : 'Join CINEBOOK to unlock 1-click booking, seat locks, and movie passes')
       }
     >
+      <div className="flex justify-center pb-2">
+        <CinebookLogo size="sm" showWordmark={true} isLink={false} />
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {mode === 'register' && (
           <div>
