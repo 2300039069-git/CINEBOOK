@@ -244,93 +244,100 @@ const PartnerCounterPosPage = () => {
       setLockedSeatsSet(locked);
     }).catch(() => {});
 
-    // Supabase Realtime Channel
-    const channel = supabase
-      .channel(`realtime:counter:${selectedShow.id}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'seats' },
-        (payload) => {
-          if (!isMounted) return;
-          const updated = payload.new || payload.old;
-          if (!updated || (updated.show_id && updated.show_id !== selectedShow.id)) return;
-          const sId = updated.seat_id || (updated.id && updated.id.includes(':') ? updated.id.split(':')[1] : updated.id);
-          if (!sId) return;
+    // Supabase Realtime Channel (if valid anon key is provided)
+    let channel = null;
+    if (supabase) {
+      try {
+        channel = supabase
+          .channel(`realtime:counter:${selectedShow.id}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'seats' },
+            (payload) => {
+              if (!isMounted) return;
+              const updated = payload.new || payload.old;
+              if (!updated || (updated.show_id && updated.show_id !== selectedShow.id)) return;
+              const sId = updated.seat_id || (updated.id && updated.id.includes(':') ? updated.id.split(':')[1] : updated.id);
+              if (!sId) return;
 
-          if (updated.status === 'BOOKED') {
-            setBookedSeatsSet((prev) => new Set([...prev, sId]));
-            setLockedSeatsSet((prev) => {
-              const next = new Set(prev);
-              next.delete(sId);
-              return next;
-            });
-          } else if (updated.status === 'LOCKED') {
-            setLockedSeatsSet((prev) => new Set([...prev, sId]));
-          } else if (updated.status === 'AVAILABLE') {
-            setLockedSeatsSet((prev) => {
-              const next = new Set(prev);
-              next.delete(sId);
-              return next;
-            });
-            setBookedSeatsSet((prev) => {
-              const next = new Set(prev);
-              next.delete(sId);
-              return next;
-            });
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'seat_locks' },
-        (payload) => {
-          if (!isMounted) return;
-          const lock = payload.new || payload.old;
-          if (!lock || (lock.show_id && lock.show_id !== selectedShow.id)) return;
-          const sId = lock.seat_id;
-          if (!sId) return;
+              if (updated.status === 'BOOKED') {
+                setBookedSeatsSet((prev) => new Set([...prev, sId]));
+                setLockedSeatsSet((prev) => {
+                  const next = new Set(prev);
+                  next.delete(sId);
+                  return next;
+                });
+              } else if (updated.status === 'LOCKED') {
+                setLockedSeatsSet((prev) => new Set([...prev, sId]));
+              } else if (updated.status === 'AVAILABLE') {
+                setLockedSeatsSet((prev) => {
+                  const next = new Set(prev);
+                  next.delete(sId);
+                  return next;
+                });
+                setBookedSeatsSet((prev) => {
+                  const next = new Set(prev);
+                  next.delete(sId);
+                  return next;
+                });
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'seat_locks' },
+            (payload) => {
+              if (!isMounted) return;
+              const lock = payload.new || payload.old;
+              if (!lock || (lock.show_id && lock.show_id !== selectedShow.id)) return;
+              const sId = lock.seat_id;
+              if (!sId) return;
 
-          if (payload.eventType === 'DELETE') {
-            setLockedSeatsSet((prev) => {
-              const next = new Set(prev);
-              next.delete(sId);
-              return next;
-            });
-          } else if (lock.status === 'LOCKED') {
-            setLockedSeatsSet((prev) => new Set([...prev, sId]));
-          } else if (lock.status === 'BOOKED') {
-            setBookedSeatsSet((prev) => new Set([...prev, sId]));
-            setLockedSeatsSet((prev) => {
-              const next = new Set(prev);
-              next.delete(sId);
-              return next;
-            });
-          }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'booked_seats' },
-        (payload) => {
-          if (!isMounted) return;
-          const rec = payload.new;
-          if (!rec || (rec.show_id && rec.show_id !== selectedShow.id)) return;
-          const sId = rec.seat_id;
-          if (!sId) return;
+              if (payload.eventType === 'DELETE') {
+                setLockedSeatsSet((prev) => {
+                  const next = new Set(prev);
+                  next.delete(sId);
+                  return next;
+                });
+              } else if (lock.status === 'LOCKED') {
+                setLockedSeatsSet((prev) => new Set([...prev, sId]));
+              } else if (lock.status === 'BOOKED') {
+                setBookedSeatsSet((prev) => new Set([...prev, sId]));
+                setLockedSeatsSet((prev) => {
+                  const next = new Set(prev);
+                  next.delete(sId);
+                  return next;
+                });
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'booked_seats' },
+            (payload) => {
+              if (!isMounted) return;
+              const rec = payload.new;
+              if (!rec || (rec.show_id && rec.show_id !== selectedShow.id)) return;
+              const sId = rec.seat_id;
+              if (!sId) return;
 
-          setBookedSeatsSet((prev) => new Set([...prev, sId]));
-          setLockedSeatsSet((prev) => {
-            const next = new Set(prev);
-            next.delete(sId);
-            return next;
-          });
-        }
-      )
-      .subscribe();
+              setBookedSeatsSet((prev) => new Set([...prev, sId]));
+              setLockedSeatsSet((prev) => {
+                const next = new Set(prev);
+                next.delete(sId);
+                return next;
+              });
+            }
+          )
+          .subscribe();
+      } catch (e) {}
+    }
 
     return () => {
       isMounted = false;
-      supabase.removeChannel(channel);
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [selectedTheatre.id, selectedMovie.id, selectedShow.id, showDate]);
 

@@ -203,132 +203,139 @@ export const SeatSelectionPage = () => {
       }
     });
 
-    const channel = supabase
-      .channel(`realtime:seats:${show.id}`, {
-        config: { broadcast: { self: false } }
-      })
-      // 1. Ultra-fast WebSocket Realtime Broadcast (<50ms fraction-of-second sync)
-      .on('broadcast', { event: 'SEAT_LOCK_EVENT' }, (payload) => {
-        if (!isMounted) return;
-        const evt = payload?.payload;
-        if (!evt || (evt.showId && evt.showId !== show.id)) return;
+    let channel = null;
+    if (supabase) {
+      try {
+        channel = supabase
+          .channel(`realtime:seats:${show.id}`, {
+            config: { broadcast: { self: false } }
+          })
+          // 1. Ultra-fast WebSocket Realtime Broadcast (<50ms fraction-of-second sync)
+          .on('broadcast', { event: 'SEAT_LOCK_EVENT' }, (payload) => {
+            if (!isMounted) return;
+            const evt = payload?.payload;
+            if (!evt || (evt.showId && evt.showId !== show.id)) return;
 
-        const currentTabId = getTabId();
-        const currentToken = getTabLockToken();
-        if (evt.tabId === currentTabId || evt.lockToken === currentToken) return;
+            const currentTabId = getTabId();
+            const currentToken = getTabLockToken();
+            if (evt.tabId === currentTabId || evt.lockToken === currentToken) return;
 
-        if (evt.action === 'LOCK' && evt.seatId) {
-          setLiveStatuses((prev) => ({
-            ...prev,
-            [evt.seatId]: {
-              status: 'LOCKED',
-              isLockedByOtherTab: true,
-              isLockedByCurrentTab: false,
-              lockToken: evt.lockToken,
-              expiresAt: evt.expiresAt || (Date.now() + 8 * 60 * 1000)
+            if (evt.action === 'LOCK' && evt.seatId) {
+              setLiveStatuses((prev) => ({
+                ...prev,
+                [evt.seatId]: {
+                  status: 'LOCKED',
+                  isLockedByOtherTab: true,
+                  isLockedByCurrentTab: false,
+                  lockToken: evt.lockToken,
+                  expiresAt: evt.expiresAt || (Date.now() + 8 * 60 * 1000)
+                }
+              }));
+
+              const currentSelected = selectedSeatsRef.current || [];
+              if (currentSelected.some((s) => s.id === evt.seatId)) {
+                toast.conflict(`Seat ${evt.seatId} was just selected by another customer.`);
+                toggleSeatSelection({ id: evt.seatId }, currentShowKey, show.id);
+              }
+            } else if (evt.action === 'UNLOCK' && evt.seatId) {
+              seatLockManager.markSeatRecentlyReleased(currentShowKey, evt.seatId);
+              setLiveStatuses((prev) => ({
+                ...prev,
+                [evt.seatId]: {
+                  status: 'AVAILABLE',
+                  isLockedByOtherTab: false,
+                  isLockedByCurrentTab: false
+                }
+              }));
+            } else if (evt.action === 'RELEASE_ALL' || evt.action === 'RELEASE_SEATS') {
+              fetchLatestLayout();
+            } else if (evt.action === 'CONFIRM' || evt.action === 'BOOKED' || evt.action === 'BOOKED_CONFIRMED') {
+              const targetSeats = evt.seatIds || (evt.seatId ? [evt.seatId] : []);
+              setLiveStatuses((prev) => {
+                const next = { ...prev };
+                targetSeats.forEach((sId) => {
+                  next[sId] = {
+                    status: 'BOOKED',
+                    isLockedByOtherTab: false,
+                    isLockedByCurrentTab: false
+                  };
+                });
+                return next;
+              });
             }
-          }));
+          })
+          // 2. Database changes on 'seats' table
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'seats' },
+            (payload) => {
+              if (!isMounted) return;
+              const updatedSeat = payload.new || payload.old;
+              if (!updatedSeat || (updatedSeat.show_id && updatedSeat.show_id !== show.id)) return;
 
-          const currentSelected = selectedSeatsRef.current || [];
-          if (currentSelected.some((s) => s.id === evt.seatId)) {
-            toast.conflict(`Seat ${evt.seatId} was just selected by another customer.`);
-            toggleSeatSelection({ id: evt.seatId }, currentShowKey, show.id);
-          }
-        } else if (evt.action === 'UNLOCK' && evt.seatId) {
-          seatLockManager.markSeatRecentlyReleased(currentShowKey, evt.seatId);
-          setLiveStatuses((prev) => ({
-            ...prev,
-            [evt.seatId]: {
-              status: 'AVAILABLE',
-              isLockedByOtherTab: false,
-              isLockedByCurrentTab: false
+              const seatId = updatedSeat.seat_id || (updatedSeat.id && updatedSeat.id.includes(':') ? updatedSeat.id.split(':')[1] : updatedSeat.id);
+              if (!seatId) return;
+
+              const currentToken = getTabLockToken();
+              const isMine = updatedSeat.lock_token === currentToken || (updatedSeat.user_id && user && updatedSeat.user_id === user.id);
+              const isOtherLocked = !isMine && updatedSeat.status === 'LOCKED';
+
+              setLiveStatuses((prev) => ({
+                ...prev,
+                [seatId]: {
+                  status: updatedSeat.status === 'AVAILABLE' ? 'AVAILABLE' : (isMine ? 'AVAILABLE' : updatedSeat.status),
+                  isLockedByOtherTab: isOtherLocked,
+                  isLockedByCurrentTab: isMine,
+                  lockToken: updatedSeat.lock_token,
+                  expiresAt: updatedSeat.expires_at ? new Date(updatedSeat.expires_at).getTime() : Date.now() + 8 * 60 * 1000
+                }
+              }));
+
+              if (isOtherLocked || updatedSeat.status === 'BOOKED') {
+                const currentSelected = selectedSeatsRef.current || [];
+                if (currentSelected.some((s) => s.id === seatId)) {
+                  toast.conflict(`Seat ${seatId} was just reserved by another customer.`);
+                  toggleSeatSelection({ id: seatId }, currentShowKey, show.id);
+                }
+              }
             }
-          }));
-        } else if (evt.action === 'RELEASE_ALL' || evt.action === 'RELEASE_SEATS') {
-          fetchLatestLayout();
-        } else if (evt.action === 'CONFIRM' || evt.action === 'BOOKED' || evt.action === 'BOOKED_CONFIRMED') {
-          const targetSeats = evt.seatIds || (evt.seatId ? [evt.seatId] : []);
-          setLiveStatuses((prev) => {
-            const next = { ...prev };
-            targetSeats.forEach((sId) => {
-              next[sId] = {
-                status: 'BOOKED',
-                isLockedByOtherTab: false,
-                isLockedByCurrentTab: false
-              };
-            });
-            return next;
-          });
-        }
-      })
-      // 2. Database changes on 'seats' table
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'seats' },
-        (payload) => {
-          if (!isMounted) return;
-          const updatedSeat = payload.new || payload.old;
-          if (!updatedSeat || (updatedSeat.show_id && updatedSeat.show_id !== show.id)) return;
+          )
+          // 3. Database changes on 'seat_locks' table
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'seat_locks' },
+            (payload) => {
+              if (!isMounted) return;
+              const rec = payload.new || payload.old;
+              if (!rec || (rec.show_id && rec.show_id !== show.id)) return;
+              const seatId = rec.seat_id;
+              if (!seatId) return;
 
-          const seatId = updatedSeat.seat_id || (updatedSeat.id && updatedSeat.id.includes(':') ? updatedSeat.id.split(':')[1] : updatedSeat.id);
-          if (!seatId) return;
+              const currentToken = getTabLockToken();
+              const isMine = rec.lock_token === currentToken || (rec.user_id && user && rec.user_id === user.id);
+              const isLocked = payload.eventType !== 'DELETE' && rec.status === 'LOCKED' && !isMine;
 
-          const currentToken = getTabLockToken();
-          const isMine = updatedSeat.lock_token === currentToken || (updatedSeat.user_id && user && updatedSeat.user_id === user.id);
-          const isOtherLocked = !isMine && updatedSeat.status === 'LOCKED';
-
-          setLiveStatuses((prev) => ({
-            ...prev,
-            [seatId]: {
-              status: updatedSeat.status === 'AVAILABLE' ? 'AVAILABLE' : (isMine ? 'AVAILABLE' : updatedSeat.status),
-              isLockedByOtherTab: isOtherLocked,
-              isLockedByCurrentTab: isMine,
-              lockToken: updatedSeat.lock_token,
-              expiresAt: updatedSeat.expires_at ? new Date(updatedSeat.expires_at).getTime() : Date.now() + 8 * 60 * 1000
+              setLiveStatuses((prev) => ({
+                ...prev,
+                [seatId]: {
+                  status: isLocked ? 'LOCKED' : (rec.status === 'BOOKED' ? 'BOOKED' : 'AVAILABLE'),
+                  isLockedByOtherTab: isLocked,
+                  isLockedByCurrentTab: isMine
+                }
+              }));
             }
-          }));
-
-          if (isOtherLocked || updatedSeat.status === 'BOOKED') {
-            const currentSelected = selectedSeatsRef.current || [];
-            if (currentSelected.some((s) => s.id === seatId)) {
-              toast.conflict(`Seat ${seatId} was just reserved by another customer.`);
-              toggleSeatSelection({ id: seatId }, currentShowKey, show.id);
-            }
-          }
-        }
-      )
-      // 3. Database changes on 'seat_locks' table
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'seat_locks' },
-        (payload) => {
-          if (!isMounted) return;
-          const rec = payload.new || payload.old;
-          if (!rec || (rec.show_id && rec.show_id !== show.id)) return;
-          const seatId = rec.seat_id;
-          if (!seatId) return;
-
-          const currentToken = getTabLockToken();
-          const isMine = rec.lock_token === currentToken || (rec.user_id && user && rec.user_id === user.id);
-          const isLocked = payload.eventType !== 'DELETE' && rec.status === 'LOCKED' && !isMine;
-
-          setLiveStatuses((prev) => ({
-            ...prev,
-            [seatId]: {
-              status: isLocked ? 'LOCKED' : (rec.status === 'BOOKED' ? 'BOOKED' : 'AVAILABLE'),
-              isLockedByOtherTab: isLocked,
-              isLockedByCurrentTab: isMine
-            }
-          }));
-        }
-      )
-      .subscribe();
+          )
+          .subscribe();
+      } catch (e) {}
+    }
 
     return () => {
       isMounted = false;
       clearInterval(pollTimer);
       unsubscribe();
-      supabase.removeChannel(channel);
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [show.id, currentShowKey]);
 
