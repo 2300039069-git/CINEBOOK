@@ -412,16 +412,16 @@ export const SeatSelectionPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white pt-24 pb-36 transition-colors">
+    <div className="min-h-screen bg-[#0B0A14] text-white pt-24 pb-36 transition-colors select-none">
       
       {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-16 sm:top-20 z-30 bg-[#121824]/95 backdrop-blur-2xl border-b border-[#E5A93C]/20 py-3.5 px-4 sm:px-6 lg:px-8 shadow-xl">
+      <div className="sticky top-16 sm:top-20 z-30 bg-[#120F24]/95 backdrop-blur-2xl border-b border-[#E5A93C]/30 py-3.5 px-4 sm:px-6 lg:px-8 shadow-xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="p-2.5 rounded-2xl bg-[#1A2234] hover:bg-[#222C42] text-white border border-[#E5A93C]/20 transition-colors cursor-pointer"
+              className="p-2.5 rounded-xl bg-[#1A1633] hover:bg-[#231E44] text-white border border-[#E5A93C]/30 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -430,7 +430,7 @@ export const SeatSelectionPage = () => {
                 <h1 className="text-base sm:text-lg font-black text-white leading-none font-display">
                   {movie.title}
                 </h1>
-                <span className="px-2 py-0.5 rounded-full bg-[#1A2234] text-[#FFD066] text-[10px] font-bold border border-[#E5A93C]/30">
+                <span className="px-2 py-0.5 rounded-full bg-[#1A1633] text-[#FFD066] text-[10px] font-bold border border-[#E5A93C]/35">
                   {movie.censorRating || 'UA 16+'}
                 </span>
               </div>
@@ -441,16 +441,16 @@ export const SeatSelectionPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#1A2234] border border-[#E5A93C]/20 text-white">
-              <Calendar className="w-3.5 h-3.5 text-[#E5A93C]" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A1633] border border-[#E5A93C]/30 text-white">
+              <Calendar className="w-3.5 h-3.5 text-[#FFD066]" />
               <span className="font-bold">{formattedDateStr}</span>
             </div>
 
             {/* 8-Minute Countdown Timer Widget */}
-            <div className={`px-3.5 py-1.5 rounded-2xl flex items-center gap-2 border transition-all ${
+            <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
               secondsLeft < 120
                 ? 'bg-rose-500/20 border-rose-500 text-rose-400 animate-pulse'
-                : 'bg-[#1A2234] border-[#E5A93C]/40 text-[#FFD066]'
+                : 'bg-[#1A1633] border-[#E5A93C]/40 text-[#FFE29A]'
             }`}>
               <Clock className="w-4 h-4" />
               <div className="leading-tight">
@@ -465,18 +465,18 @@ export const SeatSelectionPage = () => {
       {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
       {selectedSeats.length > 0 && (
         <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3.5 rounded-3xl bg-[#121824]/90 border border-[#E5A93C]/30 shadow-[0_0_15px_rgba(229,169,60,0.2)] flex items-center justify-between gap-3 animate-fade-in">
+          <div className="p-3.5 rounded-2xl bg-[#120F24]/90 border border-[#E5A93C]/40 shadow-[0_0_15px_rgba(229,169,60,0.25)] flex items-center justify-between gap-3 animate-fade-in">
             <div className="flex items-center gap-2.5 text-xs text-slate-300">
               <Sparkles className="w-4 h-4 text-[#FFD066] shrink-0" />
               <span>
-                <strong className="text-white">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-[#FFD066] font-black">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-[#FFD066]">{formatTime(secondsLeft)}</strong>.
+                <strong className="text-white">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-[#FFE29A] font-black">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-[#FFD066]">{formatTime(secondsLeft)}</strong>.
               </span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3. MAIN CINEMA SEAT MATRIX CONTAINER */}
+      {/* 3. MAIN CINEMA SEAT MATRIX CONTAINER (SCREEN 3) */}
       <div className="max-w-5xl mx-auto px-4 pt-6">
         <SeatGrid
           seatLayout={dynamicLayout}
@@ -485,50 +485,42 @@ export const SeatSelectionPage = () => {
         />
       </div>
 
-      {/* 4. STICKY FLOATING BOTTOM BOOKING SUMMARY DECK */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0B0E14]/95 backdrop-blur-2xl border-t border-[#E5A93C]/25 py-4 px-4 sm:px-6 lg:px-8 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* Selected Seats summary (Ticket Count + Seat List) */}
+      {/* 4. PERSISTENT CHECKOUT FOOTER (Art-Deco Dynamic Summary & Metallic Gold Button) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0B0A14]/95 backdrop-blur-2xl border-t border-[#E5A93C]/35 py-4 px-4 sm:px-6 lg:px-8 shadow-[0_-10px_35px_rgba(0,0,0,0.9)]">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          
+          {/* Dynamic ticket count & summary text */}
           <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-2xl bg-[#E5A93C]/10 text-[#FFD066] border border-[#E5A93C]/30 hidden sm:block">
+            <div className="p-3 rounded-xl bg-[#E5A93C]/10 text-[#FFD066] border border-[#E5A93C]/40 hidden sm:block">
               <Ticket className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="px-2.5 py-0.5 rounded-md bg-[#E5A93C]/15 border border-[#E5A93C]/30 text-[#FFD066] font-black uppercase text-[11px]">
-                  {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''}
-                </span>
-                <span className="text-slate-400 font-bold">Seats:</span>
+              <div className="text-xs sm:text-sm font-black text-white">
                 {selectedSeats.length > 0 ? (
-                  <span className="font-black bg-[#1A2234] px-3 py-0.5 rounded-full border border-[#E5A93C]/40 text-[#FFD066] shadow-[0_0_10px_rgba(229,169,60,0.25)]">
-                    {selectedSeats.map((s) => s.id).join(', ')}
+                  <span>
+                    View {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id).join(', ')}) for {movie.title.length > 18 ? movie.title.substring(0, 18) + '...' : movie.title}
                   </span>
                 ) : (
-                  <span className="text-slate-500 italic">Click on seat layout above</span>
+                  <span className="text-slate-400 italic">Select seats on layout above</span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Base Ticket(s): <strong className="text-white">₹{Number(baseAmount || 0).toFixed(2)}</strong> + Handling Fee: <strong className="text-white">₹{Number(convenienceFee || 0).toFixed(2)}</strong>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Total Price: <strong className="text-[#FFE29A]">₹{Number(totalAmount || 0).toFixed(2)}</strong> (Incl. handling & taxes)
               </p>
             </div>
           </div>
 
-          {/* Action Total and Glowing "Confirm & Pay" Button */}
-          <div className="flex items-center justify-between sm:justify-end gap-6">
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-black text-slate-400 block tracking-wider">Total Payable (All Incl.)</span>
-              <span className="text-xl sm:text-2xl font-black text-[#FFD066] font-mono">₹{Number(totalAmount || 0).toFixed(2)}</span>
-            </div>
-
+          {/* Full-width metallic gold gradient button */}
+          <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`gold-glow-btn px-8 py-3.5 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
+              className={`art-deco-gold-btn px-8 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_18px_rgba(229,169,60,0.45)] w-full sm:w-auto ${
                 selectedSeats.length === 0 ? 'opacity-40 cursor-not-allowed filter grayscale pointer-events-none' : ''
               }`}
             >
-              <span>Confirm & Pay</span>
+              <span>Confirm & Pay ₹{Number(totalAmount || 0).toFixed(2)}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

@@ -1,59 +1,66 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
   darkMode: 'class',
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        background: '#0B0E14',
-        surface: '#121824',
-        'surface-elevated': '#1A2234',
-        'surface-hover': '#222C42',
-        'surface-subtle': '#0E131D',
-        'surface-card': '#121824',
-        border: 'rgba(229, 169, 60, 0.2)',
-        'border-subtle': 'rgba(229, 169, 60, 0.1)',
-        'border-gold': 'rgba(229, 169, 60, 0.35)',
-        accent: {
-          DEFAULT: '#E5A93C',
-          hover: '#FFD066',
-          subtle: 'rgba(229, 169, 60, 0.15)',
+        background: '#0B0A14',
+        surface: {
+          DEFAULT: '#120F24',
+          elevated: '#1A1633',
+          hover: '#231E44',
+          subtle: '#0E0C1B'
         },
-        primary: {
-          DEFAULT: '#E5A93C',
-          hover: '#FFD066',
-          subtle: 'rgba(229, 169, 60, 0.15)',
-          glow: 'rgba(229, 169, 60, 0.45)',
+        obsidian: {
+          950: '#07060D',
+          900: '#0B0A14',
+          800: '#120F24',
+          700: '#1A1633',
+          600: '#231E44'
         },
         gold: {
           DEFAULT: '#E5A93C',
           bright: '#FFD066',
-          hover: '#FFD066',
-          subtle: 'rgba(229, 169, 60, 0.15)',
-          glow: 'rgba(229, 169, 60, 0.45)',
+          light: '#FFE29A',
+          dark: '#B37D22'
         },
-        'text-primary': '#FFFFFF',
-        'text-secondary': '#94A3B8',
-        'text-muted': '#64748B',
-      },
-      boxShadow: {
-        'gold-glow': '0 0 15px rgba(229, 169, 60, 0.45)',
-        'gold-glow-lg': '0 0 25px rgba(229, 169, 60, 0.55)',
-        'cine-glow': '0 0 15px rgba(229, 169, 60, 0.45)',
-        'surface-card': '0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(229, 169, 60, 0.2)',
-        'surface-hover': '0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(229, 169, 60, 0.35)',
-      },
-      borderRadius: {
-        'xl': '0.875rem',
-        '2xl': '1.25rem',
-        '3xl': '1.75rem',
-        '4xl': '2.25rem',
+        primary: {
+          DEFAULT: '#E5A93C',
+          hover: '#FFD066',
+          active: '#FFE29A',
+          light: '#FFE29A',
+          dark: '#B37D22',
+        },
+        accent: {
+          DEFAULT: '#FFD066',
+          hover: '#FFE29A',
+          gold: '#E5A93C'
+        },
+        text: {
+          primary: '#FFFFFF',
+          secondary: '#A5A1BE',
+          muted: '#6E688E'
+        },
+        border: {
+          DEFAULT: 'rgba(229, 169, 60, 0.3)',
+          subtle: 'rgba(229, 169, 60, 0.15)',
+          hover: '#FFD066'
+        }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        display: ['Cinzel', 'Plus Jakarta Sans', 'serif'],
       },
+      boxShadow: {
+        'gold-glow': '0 0 15px rgba(229, 169, 60, 0.4)',
+        'gold-glow-lg': '0 0 25px rgba(229, 169, 60, 0.6)',
+        'screen-glow': '0 12px 30px 4px rgba(180, 210, 255, 0.45)',
+      }
     },
   },
   plugins: [],
-};
+}

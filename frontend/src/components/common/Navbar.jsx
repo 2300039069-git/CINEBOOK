@@ -45,7 +45,6 @@ export const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menus on route change
   useEffect(() => {
     setIsUserMenuOpen(false);
     setIsMobileMenuOpen(false);
@@ -61,30 +60,29 @@ export const Navbar = () => {
 
   return (
     <>
-      {/* 1. LUXURY OBSIDIAN & NEON GOLD HEADER */}
+      {/* 1. ART-DECO MIDNIGHT OBSIDIAN & NEON GOLD HEADER */}
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
-            ? 'py-3 bg-[#0B0E14]/90 backdrop-blur-2xl border-b border-[#E5A93C]/25 shadow-[0_10px_35px_rgba(0,0,0,0.8)]'
-            : 'py-4 bg-[#0B0E14]/70 backdrop-blur-xl border-b border-[#E5A93C]/15'
+            ? 'py-3 bg-[#0B0A14]/92 backdrop-blur-2xl border-b border-[#E5A93C]/30 shadow-[0_10px_35px_rgba(0,0,0,0.9)]'
+            : 'py-4 bg-[#0B0A14]/75 backdrop-blur-xl border-b border-[#E5A93C]/20'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4">
             
-            {/* Left: Brand Identity & City Picker */}
+            {/* Left: Gold Film-strip Logo "Cinebook" & City Selector */}
             <div className="flex items-center gap-6">
-              {/* Brand Logo */}
               <Link to="/" className="flex items-center gap-2.5 group select-none">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E5A93C] to-[#FFD066] flex items-center justify-center text-[#0B0E14] shadow-[0_0_15px_rgba(229,169,60,0.45)] group-hover:scale-105 transition-transform duration-300">
-                  <Film className="w-5 h-5 text-[#0B0E14] transform group-hover:rotate-12 transition-transform duration-300" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E5A93C] via-[#FFD066] to-[#FFE29A] flex items-center justify-center text-[#0B0A14] shadow-[0_0_15px_rgba(229,169,60,0.5)] group-hover:scale-105 transition-transform duration-300 border border-[#FFE29A]/50">
+                  <Film className="w-5 h-5 text-[#0B0A14] transform group-hover:rotate-12 transition-transform duration-300" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xl font-black tracking-tight font-display text-white leading-none">
-                    CINE<span className="text-[#FFD066] text-shadow-[0_0_10px_rgba(229,169,60,0.6)]">BOOK</span>
+                    Cine<span className="text-[#FFD066] drop-shadow-[0_0_8px_rgba(229,169,60,0.6)]">book</span>
                   </span>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#E5A93C] mt-0.5">
-                    Premium Cinema Pass
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#E5A93C] mt-0.5 font-sans">
+                    Luxury Cinema
                   </span>
                 </div>
               </Link>
@@ -93,16 +91,16 @@ export const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setIsCityModalOpen(true)}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#121824] hover:bg-[#1A2234] border border-[#E5A93C]/25 text-xs font-bold text-white transition-all cursor-pointer shadow-xs hover:border-[#E5A93C]/60 group"
+                className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#120F24] hover:bg-[#1A1633] border border-[#E5A93C]/30 text-xs font-bold text-white transition-all cursor-pointer shadow-xs hover:border-[#FFD066] group"
               >
-                <MapPin className="w-3.5 h-3.5 text-[#E5A93C] group-hover:scale-110 transition-transform" />
+                <MapPin className="w-3.5 h-3.5 text-[#FFD066] group-hover:scale-110 transition-transform" />
                 <span>{selectedCity?.name || 'Guntur'}</span>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
               </button>
             </div>
 
             {/* Center: Desktop Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 p-1 bg-[#121824]/80 border border-[#E5A93C]/20 rounded-2xl backdrop-blur-md">
+            <nav className="hidden lg:flex items-center gap-1 p-1 bg-[#120F24]/85 border border-[#E5A93C]/25 rounded-2xl backdrop-blur-md">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -115,15 +113,15 @@ export const Navbar = () => {
                     to={link.path}
                     className={`relative flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#E5A93C] to-[#FFD066] text-[#0B0E14] shadow-[0_0_15px_rgba(229,169,60,0.5)] font-black'
-                        : 'text-slate-300 hover:text-white hover:bg-[#1A2234]'
+                        ? 'art-deco-gold-btn text-[#0B0A14] shadow-[0_0_15px_rgba(229,169,60,0.45)] font-black'
+                        : 'text-slate-300 hover:text-white hover:bg-[#1A1633]'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     <span>{link.label}</span>
                     {link.badge && (
                       <span className={`px-1.5 py-0.2 rounded-md text-[9px] font-extrabold uppercase ${
-                        isActive ? 'bg-[#0B0E14]/20 text-[#0B0E14]' : 'bg-[#E5A93C]/20 text-[#FFD066]'
+                        isActive ? 'bg-[#0B0A14]/20 text-[#0B0A14]' : 'bg-[#E5A93C]/20 text-[#FFD066]'
                       }`}>
                         {link.badge}
                       </span>
@@ -135,16 +133,16 @@ export const Navbar = () => {
 
             {/* Right: Actions (Search, Theme Toggle, Auth) */}
             <div className="flex items-center gap-2.5">
-              {/* Search Modal Trigger with Glowing Golden Frame */}
+              {/* Search Modal Trigger with Art-Deco Frame */}
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#121824] hover:bg-[#1A2234] border border-[#E5A93C]/40 text-xs font-medium text-slate-300 hover:text-white transition-all cursor-pointer shadow-[0_0_10px_rgba(229,169,60,0.15)] hover:shadow-[0_0_15px_rgba(229,169,60,0.35)]"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#120F24] hover:bg-[#1A1633] border border-[#E5A93C]/40 text-xs font-medium text-slate-300 hover:text-white transition-all cursor-pointer shadow-[0_0_10px_rgba(229,169,60,0.2)] hover:shadow-[0_0_15px_rgba(229,169,60,0.4)]"
                 title="Search movies, cast, cinemas (Cmd+K / Ctrl+K)"
               >
                 <Search className="w-4 h-4 text-[#FFD066]" />
                 <span className="hidden sm:inline text-xs font-semibold">Search movies...</span>
-                <kbd className="hidden sm:inline px-1.5 py-0.5 rounded bg-[#0B0E14] border border-[#E5A93C]/30 text-[9px] font-mono text-[#FFD066]">
+                <kbd className="hidden sm:inline px-1.5 py-0.5 rounded bg-[#0B0A14] border border-[#E5A93C]/30 text-[9px] font-mono text-[#FFD066]">
                   ⌘K
                 </kbd>
               </button>
@@ -153,7 +151,7 @@ export const Navbar = () => {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="p-2.5 rounded-xl bg-[#121824] hover:bg-[#1A2234] border border-[#E5A93C]/25 text-slate-300 hover:text-white transition-all cursor-pointer shadow-xs"
+                className="p-2.5 rounded-xl bg-[#120F24] hover:bg-[#1A1633] border border-[#E5A93C]/30 text-slate-300 hover:text-white transition-all cursor-pointer shadow-xs"
                 title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
                 aria-label="Toggle Theme"
               >
@@ -170,9 +168,9 @@ export const Navbar = () => {
                   <button
                     type="button"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-[#121824] hover:bg-[#1A2234] border border-[#E5A93C]/30 transition-all cursor-pointer shadow-[0_0_10px_rgba(229,169,60,0.2)]"
+                    className="flex items-center gap-2 p-1.5 pr-3 rounded-xl bg-[#120F24] hover:bg-[#1A1633] border border-[#E5A93C]/40 transition-all cursor-pointer shadow-[0_0_12px_rgba(229,169,60,0.25)]"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#E5A93C] to-[#FFD066] flex items-center justify-center text-[#0B0E14] text-xs font-black shadow-xs">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#E5A93C] to-[#FFD066] flex items-center justify-center text-[#0B0A14] text-xs font-black shadow-xs">
                       {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <span className="text-xs font-bold text-white hidden sm:inline max-w-[90px] truncate">
@@ -183,7 +181,7 @@ export const Navbar = () => {
 
                   {/* Dropdown Menu */}
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#121824] border border-[#E5A93C]/30 shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl">
+                    <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-[#120F24] border border-[#E5A93C]/40 shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150 backdrop-blur-2xl">
                       <div className="px-3 py-2 border-b border-[#E5A93C]/20">
                         <p className="text-xs font-bold text-white truncate">{user.name}</p>
                         <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
@@ -194,15 +192,15 @@ export const Navbar = () => {
 
                       <Link
                         to="/dashboard"
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A2234] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A1633] transition-colors"
                       >
-                        <User className="w-4 h-4 text-[#E5A93C]" />
+                        <User className="w-4 h-4 text-[#FFD066]" />
                         <span>Profile Dashboard</span>
                       </Link>
 
                       <Link
                         to="/my-bookings"
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A2234] transition-colors"
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A1633] transition-colors"
                       >
                         <Ticket className="w-4 h-4 text-[#FFD066]" />
                         <span>My E-Tickets & Passes</span>
@@ -211,7 +209,7 @@ export const Navbar = () => {
                       {isTheatreAdmin && (
                         <Link
                           to="/partner"
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A2234] transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A1633] transition-colors"
                         >
                           <Store className="w-4 h-4 text-[#FFD066]" />
                           <span>Exhibitor Portal</span>
@@ -221,7 +219,7 @@ export const Navbar = () => {
                       {isSuperAdmin && (
                         <Link
                           to="/admin"
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A2234] transition-colors"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#1A1633] transition-colors"
                         >
                           <Shield className="w-4 h-4 text-rose-400" />
                           <span>Super Admin</span>
@@ -247,7 +245,7 @@ export const Navbar = () => {
               ) : (
                 <Link
                   to="/login"
-                  className="gold-glow-btn px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5"
+                  className="art-deco-gold-btn px-4 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5"
                 >
                   <User className="w-3.5 h-3.5" />
                   <span>Sign In</span>
@@ -258,7 +256,7 @@ export const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-xl bg-[#121824] border border-[#E5A93C]/25 text-slate-300 hover:text-white"
+                className="lg:hidden p-2 rounded-xl bg-[#120F24] border border-[#E5A93C]/30 text-slate-300 hover:text-white"
                 aria-label="Toggle Navigation Menu"
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 text-[#FFD066]" />}
@@ -269,17 +267,17 @@ export const Navbar = () => {
 
         {/* Mobile Navigation Dropdown */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#E5A93C]/20 bg-[#121824] px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden border-t border-[#E5A93C]/20 bg-[#120F24] px-4 py-4 space-y-2 animate-in slide-in-from-top-2 duration-200">
             <button
               type="button"
               onClick={() => {
                 setIsCityModalOpen(true);
                 setIsMobileMenuOpen(false);
               }}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-[#1A2234] border border-[#E5A93C]/25 text-xs font-bold text-white"
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-[#1A1633] border border-[#E5A93C]/30 text-xs font-bold text-white"
             >
               <span className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#E5A93C]" />
+                <MapPin className="w-4 h-4 text-[#FFD066]" />
                 <span>City: {selectedCity?.name}</span>
               </span>
               <span className="text-[10px] text-[#FFD066] uppercase font-black">Change</span>
@@ -291,7 +289,7 @@ export const Navbar = () => {
                 <Link
                   key={link.label}
                   to={link.path}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[#1A2234] text-xs font-bold text-white transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[#1A1633] text-xs font-bold text-white transition-colors"
                 >
                   <span className="flex items-center gap-2.5">
                     <Icon className="w-4 h-4 text-[#FFD066]" />
