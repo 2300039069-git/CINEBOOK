@@ -426,7 +426,7 @@ export const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-background text-text-primary pt-28 pb-20 px-4 sm:px-6 lg:px-8 transition-colors">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6">
         
         <button
           onClick={() => navigate(-1)}

@@ -116,7 +116,7 @@ const BookingConfirmationPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-background text-text-primary transition-colors">
+    <div className="min-h-screen pt-28 pb-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-background text-text-primary transition-colors">
       {/* 1. CELEBRATION HERO BANNER (Hidden in Print) */}
       <div className="text-center space-y-3 animate-fade-in no-print">
         <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">

@@ -24,7 +24,7 @@ export const BottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.6)] py-2.5 px-6 pointer-events-auto select-none">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.6)] py-2.5 px-6 pointer-events-auto select-none">
       <nav className="max-w-md mx-auto flex items-center justify-between">
         {navItems.map((item) => {
           const Icon = item.icon;

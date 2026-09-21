@@ -35,7 +35,7 @@ const CustomerDashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in text-text-primary transition-colors">
+    <div className="min-h-screen pt-28 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in text-text-primary transition-colors">
       {/* 1. VIP User Welcome Card */}
       <div className="p-8 rounded-3xl bg-surface border border-border relative overflow-hidden shadow-2xl backdrop-blur-xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />

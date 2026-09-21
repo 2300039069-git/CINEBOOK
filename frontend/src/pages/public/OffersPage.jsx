@@ -108,7 +108,7 @@ const OffersPage = () => {
   return (
     <div className="min-h-screen bg-background text-text-primary pb-24 transition-colors">
       {/* 1. HERO HEADER BILLBOARD */}
-      <div className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-surface-elevated/40 to-transparent border-b border-border py-12 sm:py-16">
+      <div className="relative overflow-hidden bg-gradient-to-b from-primary/15 via-surface-elevated/40 to-transparent border-b border-border pt-28 pb-12 sm:pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
             <Sparkles className="w-3.5 h-3.5" />

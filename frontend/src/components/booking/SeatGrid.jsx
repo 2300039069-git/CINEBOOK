@@ -6,76 +6,82 @@ export const SeatGrid = ({
   onToggleSeat
 }) => {
   // Column numbers for the header/footer row matching mockup
-  const colNumbers = [1, 2, 3, 4, 5, 10, 12, 14, 16, 20];
+  const colNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-[#171b34] text-white p-3 sm:p-5 space-y-5 select-none">
+    <div className="w-full bg-[#1e2348] border border-white/10 rounded-3xl p-4 sm:p-8 space-y-6 select-none shadow-2xl">
       
       {/* 1. PURPLE TO GOLD GRADIENT HEADER BANNER (Screen 3 Mockup) */}
-      <div className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#7c5cc4] via-[#9e743a] to-[#e0b45c] text-center shadow-lg">
-        <h2 className="text-sm sm:text-base font-bold text-white tracking-wide font-display drop-shadow-md">
-          Screen 5, Grand Cinema Complex
+      <div className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#7c5cc4] via-[#9e743a] to-[#e0b45c] text-center shadow-lg">
+        <h2 className="text-sm sm:text-base md:text-lg font-bold text-white tracking-wide font-display drop-shadow-md">
+          Screen 5, Grand Cinema Complex • 4K Laser Dolby Atmos
         </h2>
       </div>
 
       {/* 2. EXACT 3-STATE LEGEND (Available, Selected, Sold) */}
-      <div className="flex items-center justify-center gap-6 sm:gap-8 text-xs text-[#a8adc9] pt-1">
+      <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-[#a8adc9] pt-1">
         {/* Available: #4a4f74 square */}
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-3.5 rounded-sm bg-[#4a4f74] border border-white/10" />
+          <span className="w-4 h-4 rounded-md bg-[#4a4f74] border border-white/10" />
           <span>Available</span>
         </div>
 
         {/* Selected: #e0b45c gold square */}
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-3.5 rounded-sm bg-[#e0b45c] shadow-[0_0_8px_rgba(224,180,92,0.8)]" />
-          <span className="text-white font-medium">Selected</span>
+          <span className="w-4 h-4 rounded-md bg-[#e0b45c] shadow-[0_0_10px_rgba(224,180,92,0.8)]" />
+          <span className="text-white font-bold">Selected</span>
         </div>
 
         {/* Sold: #33374f with ✕ mark */}
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-3.5 rounded-sm bg-[#33374f] text-[9px] text-[#6b7094] flex items-center justify-center font-bold">
+          <span className="w-4 h-4 rounded-md bg-[#33374f] text-[10px] text-[#6b7094] flex items-center justify-center font-bold">
             ✕
           </span>
-          <span>Sold</span>
+          <span>Sold Out</span>
         </div>
       </div>
 
       {/* 3. CURVED "SCREEN" ARC GRAPHIC (Screen 3 Mockup) */}
-      <div className="text-center space-y-1.5 pt-2">
-        <div className="relative mx-auto max-w-sm px-4">
-          <div className="w-full h-2.5 bg-gradient-to-r from-transparent via-[#7c5cc4]/80 to-transparent rounded-full blur-[0.5px]" />
-          <div className="w-3/4 mx-auto h-1.5 bg-[#a8adc9]/40 rounded-full mt-0.5" />
+      <div className="text-center space-y-2 pt-2">
+        <div className="relative mx-auto max-w-lg px-6">
+          <div className="w-full h-3 bg-gradient-to-r from-transparent via-[#7c5cc4] to-transparent rounded-full blur-[1px]" />
+          <div className="w-4/5 mx-auto h-1.5 bg-[#a8adc9]/50 rounded-full mt-0.5 shadow-[0_0_15px_rgba(124,92,196,0.8)]" />
         </div>
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#a8adc9] block">
-          Screen
+        <span className="text-[11px] font-bold uppercase tracking-widest text-[#a8adc9] block">
+          All Eyes This Way • Cinema Screen
         </span>
       </div>
 
       {/* 4. SEAT MAP GRID */}
-      <div className="overflow-x-auto pb-2">
-        <div className="min-w-[320px] max-w-md mx-auto space-y-2">
+      <div className="overflow-x-auto pb-4 pt-2">
+        <div className="min-w-[420px] max-w-2xl mx-auto space-y-2.5">
           
           {/* Top Column Numbers */}
           <div className="flex items-center justify-center gap-2 px-6 text-[10px] text-[#6b7094] font-semibold">
-            <span className="w-4 text-center" />
+            <span className="w-6 text-center" />
             <div className="flex items-center justify-between flex-1 px-1">
               {colNumbers.map((num) => (
-                <span key={num} className="w-5 text-center">{num}</span>
+                <span key={num} className="w-6 text-center">{num}</span>
               ))}
             </div>
-            <span className="w-4 text-center" />
+            <span className="w-6 text-center" />
           </div>
 
           {/* Rows */}
           {seatLayout.map((tier) => (
-            <div key={tier.name} className="space-y-1.5">
+            <div key={tier.name} className="space-y-2">
+              {tier.name && (
+                <div className="pt-2 pb-1 flex items-center justify-between border-b border-white/5 text-[10px] uppercase font-bold text-[#e0b45c] tracking-wider px-2">
+                  <span>{tier.name}</span>
+                  <span>₹{tier.price || 150}</span>
+                </div>
+              )}
               {tier.rows.map((row) => {
                 const letter = row.rowLetter || row.row_letter;
                 return (
                   <div key={letter} className="flex items-center justify-center gap-2">
                     {/* Left Row Letter */}
-                    <span className="w-4 text-center text-xs font-semibold text-[#6b7094]">
+                    <span className="w-6 text-center text-xs font-bold text-[#6b7094]">
                       {letter}
                     </span>
 
@@ -92,7 +98,7 @@ export const SeatGrid = ({
                             <button
                               key={seat.id}
                               disabled
-                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#33374f] text-[#6b7094] flex items-center justify-center text-[10px] font-bold cursor-not-allowed"
+                              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#33374f] text-[#6b7094] flex items-center justify-center text-[10px] font-bold cursor-not-allowed"
                             >
                               ✕
                             </button>
@@ -105,7 +111,7 @@ export const SeatGrid = ({
                               key={seat.id}
                               type="button"
                               onClick={() => onToggleSeat(seat)}
-                              className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#e0b45c] text-[#171b34] font-black text-[9px] sm:text-[10px] flex items-center justify-center shadow-[0_0_12px_rgba(224,180,92,0.7)] cursor-pointer scale-105"
+                              className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#e0b45c] text-[#171b34] font-black text-[10px] sm:text-[11px] flex items-center justify-center shadow-[0_0_12px_rgba(224,180,92,0.8)] cursor-pointer scale-110 transition-transform"
                             >
                               {seat.id.replace(/^[A-Z]+/, '') || seat.number}
                             </button>
@@ -117,7 +123,7 @@ export const SeatGrid = ({
                             key={seat.id}
                             type="button"
                             onClick={() => onToggleSeat(seat)}
-                            className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#4a4f74] hover:bg-[#5c6391] border border-white/10 text-transparent hover:text-white/80 text-[8px] flex items-center justify-center transition-colors cursor-pointer"
+                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-[#4a4f74] hover:bg-[#5c6391] border border-white/10 text-transparent hover:text-white text-[9px] flex items-center justify-center transition-colors cursor-pointer"
                           >
                             {seat.number}
                           </button>
@@ -126,7 +132,7 @@ export const SeatGrid = ({
                     </div>
 
                     {/* Right Row Letter */}
-                    <span className="w-4 text-center text-xs font-semibold text-[#6b7094]">
+                    <span className="w-6 text-center text-xs font-bold text-[#6b7094]">
                       {letter}
                     </span>
                   </div>
@@ -136,14 +142,14 @@ export const SeatGrid = ({
           ))}
 
           {/* Bottom Column Numbers */}
-          <div className="flex items-center justify-center gap-2 px-6 text-[10px] text-[#6b7094] font-semibold pt-1">
-            <span className="w-4 text-center" />
+          <div className="flex items-center justify-center gap-2 px-6 text-[10px] text-[#6b7094] font-semibold pt-2">
+            <span className="w-6 text-center" />
             <div className="flex items-center justify-between flex-1 px-1">
               {colNumbers.map((num) => (
-                <span key={num} className="w-5 text-center">{num}</span>
+                <span key={num} className="w-6 text-center">{num}</span>
               ))}
             </div>
-            <span className="w-4 text-center" />
+            <span className="w-6 text-center" />
           </div>
         </div>
       </div>

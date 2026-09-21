@@ -202,11 +202,11 @@ export const MoviesPage = () => {
             </div>
 
             {/* Right Movie List Area */}
-            <div className="lg:col-span-3 space-y-3">
+            <div className="lg:col-span-3">
               {filteredMovies.length > 0 ? (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {filteredMovies.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} />
+                    <MovieCard key={movie.id} movie={movie} variant="grid" />
                   ))}
                 </div>
               ) : (

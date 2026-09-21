@@ -6,7 +6,11 @@ import {
   ChevronRight,
   ShieldCheck,
   Calendar,
-  Clock
+  Clock,
+  Ticket,
+  Sparkles,
+  MapPin,
+  Volume2
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
@@ -66,7 +70,7 @@ export const SeatSelectionPage = () => {
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: timeStr,
-        price: { BALCONY: 14, SECOND_CLASS: 14 },
+        price: { BALCONY: 150, SECOND_CLASS: 100 },
         availability: 'AVAILABLE'
       };
     }
@@ -141,7 +145,7 @@ export const SeatSelectionPage = () => {
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
-      toast.warning('Please select at least 1 seat to continue.', 'Selection Required');
+      toast.warning('Please select at least 1 seat on the layout to proceed.', 'Selection Required');
       return;
     }
 
@@ -170,90 +174,208 @@ export const SeatSelectionPage = () => {
   };
 
   const handleReshuffle = () => {
-    // Quick toggle selection to demo swap
     if (rawLayout[0]?.rows[0]?.seats[0]) {
       toggleSeatSelection(rawLayout[0].rows[0].seats[0], currentShowKey, show.id);
     }
   };
 
-  const displayTotal = totalAmount && totalAmount > 0 ? totalAmount : selectedSeats.length * 14;
+  const basePricePerSeat = 150;
+  const displayTotal = totalAmount && totalAmount > 0 ? totalAmount : selectedSeats.length * basePricePerSeat;
 
   return (
-    <div className="min-h-screen bg-[#171b34] text-white pt-20 pb-36 select-none">
-      
-      {/* Top Navigation / Back bar */}
-      <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#a8adc9] hover:text-white transition-colors cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4 text-[#e0b45c]" />
-          <span>Back</span>
-        </button>
+    <div className="min-h-screen bg-[#171b34] bg-gradient-to-b from-[#171b34] via-[#1e2348] to-[#171b34] text-white pt-24 pb-36 select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        
+        {/* Top Header Navigation & Movie Info Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-[#1e2348] border border-white/10 shadow-lg">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="p-2.5 rounded-xl bg-[#262b52] hover:bg-[#323868] text-[#a8adc9] hover:text-white border border-white/10 transition-colors cursor-pointer"
+              title="Back"
+            >
+              <ArrowLeft className="w-4 h-4 text-[#e0b45c]" />
+            </button>
+            <div>
+              <h1 className="text-base sm:text-lg font-black text-white font-display flex items-center gap-2">
+                {movie.title}
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#e0b45c]/20 text-[#f6dd9c] font-bold uppercase">
+                  {movie.censorRating || 'UA 16+'}
+                </span>
+              </h1>
+              <p className="text-xs text-[#a8adc9] flex items-center gap-2 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-[#e0b45c]" />
+                <span>{theatre.name}</span>
+                <span>•</span>
+                <span>{show.screenName || 'Screen 5'}</span>
+              </p>
+            </div>
+          </div>
 
-        <span className="text-xs font-semibold text-[#a8adc9]">
-          {show.time} • {show.language || 'Telugu'}
-        </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#262b52] border border-white/10 text-xs font-bold text-[#e0b45c]">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{show.time}</span>
+            </div>
+            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#262b52] border border-white/10 text-xs font-bold text-white">
+              <Calendar className="w-3.5 h-3.5 text-[#e0b45c]" />
+              <span>{effectiveDate}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 12-COLUMN RESPONSIVE LAYOUT (Desktop Widescreen Website Experience) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT 8 COLUMNS: INTERACTIVE AUDITORIUM SEATING GRID */}
+          <div className="lg:col-span-8 space-y-6">
+            <SeatGrid
+              seatLayout={dynamicLayout}
+              selectedSeats={selectedSeats}
+              onToggleSeat={(seat) => toggleSeatSelection(seat, currentShowKey, show.id)}
+            />
+          </div>
+
+          {/* RIGHT 4 COLUMNS: DESKTOP BOOKING SUMMARY SIDEBAR */}
+          <div className="hidden lg:block lg:col-span-4 sticky top-28 space-y-5">
+            <div className="p-6 rounded-3xl bg-[#1e2348] border border-[#e0b45c]/30 shadow-2xl space-y-6">
+              
+              {/* Summary Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <Ticket className="w-5 h-5 text-[#e0b45c]" />
+                  <h3 className="text-base font-black text-white font-display">Booking Summary</h3>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3" /> Live Lock
+                </span>
+              </div>
+
+              {/* Movie Thumbnail & Show Details */}
+              <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-[#262b52] border border-white/10">
+                <img
+                  src={movie.poster || movie.posterUrl || '/posters/pushpa2.jpg'}
+                  alt={movie.title}
+                  className="w-14 h-18 rounded-xl object-cover border border-white/15 shrink-0"
+                />
+                <div className="min-w-0 space-y-1">
+                  <h4 className="text-sm font-bold text-white truncate">{movie.title}</h4>
+                  <p className="text-[11px] text-[#a8adc9] truncate">{theatre.name}</p>
+                  <p className="text-[10px] text-[#e0b45c] font-bold">{show.time} • 4K Dolby Atmos</p>
+                </div>
+              </div>
+
+              {/* Selected Seats Badges */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                  Selected Seats ({selectedSeats.length})
+                </span>
+                {selectedSeats.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSeats.map((seat) => (
+                      <span
+                        key={seat.id || seat}
+                        className="px-3 py-1 rounded-lg bg-[#e0b45c] text-[#171b34] text-xs font-black shadow-[0_0_10px_rgba(224,180,92,0.6)]"
+                      >
+                        {seat.id || seat}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 rounded-xl bg-[#171b34] border border-dashed border-white/15 text-center text-xs text-[#6b7094]">
+                    Tap available seats on the map to select
+                  </div>
+                )}
+              </div>
+
+              {/* Price Calculation */}
+              <div className="space-y-2.5 pt-2 border-t border-white/10 text-xs">
+                <div className="flex justify-between text-[#a8adc9]">
+                  <span>Tickets ({selectedSeats.length} × ₹{basePricePerSeat})</span>
+                  <span className="font-bold text-white">₹{selectedSeats.length * basePricePerSeat}.00</span>
+                </div>
+                <div className="flex justify-between text-[#a8adc9]">
+                  <span>Convenience Handling Fee</span>
+                  <span className="font-bold text-emerald-400">FREE</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-white/10 text-sm font-bold">
+                  <span className="text-white font-display">Total Payable</span>
+                  <span className="text-lg font-black text-[#e0b45c]">
+                    ₹{displayTotal > 0 ? displayTotal : selectedSeats.length * basePricePerSeat}.00
+                  </span>
+                </div>
+              </div>
+
+              {/* Primary Gold CTA Button */}
+              <button
+                type="button"
+                onClick={handleProceed}
+                disabled={selectedSeats.length === 0}
+                className={`luxury-gold-btn w-full py-3.5 px-6 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(224,180,92,0.4)] ${
+                  selectedSeats.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <span>Proceed to Checkout</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <div className="text-center">
+                <span className="text-[10px] text-[#6b7094] flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  100% Guaranteed Admission & Direct Refund Policy
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Main Seat Grid Component (Screen 3 Mockup) */}
-      <div className="max-w-lg mx-auto px-2 sm:px-4">
-        <SeatGrid
-          seatLayout={dynamicLayout}
-          selectedSeats={selectedSeats}
-          onToggleSeat={(seat) => toggleSeatSelection(seat, currentShowKey, show.id)}
-        />
-      </div>
-
-      {/* Sticky Bottom Action Bar (Screen 3 Mockup) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_35px_rgba(0,0,0,0.8)] py-3 px-4 sm:px-6">
+      {/* MOBILE STICKY BOTTOM ACTION BAR (Active on < 1024px screens only) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_35px_rgba(0,0,0,0.8)] py-3 px-4 sm:px-6">
         <div className="max-w-lg mx-auto space-y-2.5">
           
-          {/* Summary Text: "View 2 Tickets (L12, L13) for The Stei... $28.00" */}
+          {/* Summary Text */}
           <div className="flex items-center justify-between text-xs text-[#a8adc9]">
             <span className="truncate pr-2">
               {selectedSeats.length > 0 ? (
                 <span>
-                  View {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id || s).join(', ')}) for {movie.title.length > 18 ? movie.title.substring(0, 18) + '...' : movie.title}
+                  {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id || s).join(', ')})
                 </span>
               ) : (
-                <span className="text-[#6b7094] italic">Select seats on layout above</span>
+                <span className="text-[#6b7094] italic">Select seats above</span>
               )}
             </span>
-            <span className="font-bold text-white shrink-0">
-              ${Number(displayTotal || 28).toFixed(2)}
+            <span className="font-bold text-[#e0b45c] shrink-0 text-sm">
+              ₹{displayTotal > 0 ? displayTotal : selectedSeats.length * basePricePerSeat}.00
             </span>
           </div>
 
-          {/* Action Row: Left Square Reset Button + Right Large Pill Primary CTA */}
+          {/* Action Row */}
           <div className="flex items-center gap-3">
-            {/* Left Square Icon Button */}
+            {/* Left Reshuffle Button */}
             <button
               type="button"
               onClick={handleReshuffle}
               className="p-3 rounded-xl bg-[#1e2348] border border-white/15 text-[#a8adc9] hover:text-white hover:border-[#e0b45c] transition-colors cursor-pointer shrink-0"
-              title="Reshuffle selection"
+              title="Quick Toggle"
             >
               <Repeat className="w-4 h-4 text-[#e0b45c]" />
             </button>
 
-            {/* Large Pill Primary CTA Button */}
+            {/* Large Gold Primary CTA */}
             <button
               type="button"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`luxury-gold-btn flex-1 py-3 px-6 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-between cursor-pointer ${
+              className={`luxury-gold-btn flex-1 py-3 px-6 rounded-full text-xs font-bold tracking-wide flex items-center justify-between cursor-pointer ${
                 selectedSeats.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
               <span className="mx-auto pl-6">Confirm & Pay</span>
-              <span className="font-extrabold">${Number(displayTotal || 28).toFixed(2)}</span>
+              <span className="font-black">₹{displayTotal > 0 ? displayTotal : selectedSeats.length * basePricePerSeat}.00</span>
             </button>
           </div>
-
-          {/* Thin Drag Indicator Bar Centered at Bottom */}
-          <div className="w-24 h-1 bg-white/20 rounded-full mx-auto" />
         </div>
       </div>
 

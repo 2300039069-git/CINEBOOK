@@ -85,7 +85,7 @@ const MyBookingsPage = () => {
   });
 
   return (
-    <div className="min-h-screen py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-background text-text-primary transition-colors">
+    <div className="min-h-screen pt-28 pb-16 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 bg-background text-text-primary transition-colors">
       {/* 1. Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
