@@ -8,57 +8,63 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#0B0A14',
+        background: '#171b34',
         surface: {
-          DEFAULT: '#120F24',
-          elevated: '#1A1633',
-          hover: '#231E44',
-          subtle: '#0E0C1B'
+          DEFAULT: '#1e2348',
+          elevated: '#262b52',
+          hover: '#2f3563',
+          subtle: '#171b34'
         },
-        obsidian: {
-          950: '#07060D',
-          900: '#0B0A14',
-          800: '#120F24',
-          700: '#1A1633',
-          600: '#231E44'
+        navy: {
+          950: '#111428',
+          900: '#171b34',
+          800: '#1e2348',
+          700: '#262b52',
+          600: '#323868',
+          500: '#4a4f74'
         },
         gold: {
-          DEFAULT: '#E5A93C',
-          bright: '#FFD066',
-          light: '#FFE29A',
-          dark: '#B37D22'
+          light: '#f6dd9c',
+          DEFAULT: '#e0b45c',
+          mid: '#e0b45c',
+          deep: '#b8862f'
         },
         primary: {
-          DEFAULT: '#E5A93C',
-          hover: '#FFD066',
-          active: '#FFE29A',
-          light: '#FFE29A',
-          dark: '#B37D22',
+          DEFAULT: '#e0b45c',
+          hover: '#f6dd9c',
+          active: '#b8862f',
+          light: '#f6dd9c',
+          dark: '#b8862f',
         },
         accent: {
-          DEFAULT: '#FFD066',
-          hover: '#FFE29A',
-          gold: '#E5A93C'
+          DEFAULT: '#7c5cc4',
+          purple: '#7c5cc4',
+          gold: '#e0b45c'
         },
         text: {
-          primary: '#FFFFFF',
-          secondary: '#A5A1BE',
-          muted: '#6E688E'
+          primary: '#ffffff',
+          secondary: '#a8adc9',
+          muted: '#6b7094'
         },
         border: {
-          DEFAULT: 'rgba(229, 169, 60, 0.3)',
-          subtle: 'rgba(229, 169, 60, 0.15)',
-          hover: '#FFD066'
+          DEFAULT: 'rgba(255, 255, 255, 0.08)',
+          subtle: 'rgba(255, 255, 255, 0.05)',
+          gold: '#e0b45c'
+        },
+        state: {
+          available: '#4a4f74',
+          selected: '#e0b45c',
+          sold: '#33374f'
         }
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-        display: ['Cinzel', 'Plus Jakarta Sans', 'serif'],
+        sans: ['Poppins', 'Inter', 'sans-serif'],
+        display: ['Montserrat', 'Poppins', 'sans-serif'],
       },
       boxShadow: {
-        'gold-glow': '0 0 15px rgba(229, 169, 60, 0.4)',
-        'gold-glow-lg': '0 0 25px rgba(229, 169, 60, 0.6)',
-        'screen-glow': '0 12px 30px 4px rgba(180, 210, 255, 0.45)',
+        'gold-glow': '0 0 16px rgba(224, 180, 92, 0.55)',
+        'gold-glow-lg': '0 0 24px rgba(224, 180, 92, 0.75)',
+        'screen-glow': '0 12px 30px 4px rgba(180, 210, 255, 0.35)',
       }
     },
   },

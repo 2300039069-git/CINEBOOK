@@ -24,35 +24,43 @@ export const BottomNav = () => {
   ];
 
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-md pointer-events-auto select-none">
-      <nav className="flex items-center justify-around py-2.5 px-3 rounded-2xl bg-[#120F24]/90 backdrop-blur-2xl border border-[#E5A93C]/40 shadow-[0_12px_35px_rgba(0,0,0,0.85),0_0_20px_rgba(229,169,60,0.25)]">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.6)] py-2.5 px-6 pointer-events-auto select-none">
+      <nav className="max-w-md mx-auto flex items-center justify-between">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.exact
-            ? location.pathname === item.path
+            ? location.pathname === '/'
             : location.pathname.startsWith(item.path);
 
           return (
             <NavLink
               key={item.label}
               to={item.path}
-              className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 ${
-                isActive
-                  ? 'art-deco-gold-btn text-[#0B0A14] shadow-[0_0_15px_rgba(229,169,60,0.55)] scale-105'
-                  : 'text-slate-400 hover:text-[#FFD066] hover:bg-[#1A1633]'
-              }`}
+              className="relative flex flex-col items-center justify-center gap-1 py-1 px-3 transition-colors duration-200 group"
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
-              <span className={isActive ? 'inline-block' : 'hidden sm:inline-block'}>
+              <Icon
+                className={`w-5 h-5 transition-transform duration-200 ${
+                  isActive
+                    ? 'text-[#e0b45c] drop-shadow-[0_0_8px_rgba(224,180,92,0.6)] scale-110'
+                    : 'text-[#6b7094] group-hover:text-[#a8adc9]'
+                }`}
+              />
+              <span
+                className={`text-[10px] font-semibold tracking-wide transition-colors ${
+                  isActive ? 'text-[#e0b45c] font-bold' : 'text-[#6b7094] group-hover:text-[#a8adc9]'
+                }`}
+              >
                 {item.label}
               </span>
               {isActive && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-0.5 bg-[#FFE29A] rounded-full shadow-[0_0_8px_#FFD066]" />
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-[#e0b45c] rounded-full shadow-[0_0_8px_#e0b45c]" />
               )}
             </NavLink>
           );
         })}
       </nav>
+      {/* Centered thin bottom indicator bar matching mockup */}
+      <div className="w-32 h-1 bg-white/20 rounded-full mx-auto mt-2" />
     </div>
   );
 };

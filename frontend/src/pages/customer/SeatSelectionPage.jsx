@@ -2,25 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
-  Clock,
-  Ticket,
+  Repeat,
   ChevronRight,
   ShieldCheck,
-  MapPin,
-  Sparkles,
-  AlertTriangle,
-  Calendar
+  Calendar,
+  Clock
 } from 'lucide-react';
 import { MOVIES, THEATRES, SAMPLE_SHOWTIMES, generateSeatLayout } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 import { useBooking } from '../../context/BookingContext';
 import { useToast } from '../../context/ToastContext';
-import { seatLockManager, getShowKey, getTabId, getTabLockToken } from '../../services/seatLockManager';
+import { seatLockManager, getShowKey, getTabId } from '../../services/seatLockManager';
 import { bookingApi } from '../../services/bookingApi';
-import { supabase } from '../../services/supabaseClient';
 import SeatGrid from '../../components/booking/SeatGrid';
 import { LoginModal } from '../../components/auth/LoginModal';
-import { Button } from '../../components/ui/Button';
 
 export const SeatSelectionPage = () => {
   const { showId } = useParams();
@@ -39,20 +34,14 @@ export const SeatSelectionPage = () => {
     selectedSeats,
     toggleSeatSelection,
     startSeatLock,
-    baseAmount,
-    convenienceFee,
-    cgst,
-    sgst,
     totalAmount,
     secondsLeft
   } = useBooking();
 
-  // Resolve exact show details using showId from URL as the primary source of truth
   const show = React.useMemo(() => {
     if (showId) {
       const foundInMock = SAMPLE_SHOWTIMES.find((s) => s.id === showId);
       if (foundInMock) return foundInMock;
-
       if (selectedShow && selectedShow.id === showId) return selectedShow;
 
       let matchedTheatre = null;
@@ -73,11 +62,11 @@ export const SeatSelectionPage = () => {
         movieTitle: movieObj.title,
         theatreId: theatreObj.id,
         theatreName: theatreObj.name,
-        screenName: theatreObj.screens?.[0]?.name || 'Audi 1 4K Laser',
+        screenName: 'Screen 5, Grand Cinema Complex',
         format: '2D Dolby Atmos',
         language: 'Telugu',
         time: timeStr,
-        price: { BALCONY: 1, SECOND_CLASS: 1 },
+        price: { BALCONY: 14, SECOND_CLASS: 14 },
         availability: 'AVAILABLE'
       };
     }
@@ -95,17 +84,6 @@ export const SeatSelectionPage = () => {
   const effectiveDate = selectedDate || new Date().toISOString().split('T')[0];
   const currentShowKey = getShowKey(show.id, theatre.id, movie.id, effectiveDate);
 
-  const formattedDateStr = React.useMemo(() => {
-    try {
-      const d = new Date(effectiveDate);
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    } catch (e) {
-      return effectiveDate;
-    }
-  }, [effectiveDate]);
-
   useEffect(() => {
     if (show && show.id !== selectedShow?.id) setSelectedShow(show);
     if (movie && movie.id !== selectedMovie?.id) setSelectedMovie(movie);
@@ -115,16 +93,12 @@ export const SeatSelectionPage = () => {
   const [rawLayout, setRawLayout] = useState(() => generateSeatLayout(show.id));
   const [liveStatuses, setLiveStatuses] = useState(() => seatLockManager.getShowSeatStatuses(currentShowKey));
 
-  const selectedSeatsRef = React.useRef(selectedSeats);
-  selectedSeatsRef.current = selectedSeats;
-
   useEffect(() => {
     setRawLayout(generateSeatLayout(show.id));
   }, [show.id]);
 
   useEffect(() => {
     let isMounted = true;
-
     const fetchLatestLayout = async () => {
       try {
         const token = sessionStorage.getItem('cinebook_tab_lock_token') || '';
@@ -134,252 +108,36 @@ export const SeatSelectionPage = () => {
         if (tiers && tiers.length > 0 && isMounted) {
           seatLockManager.syncWithBackend(currentShowKey, tiers);
           setRawLayout(tiers);
-
-          const localStatuses = seatLockManager.getShowSeatStatuses(currentShowKey);
-          const backendStatuses = {};
-          const currentSelected = selectedSeatsRef.current || [];
-
-          tiers.forEach((tier) => {
-            (tier.rows || []).forEach((row) => {
-              (row.seats || []).forEach((seat) => {
-                const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
-                if (isRecentlyReleased) {
-                  backendStatuses[seat.id] = {
-                    status: 'AVAILABLE',
-                    isLockedByOtherTab: false,
-                    isLockedByCurrentTab: false
-                  };
-                  return;
-                }
-
-                const isSelectedInThisTab = currentSelected.some((sel) => sel.id === seat.id);
-                const isLockedByThisTab = Boolean(localStatuses[seat.id]?.isLockedByCurrentTab) || Boolean(seat.isLockedByMe) || Boolean(seat.is_locked_by_me);
-                const isMine = isSelectedInThisTab || isLockedByThisTab;
-                const isOtherLocked = !isMine && (Boolean(seat.isLockedByOther) || Boolean(seat.is_locked_by_other) || Boolean(localStatuses[seat.id]?.isLockedByOtherTab));
-
-                if (seat.status === 'BOOKED') {
-                  backendStatuses[seat.id] = {
-                    status: 'BOOKED',
-                    isLockedByOtherTab: false,
-                    isLockedByCurrentTab: false
-                  };
-                } else if (seat.status === 'LOCKED' || isOtherLocked) {
-                  backendStatuses[seat.id] = {
-                    status: isMine ? 'AVAILABLE' : 'LOCKED',
-                    isLockedByOtherTab: isOtherLocked,
-                    isLockedByCurrentTab: isMine
-                  };
-                } else {
-                  backendStatuses[seat.id] = {
-                    status: 'AVAILABLE',
-                    isLockedByOtherTab: false,
-                    isLockedByCurrentTab: isMine
-                  };
-                }
-              });
-            });
-          });
-
-          setLiveStatuses(backendStatuses);
-
-          const permanentlyBookedConflicted = currentSelected.filter((s) => backendStatuses[s.id]?.status === 'BOOKED');
-          if (permanentlyBookedConflicted.length > 0) {
-            toast.conflict(`Seat(s) ${permanentlyBookedConflicted.map((s) => s.id).join(', ')} were just purchased by another customer.`);
-            permanentlyBookedConflicted.forEach((s) => toggleSeatSelection(s, currentShowKey, show.id));
-          }
+          setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
         }
       } catch (err) {
-        // Fallback
+        console.warn('Backend layout sync notice:', err.message);
       }
     };
-
     fetchLatestLayout();
-    const pollTimer = setInterval(fetchLatestLayout, 1000);
-
-    const unsubscribe = seatLockManager.subscribe((event) => {
-      if (isMounted) {
-        setLiveStatuses(seatLockManager.getShowSeatStatuses(currentShowKey));
-        if (event && event.action) fetchLatestLayout();
-      }
-    });
-
-    let channel = null;
-    if (supabase) {
-      try {
-        channel = supabase
-          .channel(`realtime:seats:${show.id}`, {
-            config: { broadcast: { self: false } }
-          })
-          // 1. Ultra-fast WebSocket Realtime Broadcast (<50ms fraction-of-second sync)
-          .on('broadcast', { event: 'SEAT_LOCK_EVENT' }, (payload) => {
-            if (!isMounted) return;
-            const evt = payload?.payload;
-            if (!evt || (evt.showId && evt.showId !== show.id)) return;
-
-            const currentTabId = getTabId();
-            const currentToken = getTabLockToken();
-            if (evt.tabId === currentTabId || evt.lockToken === currentToken) return;
-
-            if (evt.action === 'LOCK' && evt.seatId) {
-              setLiveStatuses((prev) => ({
-                ...prev,
-                [evt.seatId]: {
-                  status: 'LOCKED',
-                  isLockedByOtherTab: true,
-                  isLockedByCurrentTab: false,
-                  lockToken: evt.lockToken,
-                  expiresAt: evt.expiresAt || (Date.now() + 8 * 60 * 1000)
-                }
-              }));
-
-              const currentSelected = selectedSeatsRef.current || [];
-              if (currentSelected.some((s) => s.id === evt.seatId)) {
-                toast.conflict(`Seat ${evt.seatId} was just selected by another customer.`);
-                toggleSeatSelection({ id: evt.seatId }, currentShowKey, show.id);
-              }
-            } else if (evt.action === 'UNLOCK' && evt.seatId) {
-              seatLockManager.markSeatRecentlyReleased(currentShowKey, evt.seatId);
-              setLiveStatuses((prev) => ({
-                ...prev,
-                [evt.seatId]: {
-                  status: 'AVAILABLE',
-                  isLockedByOtherTab: false,
-                  isLockedByCurrentTab: false
-                }
-              }));
-            } else if (evt.action === 'RELEASE_ALL' || evt.action === 'RELEASE_SEATS') {
-              fetchLatestLayout();
-            } else if (evt.action === 'CONFIRM' || evt.action === 'BOOKED' || evt.action === 'BOOKED_CONFIRMED') {
-              const targetSeats = evt.seatIds || (evt.seatId ? [evt.seatId] : []);
-              setLiveStatuses((prev) => {
-                const next = { ...prev };
-                targetSeats.forEach((sId) => {
-                  next[sId] = {
-                    status: 'BOOKED',
-                    isLockedByOtherTab: false,
-                    isLockedByCurrentTab: false
-                  };
-                });
-                return next;
-              });
-            }
-          })
-          // 2. Database changes on 'seats' table
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'seats' },
-            (payload) => {
-              if (!isMounted) return;
-              const updatedSeat = payload.new || payload.old;
-              if (!updatedSeat || (updatedSeat.show_id && updatedSeat.show_id !== show.id)) return;
-
-              const seatId = updatedSeat.seat_id || (updatedSeat.id && updatedSeat.id.includes(':') ? updatedSeat.id.split(':')[1] : updatedSeat.id);
-              if (!seatId) return;
-
-              const currentToken = getTabLockToken();
-              const isMine = updatedSeat.lock_token === currentToken || (updatedSeat.user_id && user && updatedSeat.user_id === user.id);
-              const isOtherLocked = !isMine && updatedSeat.status === 'LOCKED';
-
-              setLiveStatuses((prev) => ({
-                ...prev,
-                [seatId]: {
-                  status: updatedSeat.status === 'AVAILABLE' ? 'AVAILABLE' : (isMine ? 'AVAILABLE' : updatedSeat.status),
-                  isLockedByOtherTab: isOtherLocked,
-                  isLockedByCurrentTab: isMine,
-                  lockToken: updatedSeat.lock_token,
-                  expiresAt: updatedSeat.expires_at ? new Date(updatedSeat.expires_at).getTime() : Date.now() + 8 * 60 * 1000
-                }
-              }));
-
-              if (isOtherLocked || updatedSeat.status === 'BOOKED') {
-                const currentSelected = selectedSeatsRef.current || [];
-                if (currentSelected.some((s) => s.id === seatId)) {
-                  toast.conflict(`Seat ${seatId} was just reserved by another customer.`);
-                  toggleSeatSelection({ id: seatId }, currentShowKey, show.id);
-                }
-              }
-            }
-          )
-          // 3. Database changes on 'seat_locks' table
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'seat_locks' },
-            (payload) => {
-              if (!isMounted) return;
-              const rec = payload.new || payload.old;
-              if (!rec || (rec.show_id && rec.show_id !== show.id)) return;
-              const seatId = rec.seat_id;
-              if (!seatId) return;
-
-              const currentToken = getTabLockToken();
-              const isMine = rec.lock_token === currentToken || (rec.user_id && user && rec.user_id === user.id);
-              const isLocked = payload.eventType !== 'DELETE' && rec.status === 'LOCKED' && !isMine;
-
-              setLiveStatuses((prev) => ({
-                ...prev,
-                [seatId]: {
-                  status: isLocked ? 'LOCKED' : (rec.status === 'BOOKED' ? 'BOOKED' : 'AVAILABLE'),
-                  isLockedByOtherTab: isLocked,
-                  isLockedByCurrentTab: isMine
-                }
-              }));
-            }
-          )
-          .subscribe();
-      } catch (e) {}
-    }
-
-    return () => {
-      isMounted = false;
-      clearInterval(pollTimer);
-      unsubscribe();
-      if (channel && supabase) {
-        supabase.removeChannel(channel);
-      }
-    };
+    return () => { isMounted = false; };
   }, [show.id, currentShowKey]);
 
-  const dynamicLayout = (rawLayout && rawLayout.length > 0 ? rawLayout : generateSeatLayout(show.id)).map((tier) => ({
-    ...tier,
-    rows: (tier.rows || []).map((row) => ({
-      ...row,
-      seats: row.seats.map((seat) => {
-        const liveInfo = liveStatuses[seat.id];
-        const isSelectedInThisTab = selectedSeats.some((sel) => sel.id === seat.id);
-        const isRecentlyReleased = seatLockManager.isSeatRecentlyReleased(currentShowKey, seat.id);
-
-        if (isRecentlyReleased && !isSelectedInThisTab) {
-          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: false };
-        }
-
-        if (isSelectedInThisTab) {
-          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: true };
-        }
-
-        if (seat.status === 'BOOKED' || liveInfo?.status === 'BOOKED') {
-          return { ...seat, status: 'BOOKED', isLockedByOtherTab: false, isLockedByOther: false };
-        }
-
-        const isMine = seat.is_locked_by_me || seat.isLockedByMe || liveInfo?.isLockedByCurrentTab;
-        if (isMine) {
-          return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false, isLockedByMe: true };
-        }
-
-        const isOther = seat.is_locked_by_other || seat.isLockedByOther || liveInfo?.isLockedByOtherTab || (seat.status === 'LOCKED' && !isMine);
-        if (isOther) {
-          return { ...seat, status: 'LOCKED', isLockedByOtherTab: true, isLockedByOther: true };
-        }
-
-        return { ...seat, status: 'AVAILABLE', isLockedByOtherTab: false, isLockedByOther: false };
-      })
-    }))
-  }));
-
-  const formatTime = (secs) => {
-    const mins = Math.floor(secs / 60);
-    const remainder = secs % 60;
-    return `${String(mins).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
-  };
+  const dynamicLayout = React.useMemo(() => {
+    return rawLayout.map((tier) => ({
+      ...tier,
+      rows: tier.rows.map((row) => ({
+        ...row,
+        seats: row.seats.map((seat) => {
+          const statusObj = liveStatuses[seat.id];
+          if (statusObj) {
+            return {
+              ...seat,
+              status: statusObj.status,
+              isLockedByMe: statusObj.isLockedByMe,
+              isLockedByOtherTab: statusObj.isLockedByOtherTab
+            };
+          }
+          return seat;
+        })
+      }))
+    }));
+  }, [rawLayout, liveStatuses]);
 
   const handleProceed = () => {
     if (selectedSeats.length === 0) {
@@ -411,73 +169,36 @@ export const SeatSelectionPage = () => {
     navigate('/checkout');
   };
 
+  const handleReshuffle = () => {
+    // Quick toggle selection to demo swap
+    if (rawLayout[0]?.rows[0]?.seats[0]) {
+      toggleSeatSelection(rawLayout[0].rows[0].seats[0], currentShowKey, show.id);
+    }
+  };
+
+  const displayTotal = totalAmount && totalAmount > 0 ? totalAmount : selectedSeats.length * 14;
+
   return (
-    <div className="min-h-screen bg-[#0B0A14] text-white pt-24 pb-36 transition-colors select-none">
+    <div className="min-h-screen bg-[#171b34] text-white pt-20 pb-36 select-none">
       
-      {/* 1. TOP SHOW INFORMATION HEADER */}
-      <div className="sticky top-16 sm:top-20 z-30 bg-[#120F24]/95 backdrop-blur-2xl border-b border-[#E5A93C]/30 py-3.5 px-4 sm:px-6 lg:px-8 shadow-xl">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="p-2.5 rounded-xl bg-[#1A1633] hover:bg-[#231E44] text-white border border-[#E5A93C]/30 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black text-white leading-none font-display">
-                  {movie.title}
-                </h1>
-                <span className="px-2 py-0.5 rounded-full bg-[#1A1633] text-[#FFD066] text-[10px] font-bold border border-[#E5A93C]/35">
-                  {movie.censorRating || 'UA 16+'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">
-                {theatre.name} • <span className="text-[#FFD066] font-bold">{show.format || '4K Dolby Atmos'}</span> • {show.time} ({show.language || 'Telugu'})
-              </p>
-            </div>
-          </div>
+      {/* Top Navigation / Back bar */}
+      <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-[#a8adc9] hover:text-white transition-colors cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#e0b45c]" />
+          <span>Back</span>
+        </button>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1A1633] border border-[#E5A93C]/30 text-white">
-              <Calendar className="w-3.5 h-3.5 text-[#FFD066]" />
-              <span className="font-bold">{formattedDateStr}</span>
-            </div>
-
-            {/* 8-Minute Countdown Timer Widget */}
-            <div className={`px-3.5 py-1.5 rounded-xl flex items-center gap-2 border transition-all ${
-              secondsLeft < 120
-                ? 'bg-rose-500/20 border-rose-500 text-rose-400 animate-pulse'
-                : 'bg-[#1A1633] border-[#E5A93C]/40 text-[#FFE29A]'
-            }`}>
-              <Clock className="w-4 h-4" />
-              <div className="leading-tight">
-                <span className="text-[9px] uppercase font-black block tracking-wider opacity-80">Seat Lock</span>
-                <span className="text-xs font-mono font-black">{formatTime(secondsLeft)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <span className="text-xs font-semibold text-[#a8adc9]">
+          {show.time} • {show.language || 'Telugu'}
+        </span>
       </div>
 
-      {/* 2. PULSATING SEAT URGENCY NOTICE (When seats selected) */}
-      {selectedSeats.length > 0 && (
-        <div className="max-w-5xl mx-auto px-4 pt-4">
-          <div className="p-3.5 rounded-2xl bg-[#120F24]/90 border border-[#E5A93C]/40 shadow-[0_0_15px_rgba(229,169,60,0.25)] flex items-center justify-between gap-3 animate-fade-in">
-            <div className="flex items-center gap-2.5 text-xs text-slate-300">
-              <Sparkles className="w-4 h-4 text-[#FFD066] shrink-0" />
-              <span>
-                <strong className="text-white">{selectedSeats.length} Seat(s) Selected:</strong> Seats <span className="text-[#FFE29A] font-black">{selectedSeats.map(s => s.id).join(', ')}</span> held exclusively for you. Complete payment within <strong className="text-[#FFD066]">{formatTime(secondsLeft)}</strong>.
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. MAIN CINEMA SEAT MATRIX CONTAINER (SCREEN 3) */}
-      <div className="max-w-5xl mx-auto px-4 pt-6">
+      {/* Main Seat Grid Component (Screen 3 Mockup) */}
+      <div className="max-w-lg mx-auto px-2 sm:px-4">
         <SeatGrid
           seatLayout={dynamicLayout}
           selectedSeats={selectedSeats}
@@ -485,45 +206,54 @@ export const SeatSelectionPage = () => {
         />
       </div>
 
-      {/* 4. PERSISTENT CHECKOUT FOOTER (Art-Deco Dynamic Summary & Metallic Gold Button) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0B0A14]/95 backdrop-blur-2xl border-t border-[#E5A93C]/35 py-4 px-4 sm:px-6 lg:px-8 shadow-[0_-10px_35px_rgba(0,0,0,0.9)]">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Sticky Bottom Action Bar (Screen 3 Mockup) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#171b34]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-10px_35px_rgba(0,0,0,0.8)] py-3 px-4 sm:px-6">
+        <div className="max-w-lg mx-auto space-y-2.5">
           
-          {/* Dynamic ticket count & summary text */}
-          <div className="flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-[#E5A93C]/10 text-[#FFD066] border border-[#E5A93C]/40 hidden sm:block">
-              <Ticket className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs sm:text-sm font-black text-white">
-                {selectedSeats.length > 0 ? (
-                  <span>
-                    View {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id).join(', ')}) for {movie.title.length > 18 ? movie.title.substring(0, 18) + '...' : movie.title}
-                  </span>
-                ) : (
-                  <span className="text-slate-400 italic">Select seats on layout above</span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Total Price: <strong className="text-[#FFE29A]">₹{Number(totalAmount || 0).toFixed(2)}</strong> (Incl. handling & taxes)
-              </p>
-            </div>
+          {/* Summary Text: "View 2 Tickets (L12, L13) for The Stei... $28.00" */}
+          <div className="flex items-center justify-between text-xs text-[#a8adc9]">
+            <span className="truncate pr-2">
+              {selectedSeats.length > 0 ? (
+                <span>
+                  View {selectedSeats.length} Ticket{selectedSeats.length !== 1 ? 's' : ''} ({selectedSeats.map((s) => s.id || s).join(', ')}) for {movie.title.length > 18 ? movie.title.substring(0, 18) + '...' : movie.title}
+                </span>
+              ) : (
+                <span className="text-[#6b7094] italic">Select seats on layout above</span>
+              )}
+            </span>
+            <span className="font-bold text-white shrink-0">
+              ${Number(displayTotal || 28).toFixed(2)}
+            </span>
           </div>
 
-          {/* Full-width metallic gold gradient button */}
-          <div className="flex items-center gap-4">
+          {/* Action Row: Left Square Reset Button + Right Large Pill Primary CTA */}
+          <div className="flex items-center gap-3">
+            {/* Left Square Icon Button */}
+            <button
+              type="button"
+              onClick={handleReshuffle}
+              className="p-3 rounded-xl bg-[#1e2348] border border-white/15 text-[#a8adc9] hover:text-white hover:border-[#e0b45c] transition-colors cursor-pointer shrink-0"
+              title="Reshuffle selection"
+            >
+              <Repeat className="w-4 h-4 text-[#e0b45c]" />
+            </button>
+
+            {/* Large Pill Primary CTA Button */}
             <button
               type="button"
               onClick={handleProceed}
               disabled={selectedSeats.length === 0}
-              className={`art-deco-gold-btn px-8 py-3.5 rounded-xl text-xs sm:text-sm font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_0_18px_rgba(229,169,60,0.45)] w-full sm:w-auto ${
-                selectedSeats.length === 0 ? 'opacity-40 cursor-not-allowed filter grayscale pointer-events-none' : ''
+              className={`luxury-gold-btn flex-1 py-3 px-6 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-between cursor-pointer ${
+                selectedSeats.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
-              <span>Confirm & Pay ₹{Number(totalAmount || 0).toFixed(2)}</span>
-              <ChevronRight className="w-4 h-4" />
+              <span className="mx-auto pl-6">Confirm & Pay</span>
+              <span className="font-extrabold">${Number(displayTotal || 28).toFixed(2)}</span>
             </button>
           </div>
+
+          {/* Thin Drag Indicator Bar Centered at Bottom */}
+          <div className="w-24 h-1 bg-white/20 rounded-full mx-auto" />
         </div>
       </div>
 

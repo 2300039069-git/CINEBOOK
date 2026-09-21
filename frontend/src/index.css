@@ -5,33 +5,38 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #0B0A14;
-    --theme-surface: #120F24;
-    --theme-card: #120F24;
-    --theme-elevated: #1A1633;
-    --theme-hover: #231E44;
-    --theme-subtle: #0E0C1B;
-    --theme-border: rgba(229, 169, 60, 0.3);
-    --theme-border-subtle: rgba(229, 169, 60, 0.15);
-    --theme-border-hover: #FFD066;
-    --theme-primary: #E5A93C;
-    --theme-primary-hover: #FFD066;
-    --theme-accent: #FFD066;
-    --theme-accent-hover: #FFE29A;
-    --theme-gold: #E5A93C;
-    --theme-gold-bright: #FFD066;
-    --theme-gold-light: #FFE29A;
-    --theme-gold-glow: 0 0 15px rgba(229, 169, 60, 0.4);
-    --theme-text: #FFFFFF;
-    --theme-text-primary: #FFFFFF;
-    --theme-text-secondary: #A5A1BE;
-    --theme-text-muted: #6E688E;
+    --bg-primary: #171b34;
+    --bg-secondary: #1e2348;
+    --bg-elevated: #262b52;
+    --bg-gradient: linear-gradient(160deg, #171b34 0%, #241a3e 50%, #2c1f4a 100%);
+
+    --gold-light: #f6dd9c;
+    --gold-mid: #e0b45c;
+    --gold-deep: #b8862f;
+    --gold-gradient: linear-gradient(135deg, #f6dd9c 0%, #e0b45c 50%, #b8862f 100%);
+
+    --accent-purple: #7c5cc4;
+    --accent-purple-gradient: linear-gradient(135deg, #7c5cc4 0%, #b8862f 100%);
+
+    --text-primary: #ffffff;
+    --text-secondary: #a8adc9;
+    --text-muted: #6b7094;
+
+    --border-default: rgba(255, 255, 255, 0.08);
+    --border-gold: #e0b45c;
+    --glow-gold: 0 0 16px rgba(224, 180, 92, 0.55);
+
+    --state-available: #4a4f74;
+    --state-selected: #e0b45c;
+    --state-sold: #33374f;
   }
 
   body {
-    background-color: #0B0A14;
-    color: #FFFFFF;
-    font-family: 'Plus Jakarta Sans', 'Cinzel', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #171b34;
+    background-image: linear-gradient(160deg, #171b34 0%, #241a3e 50%, #2c1f4a 100%);
+    background-attachment: fixed;
+    color: #ffffff;
+    font-family: 'Poppins', 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -39,204 +44,146 @@
 }
 
 @layer utilities {
-  /* Translucent frosted glass cards & modals with 1px gold border */
-  .art-deco-glass {
-    background: rgba(18, 15, 36, 0.85);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(229, 169, 60, 0.3);
-    box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 208, 102, 0.2);
+  /* Luxury Cinema Cards & Surfaces (16px radius) */
+  .luxury-card {
+    background-color: #1e2348;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   }
 
-  .art-deco-glass:hover {
-    border-color: rgba(255, 208, 102, 0.6);
-    box-shadow: 0 15px 40px -5px rgba(0, 0, 0, 0.9), 0 0 15px rgba(229, 169, 60, 0.3);
+  .luxury-card-selected {
+    background-color: #1e2348;
+    border: 1px solid #e0b45c;
+    border-radius: 16px;
+    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55), 0 8px 30px rgba(0, 0, 0, 0.4);
   }
 
-  /* Notched / Chamfered Cut-Corner Frames */
-  .art-deco-notched {
-    clip-path: polygon(
-      12px 0%, calc(100% - 12px) 0%,
-      100% 12px, 100% calc(100% - 12px),
-      calc(100% - 12px) 100%, 12px 100%,
-      0% calc(100% - 12px), 0% 12px
-    );
+  .luxury-elevated {
+    background-color: #262b52;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
   }
 
-  .art-deco-notched-lg {
-    clip-path: polygon(
-      20px 0%, calc(100% - 20px) 0%,
-      100% 20px, 100% calc(100% - 20px),
-      calc(100% - 20px) 100%, 20px 100%,
-      0% calc(100% - 20px), 0% 20px
-    );
+  /* Luxury Gold Glow */
+  .luxury-glow {
+    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55);
   }
 
-  /* Geometric Double-line Gold Border Glow */
-  .art-deco-double-border {
-    border: 3px double rgba(255, 208, 102, 0.85);
-    box-shadow: 0 0 15px rgba(229, 169, 60, 0.4);
+  .luxury-glow-lg {
+    box-shadow: 0 0 24px rgba(224, 180, 92, 0.75);
   }
 
-  /* Vintage Neon Gold Outer Glow */
-  .art-deco-glow {
-    box-shadow: 0 0 15px rgba(229, 169, 60, 0.4);
+  .luxury-text-glow {
+    text-shadow: 0 0 12px rgba(224, 180, 92, 0.6);
   }
 
-  .art-deco-glow-lg {
-    box-shadow: 0 0 25px rgba(229, 169, 60, 0.6);
-  }
-
-  .art-deco-text-glow {
-    text-shadow: 0 0 12px rgba(229, 169, 60, 0.6);
-  }
-
-  /* Metallic Gold Gradient Call-to-Action Buttons */
-  .art-deco-gold-btn {
-    background: linear-gradient(135deg, #E5A93C 0%, #FFD066 50%, #FFE29A 100%);
-    color: #0B0A14;
-    font-weight: 900;
-    box-shadow: 0 0 15px rgba(229, 169, 60, 0.4);
+  /* Primary CTA Button: Gold Gradient Fill with Dark Navy Text & Shine Sweep */
+  .luxury-gold-btn {
+    background: linear-gradient(135deg, #f6dd9c 0%, #e0b45c 50%, #b8862f 100%);
+    color: #171b34;
+    font-weight: 700;
+    border-radius: 9999px;
+    box-shadow: 0 0 16px rgba(224, 180, 92, 0.55);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
   }
 
-  .art-deco-gold-btn:hover {
-    background: linear-gradient(135deg, #FFD066 0%, #FFE29A 50%, #FFFFFF 100%);
-    box-shadow: 0 0 25px rgba(229, 169, 60, 0.65), 0 4px 15px rgba(0, 0, 0, 0.5);
+  .luxury-gold-btn:hover {
+    background: linear-gradient(135deg, #ffffff 0%, #f6dd9c 40%, #e0b45c 100%);
+    box-shadow: 0 0 24px rgba(224, 180, 92, 0.75), 0 4px 15px rgba(0, 0, 0, 0.5);
     transform: translateY(-1px);
   }
 
-  .art-deco-gold-btn:active {
+  .luxury-gold-btn:active {
     transform: translateY(0);
-    box-shadow: 0 0 10px rgba(229, 169, 60, 0.35);
+    box-shadow: 0 0 10px rgba(224, 180, 92, 0.4);
   }
 
-  /* Violet-to-Gold Metallic Gradient Header Card */
-  .art-deco-header-card {
-    background: linear-gradient(135deg, rgba(30, 24, 60, 0.95) 0%, rgba(18, 15, 36, 0.95) 50%, rgba(229, 169, 60, 0.15) 100%);
-    border: 1px solid rgba(229, 169, 60, 0.35);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(229, 169, 60, 0.2);
+  /* Pill Buttons */
+  .luxury-pill-btn {
+    border: 1px solid #e0b45c;
+    color: #e0b45c;
+    border-radius: 9999px;
+    background: transparent;
+    transition: all 0.2s ease;
   }
 
-  /* Cinema Curved Trapezoid Screen with Ambient Downward White/Blue Glow */
-  .cinema-trapezoid-screen {
+  .luxury-pill-btn:hover {
+    background: rgba(224, 180, 92, 0.15);
+    box-shadow: 0 0 12px rgba(224, 180, 92, 0.35);
+  }
+
+  .luxury-pill-btn-subtle {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #a8adc9;
+    border-radius: 9999px;
+    background: transparent;
+    transition: all 0.2s ease;
+  }
+
+  .luxury-pill-btn-subtle:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Header Banner: Purple to Gold Metallic Gradient (Screen 3) */
+  .luxury-header-banner {
+    background: linear-gradient(135deg, #7c5cc4 0%, #b8862f 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(124, 92, 196, 0.3);
+  }
+
+  /* Curved Cinema Screen Arc Graphic with Ambient Downward Glow */
+  .luxury-cinema-screen {
     position: relative;
-    width: 80%;
+    width: 84%;
     margin: 0 auto;
-    height: 16px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #90B4E8 60%, rgba(144, 180, 232, 0) 100%);
-    clip-path: polygon(4% 0%, 96% 0%, 100% 100%, 0% 100%);
-    border-radius: 4px 4px 0 0;
-    box-shadow: 0 12px 30px 4px rgba(180, 210, 255, 0.45);
+    height: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #7c5cc4 60%, rgba(124, 92, 196, 0) 100%);
+    clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%);
+    border-radius: 6px 6px 0 0;
+    box-shadow: 0 10px 25px 4px rgba(124, 92, 196, 0.45);
   }
 
-  /* Horizontal Dotted Track for Timeline */
-  .timeline-dotted-track {
-    background-image: radial-gradient(circle, rgba(229, 169, 60, 0.4) 1.5px, transparent 1.5px);
+  /* Timeline Dotted Line Track */
+  .luxury-timeline-track {
+    background-image: radial-gradient(circle, rgba(224, 180, 92, 0.5) 1.5px, transparent 1.5px);
     background-size: 8px 8px;
     background-repeat: repeat-x;
     background-position: center;
   }
 }
 
-/* Custom Refined Scrollbars in Gold & Midnight Violet-Obsidian */
+/* Custom Refined Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0A14;
+  background: #171b34;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1A1633;
+  background: #262b52;
   border-radius: 9999px;
-  border: 1px solid rgba(229, 169, 60, 0.25);
+  border: 1px solid rgba(224, 180, 92, 0.25);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #E5A93C;
+  background: #e0b45c;
 }
 
-/* ============================================================================
-   80MM THERMAL RECEIPT & PRINT STYLES
-   ============================================================================ */
+/* Print Styles */
 @media print {
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-    color-adjust: exact !important;
-  }
-
-  header,
-  footer,
-  nav,
-  button,
-  .no-print,
-  [role="navigation"],
-  #cinebot-modal,
-  .cinebot-widget {
+  header, footer, nav, button, .no-print, [role="navigation"] {
     display: none !important;
   }
-
-  body:not(.printing-thermal) {
-    background-color: #FFFFFF !important;
+  body {
+    background: #ffffff !important;
     color: #000000 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  body:not(.printing-thermal) #printable-ticket {
-    display: block !important;
-    max-width: 650px !important;
-    margin: 20px auto !important;
-    border: 2px solid #E2E8F0 !important;
-    background: #FFFFFF !important;
-    box-shadow: none !important;
-    page-break-inside: avoid !important;
-  }
-
-  @page {
-    size: 80mm auto;
-    margin: 0;
-  }
-
-  body.printing-thermal {
-    background: #FFFFFF !important;
-    color: #000000 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-  }
-
-  body.printing-thermal * {
-    visibility: hidden !important;
-  }
-
-  body.printing-thermal #thermal-receipt-slip,
-  body.printing-thermal #thermal-receipt-slip *,
-  body.printing-thermal .thermal-receipt-container,
-  body.printing-thermal .thermal-receipt-container * {
-    visibility: visible !important;
-  }
-
-  body.printing-thermal #thermal-receipt-slip,
-  body.printing-thermal .thermal-receipt-container {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 80mm !important;
-    max-width: 80mm !important;
-    margin: 0 auto !important;
-    padding: 2mm 3mm !important;
-    background: #FFFFFF !important;
-    color: #000000 !important;
-    font-family: 'Courier New', Courier, monospace, sans-serif !important;
-    box-shadow: none !important;
-    border: none !important;
-    page-break-inside: avoid !important;
-    display: block !important;
-    z-index: 999999 !important;
   }
 }
