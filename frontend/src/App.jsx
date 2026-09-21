@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
+import BottomNav from './components/common/BottomNav';
 import Footer from './components/common/Footer';
 import HomePage from './pages/public/HomePage';
 import MoviesPage from './pages/public/MoviesPage';
@@ -166,6 +167,7 @@ function App() {
                   </Routes>
                 </main>
                 <Footer />
+                <BottomNav />
               </>
             }
           />

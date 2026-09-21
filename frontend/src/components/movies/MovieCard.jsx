@@ -1,10 +1,9 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Star, Ticket, Clock, Sparkles } from 'lucide-react';
 import { useBooking } from '../../context/BookingContext';
-import { Badge } from '../ui/Badge';
 
-export const MovieCard = ({ movie, variant = 'standard' }) => {
+export const MovieCard = ({ movie, onOpenShowtimes }) => {
   const { setSelectedMovie } = useBooking();
   const navigate = useNavigate();
 
@@ -14,18 +13,34 @@ export const MovieCard = ({ movie, variant = 'standard' }) => {
     e.stopPropagation();
     e.preventDefault();
     setSelectedMovie(movie);
-    navigate(`/movie/${movie.slug || movie.id}`);
+    if (onOpenShowtimes) {
+      onOpenShowtimes(movie);
+    } else {
+      navigate(`/movie/${movie.slug || movie.id}`);
+    }
+  };
+
+  const handleShowtimeClick = (e, time) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setSelectedMovie(movie);
+    if (onOpenShowtimes) {
+      onOpenShowtimes(movie, time);
+    } else {
+      navigate(`/movie/${movie.slug || movie.id}`);
+    }
   };
 
   const posterSrc = movie.poster || movie.posterUrl || movie.poster_url || '/posters/pushpa2.jpg';
+  const sampleShowtimes = ['10:00 AM', '02:30 PM', '06:15 PM', '09:45 PM'];
 
   return (
     <div
       onClick={() => navigate(`/movie/${movie.slug || movie.id}`)}
-      className="group relative flex flex-col rounded-2xl bg-surface border border-border hover:border-primary/50 shadow-md hover:shadow-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1"
+      className="gold-glass-card group relative flex flex-col rounded-3xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1.5"
     >
-      {/* 1. POSTER CONTAINER (2:3 Ratio) */}
-      <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface-elevated">
+      {/* 1. GLOWING POSTER CONTAINER (2:3 Ratio) */}
+      <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#121824]">
         <img
           src={posterSrc}
           alt={movie.title}
@@ -44,52 +59,66 @@ export const MovieCard = ({ movie, variant = 'standard' }) => {
         />
 
         {/* Gradient Shadow Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
         {/* Top Badges (Status & Format) */}
-        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 pointer-events-none">
-          <Badge variant="primary" size="sm">
-            {movie.status === 'NOW_SHOWING' ? 'Now Showing' : 'Upcoming'}
-          </Badge>
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-1.5 pointer-events-none">
+          <span className="px-2.5 py-1 rounded-full bg-[#E5A93C]/20 border border-[#E5A93C]/40 text-[#FFD066] text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-[0_0_10px_rgba(229,169,60,0.3)]">
+            {movie.status === 'NOW_SHOWING' ? 'Now Showing' : 'Premiere'}
+          </span>
 
-          <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-bold text-white">
-            {movie.censorRating || 'UA'}
+          <span className="px-2 py-0.5 rounded-lg bg-[#0B0E14]/80 backdrop-blur-md border border-[#E5A93C]/25 text-[10px] font-bold text-white">
+            {movie.censorRating || 'UA 16+'}
           </span>
         </div>
 
-        {/* Floating Rating Pill at Bottom of Poster */}
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/15 shadow-sm">
-          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-          <span className="text-xs font-black text-white">{movie.rating}</span>
-          <span className="text-[10px] text-slate-300 font-medium">({movie.votes || '20K'})</span>
+        {/* Floating Star Rating Badge at Bottom of Poster (⭐ 9.4) */}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#0B0E14]/85 backdrop-blur-md border border-[#E5A93C]/30 shadow-[0_0_12px_rgba(229,169,60,0.3)]">
+          <Star className="w-3.5 h-3.5 fill-[#FFD066] text-[#FFD066]" />
+          <span className="text-xs font-black text-[#FFD066]">⭐ {movie.rating || '9.4'}</span>
+          <span className="text-[10px] text-slate-400 font-medium">({movie.votes || '20K'})</span>
         </div>
       </div>
 
-      {/* 2. CARD DETAILS DRAWER */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
+      {/* 2. CARD DETAILS & SHOWTIME PILLS DRAWER */}
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3 bg-[#121824]/90">
         <div>
-          <h3 className="font-black text-sm sm:text-base text-text-primary group-hover:text-primary transition-colors truncate">
+          <h3 className="font-black text-sm sm:text-base text-white group-hover:text-[#FFD066] transition-colors truncate">
             {movie.title}
           </h3>
-          <p className="text-[11px] text-text-muted truncate mt-0.5">
-            {movie.genres?.join(', ') || movie.genre || 'Action, Drama'}
+          <p className="text-[11px] text-slate-400 truncate mt-0.5">
+            {movie.genres?.join(', ') || movie.genre || 'Action, Drama'} • {movie.duration || '2h 45m'}
           </p>
         </div>
 
-        {/* Language & Duration Bar */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/80 text-[11px] text-text-secondary font-medium">
-          <span>{movie.languages?.join(' • ') || movie.language || 'Telugu'}</span>
-          <span className="text-text-muted">{movie.duration || '2h 45m'}</span>
+        {/* Showtime Pills Strip */}
+        <div className="space-y-1.5 pt-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+            <Clock className="w-3 h-3 text-[#E5A93C]" />
+            Showtimes Today:
+          </span>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            {sampleShowtimes.map((slot) => (
+              <button
+                key={slot}
+                type="button"
+                onClick={(e) => handleShowtimeClick(e, slot)}
+                className="px-2.5 py-1 rounded-lg bg-[#1A2234] hover:bg-[#E5A93C] text-slate-300 hover:text-[#0B0E14] border border-[#E5A93C]/20 hover:border-[#FFD066] text-[10px] font-bold whitespace-nowrap transition-all shadow-xs"
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Direct Action Button */}
+        {/* Direct Action "Find Best Seats" Button */}
         <button
           type="button"
           onClick={handleBook}
-          className="w-full py-2.5 rounded-xl bg-surface-elevated group-hover:bg-primary text-text-primary group-hover:text-white border border-border group-hover:border-primary text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+          className="gold-glow-btn w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 mt-1"
         >
           <Ticket className="w-3.5 h-3.5" />
-          <span>Book Tickets</span>
+          <span>Find Best Seats</span>
         </button>
       </div>
     </div>

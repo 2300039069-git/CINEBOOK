@@ -19,17 +19,17 @@ export const Button = ({
 
   const variants = {
     primary:
-      'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-primary/25 border border-primary/40 hover:shadow-primary/40',
+      'bg-gradient-to-r from-[#E5A93C] to-[#FFD066] hover:from-[#FFD066] hover:to-[#FFE599] text-[#0B0E14] font-black shadow-[0_0_18px_rgba(229,169,60,0.45)] hover:shadow-[0_0_28px_rgba(229,169,60,0.65)] border border-[#FFD066]',
     glass:
-      'bg-white/10 dark:bg-white/5 hover:bg-white/15 dark:hover:bg-white/10 text-text-primary border border-white/15 dark:border-white/10 backdrop-blur-xl shadow-md',
+      'bg-[#121824]/80 hover:bg-[#1A2234] text-white border border-[#E5A93C]/30 hover:border-[#E5A93C] backdrop-blur-xl shadow-md hover:shadow-[0_0_15px_rgba(229,169,60,0.25)]',
     secondary:
-      'bg-surface-elevated hover:bg-surface-hover text-text-primary border border-border shadow-sm',
+      'bg-[#1A2234] hover:bg-[#222C42] text-white border border-[#E5A93C]/20 hover:border-[#E5A93C]/50 shadow-sm',
     outline:
-      'bg-transparent border border-border hover:border-primary/60 text-text-primary hover:text-primary',
+      'bg-transparent border border-[#E5A93C]/40 hover:border-[#E5A93C] text-slate-200 hover:text-[#FFD066]',
     danger:
-      'bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/30 shadow-sm',
+      'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-sm',
     gold:
-      'bg-accent hover:bg-accent-hover text-black font-extrabold shadow-lg shadow-accent/25 border border-accent/40',
+      'bg-gradient-to-r from-[#E5A93C] to-[#FFD066] hover:from-[#FFD066] hover:to-[#FFE599] text-[#0B0E14] font-black shadow-[0_0_18px_rgba(229,169,60,0.45)] border border-[#FFD066]',
   };
 
   const sizes = {

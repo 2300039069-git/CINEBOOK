@@ -5,133 +5,90 @@
 @layer base {
   :root,
   .dark {
-    --theme-bg: #05070B;
-    --theme-surface: #0C1017;
-    --theme-card: #0C1017;
-    --theme-elevated: #141A24;
-    --theme-hover: #1C2331;
-    --theme-subtle: #080B10;
-    --theme-border: rgba(255, 255, 255, 0.08);
-    --theme-border-subtle: rgba(255, 255, 255, 0.04);
-    --theme-border-hover: #FF204E;
-    --theme-primary: #FF204E;
-    --theme-primary-hover: #FF3B64;
-    --theme-accent: #E5B869;
-    --theme-accent-hover: #F3C77C;
-    --theme-crimson: #FF204E;
-    --theme-gold: #E5B869;
-    --theme-cyan: #00D2FF;
-    --theme-text: #F8FAFC;
-    --theme-text-primary: #F8FAFC;
+    --theme-bg: #0B0E14;
+    --theme-surface: #121824;
+    --theme-card: #121824;
+    --theme-elevated: #1A2234;
+    --theme-hover: #222C42;
+    --theme-subtle: #0E131D;
+    --theme-border: rgba(229, 169, 60, 0.2);
+    --theme-border-subtle: rgba(229, 169, 60, 0.1);
+    --theme-border-hover: #E5A93C;
+    --theme-primary: #E5A93C;
+    --theme-primary-hover: #FFD066;
+    --theme-accent: #E5A93C;
+    --theme-accent-hover: #FFD066;
+    --theme-gold: #E5A93C;
+    --theme-gold-bright: #FFD066;
+    --theme-gold-glow: 0 0 15px rgba(229, 169, 60, 0.45);
+    --theme-text: #FFFFFF;
+    --theme-text-primary: #FFFFFF;
     --theme-text-secondary: #94A3B8;
     --theme-text-muted: #64748B;
   }
 
-  .light {
-    --theme-bg: #F7F9FC;
-    --theme-surface: #FFFFFF;
-    --theme-card: #FFFFFF;
-    --theme-elevated: #EEF2F6;
-    --theme-hover: #E2E8F0;
-    --theme-subtle: #F1F5F9;
-    --theme-border: rgba(15, 23, 42, 0.08);
-    --theme-border-subtle: rgba(15, 23, 42, 0.04);
-    --theme-border-hover: #E50914;
-    --theme-primary: #E50914;
-    --theme-primary-hover: #CC0812;
-    --theme-accent: #D97706;
-    --theme-accent-hover: #B45309;
-    --theme-crimson: #E50914;
-    --theme-gold: #D97706;
-    --theme-cyan: #0284C7;
-    --theme-text: #0A0F1D;
-    --theme-text-primary: #0A0F1D;
-    --theme-text-secondary: #475569;
-    --theme-text-muted: #64748B;
-  }
-
   body {
-    background-color: var(--theme-bg, #05070B);
-    color: var(--theme-text-primary, #F8FAFC);
+    background-color: #0B0E14;
+    color: #FFFFFF;
     font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.25s ease-out, color 0.25s ease-out;
   }
 }
 
 @layer utilities {
-  /* Floating Glass Navbar & Panels */
-  .glass-nav {
-    background: rgba(12, 16, 23, 0.78);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Dark Glassmorphism Cards & Panels with 1px Golden Borders */
+  .gold-glass-card {
+    background: rgba(18, 24, 36, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(229, 169, 60, 0.22);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(229, 169, 60, 0.15);
   }
 
-  .light .glass-nav {
-    background: rgba(255, 255, 255, 0.86);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  .gold-glass-card:hover {
+    border-color: rgba(229, 169, 60, 0.45);
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(229, 169, 60, 0.25);
   }
 
-  /* Luxury Cinema Surface Card */
-  .cine-surface {
-    background-color: var(--theme-surface, #0C1017);
-    border: 1px solid var(--theme-border, rgba(255, 255, 255, 0.08));
-    border-radius: 1.25rem;
-    box-shadow: 0 8px 30px -8px rgba(0, 0, 0, 0.4);
+  .gold-glow {
+    box-shadow: 0 0 15px rgba(229, 169, 60, 0.45);
+  }
+
+  .gold-glow-lg {
+    box-shadow: 0 0 25px rgba(229, 169, 60, 0.55);
+  }
+
+  .gold-glow-text {
+    text-shadow: 0 0 12px rgba(229, 169, 60, 0.6);
+  }
+
+  /* Glowing Neon Gold Action Button */
+  .gold-glow-btn {
+    background: linear-gradient(135deg, #E5A93C 0%, #FFD066 100%);
+    color: #0B0E14;
+    font-weight: 800;
+    box-shadow: 0 0 18px rgba(229, 169, 60, 0.45);
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .cine-surface:hover {
-    border-color: rgba(255, 32, 78, 0.35);
-    box-shadow: 0 18px 42px -10px rgba(0, 0, 0, 0.6), 0 0 20px -4px rgba(255, 32, 78, 0.15);
+  .gold-glow-btn:hover {
+    background: linear-gradient(135deg, #FFD066 0%, #FFE599 100%);
+    box-shadow: 0 0 28px rgba(229, 169, 60, 0.65), 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
   }
 
-  .light .cine-surface {
-    box-shadow: 0 8px 30px -8px rgba(15, 23, 42, 0.05);
+  .gold-glow-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 12px rgba(229, 169, 60, 0.35);
   }
 
-  .light .cine-surface:hover {
-    border-color: rgba(229, 9, 20, 0.3);
-    box-shadow: 0 18px 42px -10px rgba(15, 23, 42, 0.1), 0 0 20px -4px rgba(229, 9, 20, 0.1);
-  }
-
-  /* 3D Perspective & Depth */
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-
-  .perspective-2000 {
-    perspective: 2000px;
-  }
-
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-
-  /* Overhead Spotlight Cone */
-  .spotlight-cone {
-    background: radial-gradient(circle at 50% 0%, rgba(229, 184, 105, 0.2) 0%, rgba(255, 32, 78, 0.06) 35%, transparent 70%);
-  }
-
-  .light .spotlight-cone {
-    background: radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.12) 0%, rgba(229, 9, 20, 0.04) 35%, transparent 70%);
-  }
-
-  /* Screen Curve Light Bar */
-  .cinema-screen-glow {
-    border-top: 3px solid #FF204E;
-    border-radius: 50% 50% 0 0 / 20px 20px 0 0;
-    box-shadow: 0 -10px 30px -2px rgba(255, 32, 78, 0.5);
-  }
-
-  .light .cinema-screen-glow {
-    border-top: 3px solid #E50914;
-    box-shadow: 0 -10px 30px -2px rgba(229, 9, 20, 0.35);
+  /* Screen Curve Light Arc */
+  .curved-screen-glow {
+    border-top: 3px solid #E5A93C;
+    border-radius: 50% 50% 0 0 / 25px 25px 0 0;
+    box-shadow: 0 -12px 30px -2px rgba(229, 169, 60, 0.55);
   }
 
   /* Digital E-Ticket Perforation */
@@ -141,7 +98,7 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-color: var(--theme-bg, #05070B);
+    background-color: #0B0E14;
   }
 
   .ticket-perforation-right {
@@ -150,40 +107,28 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background-color: var(--theme-bg, #05070B);
+    background-color: #0B0E14;
   }
 }
 
-/* Custom Refined Scrollbars */
+/* Custom Refined Scrollbars in Gold & Obsidian */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #05070B;
+::-webkit-scrollbar-track {
+  background: #0B0E14;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #141A24;
+::-webkit-scrollbar-thumb {
+  background: #1A2234;
   border-radius: 9999px;
+  border: 1px solid rgba(229, 169, 60, 0.2);
 }
 
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #FF204E;
-}
-
-.light ::-webkit-scrollbar-track {
-  background: #F1F5F9;
-}
-
-.light ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 9999px;
-}
-
-.light ::-webkit-scrollbar-thumb:hover {
-  background: #E50914;
+::-webkit-scrollbar-thumb:hover {
+  background: #E5A93C;
 }
 
 /* ============================================================================
