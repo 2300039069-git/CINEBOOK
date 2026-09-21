@@ -68,7 +68,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000,
+  timeout: 45000,
 });
 
 // Request interceptor to attach JWT bearer token & dynamically update baseURL if localStorage was modified

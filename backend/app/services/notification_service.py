@@ -155,7 +155,7 @@ class NotificationService:
         # 1. Email Dispatch (HTML E-Ticket Pass)
         if email:
             try:
-                email_res = EmailService.send_ticket_email(email, booking)
+                email_res = await asyncio.to_thread(EmailService.send_ticket_email, email, booking)
                 results["email"] = email_res
             except Exception as e:
                 logger.error(f"Failed to dispatch ticket email to {email}: {e}")

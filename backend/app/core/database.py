@@ -112,12 +112,12 @@ async def connect_to_supabase():
             max_size=10,
             init=_init_connection,
             statement_cache_size=0, # Required for Supabase PgBouncer / pooler
-            timeout=3.0,
-            command_timeout=3.0
+            timeout=10.0,
+            command_timeout=15.0
         )
         
         # Verify connectivity
-        async with db_manager.pool.acquire(timeout=2.0) as conn:
+        async with db_manager.pool.acquire(timeout=8.0) as conn:
             pg_version = await conn.fetchval("SELECT version();")
             logger.info(f"Successfully connected to Supabase PostgreSQL! ({pg_version.split(',')[0]})")
         
